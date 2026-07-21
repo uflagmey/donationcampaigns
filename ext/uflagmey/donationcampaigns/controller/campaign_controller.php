@@ -261,7 +261,7 @@ class campaign_controller
 			));
 		}
 
-		confirm_box(false, 'DONATIONCAMPAIGNS_CONFIRM_DISABLE', '', 'confirm_body.html', $this->helper->route(
+		confirm_box(false, $this->language->lang('DONATIONCAMPAIGNS_CONFIRM_DISABLE'), '', 'confirm_body.html', $this->helper->route(
 			'uflagmey_donationcampaigns_campaign_disable',
 			array('campaign_id' => $campaign['campaign_id'])
 		));
@@ -307,7 +307,7 @@ class campaign_controller
 			));
 		}
 
-		confirm_box(false, 'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY', '', 'confirm_body.html', $this->helper->route(
+		confirm_box(false, $this->language->lang('DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'), '', 'confirm_body.html', $this->helper->route(
 			'uflagmey_donationcampaigns_campaign_delete',
 			array('campaign_id' => $campaign['campaign_id'])
 		));
