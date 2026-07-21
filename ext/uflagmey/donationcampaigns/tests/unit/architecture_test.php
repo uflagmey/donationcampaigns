@@ -383,20 +383,23 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
-	 * Public-facing output must never carry a donor's individual amount, nor
-	 * any storage metadata. The listener is the only thing that writes to the
-	 * public template.
+	 * A donor row carries a computed display name and amount, and nothing else.
+	 * The name and amount are worked out ABOVE the assignment, so no raw storage
+	 * column reaches the template: a private donor's stored name cannot leak,
+	 * and no identifier or bbcode metadata rides along. The listener is the only
+	 * thing that writes to the public template.
 	 */
-	public function test_the_public_listener_exposes_no_amounts_or_metadata_per_donor()
+	public function test_the_public_listener_exposes_only_computed_donor_fields()
 	{
 		$code = $this->code_of($this->package . '/event/viewtopic_listener.php');
 
-		// The donor block is built here; it may carry a NAME and nothing else.
+		// The donor block is built here; its keys are NAME and AMOUNT, assigned
+		// from values computed above, never from a raw row field.
 		preg_match('/assign_block_vars\(\s*\'donationcampaigns_donor\'.*?\)\);/s', $code, $match);
 
 		$this->assertNotEmpty($match, 'The donor block assignment could not be found');
 
-		foreach (array('donation_amount', 'AMOUNT', 'donation_id', 'campaign_id', 'bbcode') as $forbidden)
+		foreach (array('donor_name', 'donation_amount', 'donation_public', 'donation_id', 'campaign_id', 'bbcode') as $forbidden)
 		{
 			$this->assertStringNotContainsString($forbidden, $match[0], "A donor row exposes {$forbidden}");
 		}

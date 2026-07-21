@@ -29,9 +29,11 @@
 
 		<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS and .donationcampaigns_donor -->
 			<p class="donationcampaigns-donors">
-				<strong>{L_DONATIONCAMPAIGNS_DONORS}{L_COLON}</strong>
-				<!-- BEGIN donationcampaigns_donor -->{donationcampaigns_donor.NAME|e}<!-- IF not donationcampaigns_donor.S_LAST_ROW -->, <!-- ENDIF --><!-- END donationcampaigns_donor -->
-				<!-- IF DONATIONCAMPAIGNS_AND_OTHERS -->{DONATIONCAMPAIGNS_AND_OTHERS}<!-- ENDIF -->
+				<strong>{L_DONATIONCAMPAIGNS_DONORS}{L_COLON}</strong><br />
+				<!-- Each confirmed donation on its own line: the donor's name, or
+				     "Anonymous" for a private or nameless one, and the amount. -->
+				<!-- BEGIN donationcampaigns_donor -->{donationcampaigns_donor.NAME|e} &mdash; {donationcampaigns_donor.AMOUNT|e}<!-- IF not donationcampaigns_donor.S_LAST_ROW --><br /><!-- ENDIF --><!-- END donationcampaigns_donor -->
+				<!-- IF DONATIONCAMPAIGNS_AND_OTHERS --><br />{DONATIONCAMPAIGNS_AND_OTHERS}<!-- ENDIF -->
 			</p>
 		<!-- ENDIF -->
 

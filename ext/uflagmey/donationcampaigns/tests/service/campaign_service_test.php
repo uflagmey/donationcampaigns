@@ -748,6 +748,30 @@ class campaign_service_test extends \phpbb_test_case
 		$this->assertSame(array(), $this->service->get_public_donor_list(2, 25));
 	}
 
+	/**
+	 * The donor list returns every donation, public and private alike — the
+	 * flag names the donor, it does not hide the donation. Anonymising a private
+	 * name is the listener's job, not this method's; the private row is returned
+	 * here with its stored name intact.
+	 */
+	public function test_get_donor_list_includes_public_and_private_donations()
+	{
+		$donors = $this->service->get_donor_list(1, 25);
+
+		$this->assertCount(3, $donors);
+		$this->assertContains('Bernd K.', array_column($donors, 'donor_name'));
+	}
+
+	public function test_get_donor_list_honours_the_limit()
+	{
+		$this->assertCount(1, $this->service->get_donor_list(1, 1));
+	}
+
+	public function test_get_donor_list_is_empty_for_a_campaign_without_donations()
+	{
+		$this->assertSame(array(), $this->service->get_donor_list(2, 25));
+	}
+
 	// -------------------------------------------------------------- deletion
 
 	public function test_delete_campaign_removes_the_campaign_and_its_donations()
@@ -1001,6 +1025,7 @@ class campaign_service_test extends \phpbb_test_case
 			'get_campaign'				=> array('get_campaign', array(1)),
 			'get_campaign_for_topic'	=> array('get_campaign_for_topic', array(10)),
 			'get_public_donor_list'		=> array('get_public_donor_list', array(1, 25)),
+			'get_donor_list'			=> array('get_donor_list', array(1, 25)),
 			'validate'					=> array('validate', array(array('campaign_title' => 'x', 'topic_id' => 30, 'target_amount' => 1))),
 		);
 	}

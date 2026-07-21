@@ -429,12 +429,18 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 	// ------------------------------------------------------------ donor list
 
-	public function test_the_donor_list_is_shown_when_enabled()
+	/**
+	 * The fixture campaign has three donations: Anna M. (10.00, public),
+	 * Bernd K. (12.00, private) and one with no name (3.00, public). Every one
+	 * of them must appear — the public/private flag names the donor, it does
+	 * not hide the donation.
+	 */
+	public function test_the_donor_list_shows_every_confirmed_donation()
 	{
 		$this->view(10);
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_SHOW_DONORS']);
-		$this->assertCount(2, $this->template->block('donationcampaigns_donor'));
+		$this->assertCount(3, $this->template->block('donationcampaigns_donor'));
 	}
 
 	public function test_the_donor_list_is_absent_when_disabled()
@@ -448,37 +454,84 @@ class viewtopic_listener_test extends \phpbb_test_case
 	}
 
 	/**
-	 * The privacy rule. A donor who asked not to be listed must not appear,
-	 * and no row may carry an amount — an individual donation figure is not
-	 * public information.
+	 * A public donation shows the donor's name and the amount.
 	 */
-	public function test_only_public_donors_are_exposed()
+	public function test_a_public_donation_shows_the_donor_name_and_amount()
 	{
 		$this->view(10);
 
-		$names = array_column($this->template->block('donationcampaigns_donor'), 'NAME');
-
-		$this->assertNotContains('Bernd K.', $names, 'A private donor was exposed');
-		$this->assertContains('Anna M.', $names);
+		$this->assertContains(
+			array('NAME' => 'Anna M.', 'AMOUNT' => '10.00 €'),
+			$this->template->block('donationcampaigns_donor')
+		);
 	}
 
-	public function test_no_donor_row_carries_an_amount()
+	/**
+	 * A private donation is still listed, with its amount, but named only as
+	 * the localised "Anonymous". The stored name must never reach the template.
+	 */
+	public function test_a_private_donation_shows_anonymous_with_its_amount()
 	{
 		$this->view(10);
 
+		$rows = $this->template->block('donationcampaigns_donor');
+
+		$this->assertContains(array('NAME' => 'Anonymous', 'AMOUNT' => '12.00 €'), $rows);
+		$this->assertNotContains('Bernd K.', array_column($rows, 'NAME'), 'A private donor was named');
+	}
+
+	/**
+	 * An empty donor name is shown as "Anonymous", with the amount intact.
+	 */
+	public function test_an_empty_donor_name_shows_anonymous_with_its_amount()
+	{
+		$this->view(10);
+
+		$this->assertContains(
+			array('NAME' => 'Anonymous', 'AMOUNT' => '3.00 €'),
+			$this->template->block('donationcampaigns_donor')
+		);
+	}
+
+	/**
+	 * Listing every donation must not disturb the collected total, the target,
+	 * or the donation count: those are the campaign's figures, not a sum of the
+	 * rows shown.
+	 */
+	public function test_listing_every_donation_leaves_the_totals_and_count_unchanged()
+	{
+		$this->view(10);
+
+		$this->assertSame('25.00 €', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
+		$this->assertSame('100.00 €', $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
+		$this->assertStringContainsString('3', $this->template->vars['DONATIONCAMPAIGNS_COUNT']);
+	}
+
+	/**
+	 * The reconciliation invariant: when the whole list is visible, the listed
+	 * amounts sum exactly to the displayed collected total. This is why the
+	 * amount is public — the list adds up to a figure that was already public.
+	 */
+	public function test_the_full_list_amounts_sum_to_the_collected_total()
+	{
+		$this->view(10);
+
+		// Nothing was truncated at the default limit.
+		$this->assertArrayNotHasKey('DONATIONCAMPAIGNS_AND_OTHERS', $this->template->vars);
+
+		$formatter = new currency_formatter($this->language());
+		$to_minor = static function ($displayed) use ($formatter) {
+			return $formatter->parse(str_replace(' €', '', $displayed), 2);
+		};
+
+		$sum = 0;
 		foreach ($this->template->block('donationcampaigns_donor') as $row)
 		{
-			$this->assertSame(array('NAME'), array_keys($row), 'A donor row exposed more than a name');
+			$sum += $to_minor($row['AMOUNT']);
 		}
-	}
 
-	public function test_an_empty_donor_name_renders_as_anonymous()
-	{
-		$this->view(10);
-
-		$names = array_column($this->template->block('donationcampaigns_donor'), 'NAME');
-
-		$this->assertContains('Anonymous', $names);
+		$this->assertSame($to_minor($this->template->vars['DONATIONCAMPAIGNS_COLLECTED']), $sum);
+		$this->assertSame(2500, $sum);
 	}
 
 	public function test_the_donor_list_limit_is_respected()
@@ -490,14 +543,18 @@ class viewtopic_listener_test extends \phpbb_test_case
 		$this->assertCount(1, $this->template->block('donationcampaigns_donor'));
 	}
 
-	public function test_truncated_donors_are_summarised()
+	/**
+	 * With one donation shown of three, two are summarised — counted over every
+	 * donation, not only the publicly named ones.
+	 */
+	public function test_truncated_donations_are_summarised()
 	{
 		$this->config->set('donationcampaigns_donor_list_limit', 1);
 
 		$this->view(10);
 
 		$this->assertArrayHasKey('DONATIONCAMPAIGNS_AND_OTHERS', $this->template->vars);
-		$this->assertStringContainsString('1', $this->template->vars['DONATIONCAMPAIGNS_AND_OTHERS']);
+		$this->assertStringContainsString('2', $this->template->vars['DONATIONCAMPAIGNS_AND_OTHERS']);
 	}
 
 	public function test_nothing_is_summarised_when_the_whole_list_fits()
@@ -505,6 +562,58 @@ class viewtopic_listener_test extends \phpbb_test_case
 		$this->view(10);
 
 		$this->assertArrayNotHasKey('DONATIONCAMPAIGNS_AND_OTHERS', $this->template->vars);
+	}
+
+	/**
+	 * English formatting: the amount uses the dot decimal separator.
+	 */
+	public function test_donor_amounts_use_english_formatting()
+	{
+		$this->view(10);
+
+		$amounts = array_column($this->template->block('donationcampaigns_donor'), 'AMOUNT');
+
+		$this->assertContains('10.00 €', $amounts);
+		$this->assertContains('12.00 €', $amounts);
+		$this->assertContains('3.00 €', $amounts);
+	}
+
+	/**
+	 * German formatting: the amount uses the comma decimal separator, and the
+	 * Anonymous label is translated. Same listener, a German reader.
+	 */
+	public function test_donor_amounts_and_the_anonymous_label_are_localised_in_german()
+	{
+		global $user;
+
+		$language = $this->language();
+		$language->set_default_language('de');
+
+		$german_listener = new viewtopic_listener(
+			$this->service,
+			new currency_formatter($language),
+			$this->config,
+			$this->template,
+			$language,
+			new selective_auth(array()),
+			$user,
+			'adm/',
+			'php'
+		);
+
+		$german_listener->assign_campaign_vars(
+			new \phpbb\event\data(array('topic_id' => 10))
+		);
+
+		$rows = $this->template->block('donationcampaigns_donor');
+		$names = array_column($rows, 'NAME');
+		$amounts = array_column($rows, 'AMOUNT');
+
+		$this->assertContains('Anonym', $names, 'The Anonymous label was not translated');
+		$this->assertContains('Anna M.', $names);
+		$this->assertContains('12,00 €', $amounts, 'A German amount must use the comma decimal separator');
+		$this->assertContains('10,00 €', $amounts);
+		$this->assertNotContains('Bernd K.', $names, 'A private donor was exposed');
 	}
 
 	// ---------------------------------------------------------------- count

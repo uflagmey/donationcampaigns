@@ -191,7 +191,7 @@ class viewtopic_listener implements EventSubscriberInterface
 
 		if ($campaign['show_donor_names'])
 		{
-			$this->assign_donor_list($campaign['campaign_id']);
+			$this->assign_donor_list($campaign['campaign_id'], $exponent, $symbol);
 		}
 	}
 
@@ -270,32 +270,50 @@ class viewtopic_listener implements EventSubscriberInterface
 	}
 
 	/**
-	 * Assign the public donor names, and a summary of any that did not fit.
+	 * Assign the donor list, and a summary of any donations that did not fit.
 	 *
-	 * Only names are exposed. An individual donation amount is not public
-	 * information, and nothing here carries one.
+	 * Every confirmed donation the campaign may show is listed, up to the
+	 * configured limit and in the same order as the ACP, each as a display name
+	 * and its amount. The public/private flag decides ONLY whether the donor is
+	 * named: a private donation, or one with no name, is shown as the localised
+	 * "Anonymous" with its amount intact. It is never hidden, and — crucially —
+	 * a private donor's stored name is discarded here and never assigned, so it
+	 * cannot reach the public template.
+	 *
+	 * The amount is public here because the list now reconciles with the
+	 * collected total: with nothing truncated, the listed amounts sum to it.
 	 *
 	 * @param int $campaign_id
+	 * @param int $exponent
+	 * @param string $symbol
 	 * @return void
 	 */
-	protected function assign_donor_list($campaign_id)
+	protected function assign_donor_list($campaign_id, $exponent, $symbol)
 	{
 		$limit = (int) $this->config['donationcampaigns_donor_list_limit'];
 
-		$donors = $this->campaign_service->get_public_donor_list($campaign_id, $limit);
+		$donations = $this->campaign_service->get_donor_list($campaign_id, $limit);
 
-		foreach ($donors as $donor)
+		foreach ($donations as $donation)
 		{
-			$name = trim($donor['donor_name']);
+			$named = $donation['donation_public'] && trim($donation['donor_name']) !== '';
+
+			// A private or nameless donation is listed as Anonymous. The stored
+			// name is read into $name only when it may be shown; otherwise it is
+			// dropped here and never assigned to the template.
+			$name = $named
+				? $donation['donor_name']
+				: $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
+
+			$amount = $this->money($donation['donation_amount'], $exponent, $symbol);
 
 			$this->template->assign_block_vars('donationcampaigns_donor', array(
-				'NAME'	=> ($name !== '')
-					? $name
-					: $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS'),
+				'NAME'		=> $name,
+				'AMOUNT'	=> $amount,
 			));
 		}
 
-		$remaining = $this->campaign_service->count_public_donations($campaign_id) - count($donors);
+		$remaining = $this->campaign_service->count_donations($campaign_id) - count($donations);
 
 		if ($remaining > 0)
 		{

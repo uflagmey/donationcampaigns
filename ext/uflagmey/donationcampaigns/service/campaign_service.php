@@ -188,6 +188,26 @@ class campaign_service
 	}
 
 	/**
+	 * Every donation the campaign may list, most recent first, up to $limit.
+	 *
+	 * The public/private flag decides whether the DONOR is NAMED, never whether
+	 * the donation is listed — so public and private donations are returned
+	 * alike, each with its amount. Anonymising a private donor's name is the
+	 * caller's responsibility; this only fetches the rows, in the same order the
+	 * ACP list uses.
+	 *
+	 * TRANSACTION BOUNDARY: none.
+	 *
+	 * @param int $campaign_id
+	 * @param int $limit
+	 * @return array
+	 */
+	public function get_donor_list($campaign_id, $limit)
+	{
+		return $this->donations->find_page_by_campaign($campaign_id, $limit, 0);
+	}
+
+	/**
 	 * How many donations a campaign has, public or not.
 	 *
 	 * The public flag governs whether a donor is named, never whether the
