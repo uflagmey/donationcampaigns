@@ -104,6 +104,23 @@ services:
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
 
+    uflagmey.donationcampaigns.controller.donation:
+        class: uflagmey\donationcampaigns\controller\donation_controller
+        arguments:
+            - '@controller.helper'
+            - '@template'
+            - '@language'
+            - '@config'
+            - '@request'
+            - '@log'
+            - '@user'
+            - '@uflagmey.donationcampaigns.access'
+            - '@uflagmey.donationcampaigns.donation_service'
+            - '@uflagmey.donationcampaigns.donation_repository'
+            - '@uflagmey.donationcampaigns.campaign_service'
+            - '@uflagmey.donationcampaigns.topic_repository'
+            - '@uflagmey.donationcampaigns.currency_formatter'
+
     uflagmey.donationcampaigns.description_formatter:
         class: uflagmey\donationcampaigns\service\description_formatter
 

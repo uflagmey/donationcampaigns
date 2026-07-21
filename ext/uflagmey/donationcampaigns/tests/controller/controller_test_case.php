@@ -9,8 +9,10 @@
 namespace uflagmey\donationcampaigns\tests\controller;
 
 use uflagmey\donationcampaigns\controller\campaign_controller;
+use uflagmey\donationcampaigns\controller\donation_controller;
 use uflagmey\donationcampaigns\service\access;
 use uflagmey\donationcampaigns\service\campaign_service;
+use uflagmey\donationcampaigns\service\donation_service;
 use uflagmey\donationcampaigns\service\currency_formatter;
 use uflagmey\donationcampaigns\tests\service\fake_description_formatter;
 use uflagmey\donationcampaigns\repository\campaign_repository;
@@ -49,6 +51,9 @@ abstract class controller_test_case extends \phpbb_test_case
 	/** @var campaign_controller */
 	protected $controller;
 
+	/** @var donation_controller */
+	protected $donation_controller;
+
 	/** @var recording_helper */
 	protected $helper;
 
@@ -69,6 +74,9 @@ abstract class controller_test_case extends \phpbb_test_case
 
 	/** @var campaign_service */
 	protected $campaign_service;
+
+	/** @var donation_service */
+	protected $donation_service;
 
 	/** @var string */
 	protected $db_file;
@@ -106,6 +114,7 @@ abstract class controller_test_case extends \phpbb_test_case
 		$this->campaign_service = new campaign_service(
 			$this->db, $this->campaigns, $this->donations, $topics, new fake_description_formatter()
 		);
+		$this->donation_service = new donation_service($this->db, $this->campaigns, $this->donations);
 
 		$this->config = new \phpbb\config\config(array(
 			'donationcampaigns_currency_code'		=> 'EUR',
@@ -180,6 +189,22 @@ abstract class controller_test_case extends \phpbb_test_case
 			new access(new forum_scoped_auth($this->grants)),
 			$this->campaign_service,
 			$this->campaigns,
+			new topic_repository($this->db, 'phpbb_topics'),
+			new currency_formatter($language)
+		);
+
+		$this->donation_controller = new donation_controller(
+			$this->helper,
+			$template,
+			$language,
+			$config,
+			$request,
+			$this->log,
+			$user,
+			new access(new forum_scoped_auth($this->grants)),
+			$this->donation_service,
+			$this->donations,
+			$this->campaign_service,
 			new topic_repository($this->db, 'phpbb_topics'),
 			new currency_formatter($language)
 		);
@@ -318,6 +343,30 @@ abstract class controller_test_case extends \phpbb_test_case
 		$creation_time = time() - 60;
 		$token = $valid_token
 			? sha1($creation_time . $user->data['user_form_salt'] . 'donationcampaigns_campaign')
+			: 'a_wrong_token';
+
+		$request = new \phpbb_mock_request(array(), array_merge(array(
+			'creation_time'	=> $creation_time,
+			'form_token'	=> $token,
+			'submit'		=> 'Submit',
+		), $values));
+		$this->rebuild();
+	}
+
+	/**
+	 * A POST to the donation form, carrying the donation form key.
+	 *
+	 * @param array $values
+	 * @param bool $valid_token
+	 * @return void
+	 */
+	protected function post_donation(array $values, $valid_token = true)
+	{
+		global $request, $user;
+
+		$creation_time = time() - 60;
+		$token = $valid_token
+			? sha1($creation_time . $user->data['user_form_salt'] . 'donationcampaigns_donation')
 			: 'a_wrong_token';
 
 		$request = new \phpbb_mock_request(array(), array_merge(array(

@@ -98,6 +98,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sZurück zum Thema%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'Die Kampagne wurde gespeichert.<br /><br />%sZurück zum Thema%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'Die Kampagne wurde gelöscht.<br /><br />%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'Die bestätigte Spende wurde gespeichert und die Kampagnensumme neu berechnet.<br /><br />%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_DONATION_DELETED_RETURN'		=> 'Die bestätigte Spende wurde gelöscht und die Kampagnensumme neu berechnet.<br /><br />%sZurück zum Thema%s',
 
 	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
 	'DONATIONCAMPAIGNS_EDIT'						=> 'Kampagne bearbeiten',

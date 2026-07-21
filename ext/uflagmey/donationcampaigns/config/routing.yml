@@ -37,3 +37,21 @@ uflagmey_donationcampaigns_campaign_delete:
     defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:delete }
     requirements:
         campaign_id: \d+
+
+# --- donation ledger (m_donationcampaigns_donations) ---
+
+# The campaign is the anchor: its stored topic decides the forum authorised
+# against. GET renders the add form; only the POST writes.
+uflagmey_donationcampaigns_donation_add:
+    path: /donationcampaigns/campaign/{campaign_id}/donation/add
+    defaults: { _controller: uflagmey.donationcampaigns.controller.donation:add }
+    requirements:
+        campaign_id: \d+
+
+# The donation is the anchor: its campaign, and that campaign's topic, decide
+# the forum. GET renders the edit form; only the POST writes.
+uflagmey_donationcampaigns_donation_edit:
+    path: /donationcampaigns/donation/{donation_id}/edit
+    defaults: { _controller: uflagmey.donationcampaigns.controller.donation:edit }
+    requirements:
+        donation_id: \d+

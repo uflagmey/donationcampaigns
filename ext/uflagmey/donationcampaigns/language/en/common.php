@@ -97,6 +97,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sReturn to the topic%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'The campaign has been saved.<br /><br />%sReturn to the topic%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'The campaign has been deleted.<br /><br />%sReturn to the topic%s',
+	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'The confirmed donation has been saved and the campaign total recalculated.<br /><br />%sReturn to the topic%s',
+	'DONATIONCAMPAIGNS_DONATION_DELETED_RETURN'		=> 'The confirmed donation has been deleted and the campaign total recalculated.<br /><br />%sReturn to the topic%s',
 
 	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
 	'DONATIONCAMPAIGNS_EDIT'						=> 'Edit campaign',
