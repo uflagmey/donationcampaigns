@@ -10,11 +10,11 @@
         "campaign",
         "fundraising"
     ],
+    "homepage": "https://github.com/uflagmey/donationcampaigns",
     "license": "GPL-2.0-only",
     "authors": [
         {
             "name": "uflagmey",
-            "email": "uflagmeyer@gmail.com",
             "role": "Developer"
         }
     ],
