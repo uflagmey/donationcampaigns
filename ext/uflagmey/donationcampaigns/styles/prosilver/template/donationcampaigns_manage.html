@@ -43,6 +43,43 @@
 		<!-- ENDIF -->
 	<!-- ENDIF -->
 
+	<!-- IF S_DONATIONCAMPAIGNS_CAN_DONATIONS -->
+		<h3>{L_DONATIONCAMPAIGNS_LIST_DONATIONS}</h3>
+
+		<p class="submit-buttons">
+			<a href="{U_ADD_DONATION}" class="button1">{L_DONATIONCAMPAIGNS_ADD_DONATION}</a>
+		</p>
+
+		<table class="table1">
+		<thead>
+		<tr>
+			<th scope="col">{L_DONATIONCAMPAIGNS_DONOR}</th>
+			<th scope="col">{L_DONATIONCAMPAIGNS_AMOUNT}</th>
+			<th scope="col">{L_DONATIONCAMPAIGNS_VISIBILITY}</th>
+			<th scope="col">{L_DONATIONCAMPAIGNS_LIST_ACTIONS}</th>
+		</tr>
+		</thead>
+		<tbody>
+		<!-- BEGIN donationcampaigns_donation -->
+			<tr>
+				<td><strong>{donationcampaigns_donation.DONOR_NAME|e}</strong></td>
+				<td>{donationcampaigns_donation.AMOUNT|e}</td>
+				<td><!-- IF donationcampaigns_donation.S_PUBLIC -->{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}<!-- ELSE -->{L_DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS}<!-- ENDIF --></td>
+				<td>
+					<a href="{donationcampaigns_donation.U_EDIT}">{L_EDIT}</a>
+					&nbsp;|&nbsp;
+					<a href="{donationcampaigns_donation.U_DELETE}">{L_DELETE}</a>
+				</td>
+			</tr>
+		<!-- BEGINELSE -->
+			<tr>
+				<td colspan="4">{L_DONATIONCAMPAIGNS_NO_DONATIONS_YET}</td>
+			</tr>
+		<!-- END donationcampaigns_donation -->
+		</tbody>
+		</table>
+	<!-- ENDIF -->
+
 	<p class="submit-buttons">
 		<a href="{U_BACK}" class="button2">{L_BACK}</a>
 	</p>

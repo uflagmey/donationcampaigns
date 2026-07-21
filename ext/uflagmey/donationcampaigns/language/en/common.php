@@ -106,6 +106,7 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DISABLE'						=> 'Disable',
 	'DONATIONCAMPAIGNS_DELETE'						=> 'Delete',
 	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Manage donations',
+	'DONATIONCAMPAIGNS_NO_DONATIONS_YET'			=> 'No confirmed donations have been recorded yet.',
 
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Are you sure you want to disable this campaign? It will be hidden from the topic; all donation records are kept.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Are you sure you want to delete this campaign? It has no donations and this cannot be undone.',

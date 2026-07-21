@@ -101,6 +101,7 @@ services:
             - '@uflagmey.donationcampaigns.access'
             - '@uflagmey.donationcampaigns.campaign_service'
             - '@uflagmey.donationcampaigns.campaign_repository'
+            - '@uflagmey.donationcampaigns.donation_repository'
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
 

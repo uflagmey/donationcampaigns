@@ -606,4 +606,69 @@ class campaign_controller_test extends controller_test_case
 			$this->controller->delete(99999);
 		});
 	}
+
+	// -------------------------------------------- the donation ledger on the landing
+
+	/**
+	 * The landing is the topic-side hub. A donations holder must be able to reach
+	 * add/edit/delete for the ledger from here — that is the whole point of the
+	 * frontend design — so the landing offers them.
+	 */
+	public function test_the_landing_offers_the_donation_ledger_to_a_donations_holder()
+	{
+		$this->as_donations_a();
+		$this->request();
+
+		$this->controller->manage(10);
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_CAN_DONATIONS']);
+		$this->assertStringContainsString('uflagmey_donationcampaigns_donation_add', $this->template->vars['U_ADD_DONATION']);
+		// Campaign 1 has one donation in the fixture; it is listed.
+		$this->assertCount(1, $this->template->block('donationcampaigns_donation'));
+	}
+
+	public function test_each_ledger_row_links_to_the_donation_edit_and_delete_routes()
+	{
+		$this->as_donations_a();
+		$this->request();
+
+		$this->controller->manage(10);
+
+		foreach ($this->template->block('donationcampaigns_donation') as $row)
+		{
+			$this->assertStringContainsString('uflagmey_donationcampaigns_donation_edit', $row['U_EDIT']);
+			$this->assertStringContainsString('uflagmey_donationcampaigns_donation_delete', $row['U_DELETE']);
+		}
+	}
+
+	/**
+	 * A shell manager who cannot manage donations must not be shown the ledger or
+	 * its actions: the two capabilities are independent, and the donor names a
+	 * donation carries are exactly what m_manage does not grant.
+	 */
+	public function test_the_landing_hides_the_donation_ledger_from_a_manage_only_holder()
+	{
+		$this->as_manager_a();
+		$this->request();
+
+		$this->controller->manage(10);
+
+		$this->assertFalse($this->template->vars['S_DONATIONCAMPAIGNS_CAN_DONATIONS']);
+		$this->assertSame(array(), $this->template->block('donationcampaigns_donation'), 'The ledger must not be built for a manage-only holder');
+	}
+
+	/**
+	 * An administrator holds both capabilities through the override, so the
+	 * landing offers both the campaign actions and the donation ledger.
+	 */
+	public function test_the_landing_offers_the_ledger_to_an_administrator()
+	{
+		$this->as_admin();
+		$this->request();
+
+		$this->controller->manage(10);
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_CAN_DONATIONS']);
+		$this->assertCount(1, $this->template->block('donationcampaigns_donation'));
+	}
 }

@@ -107,6 +107,7 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DISABLE'						=> 'Deaktivieren',
 	'DONATIONCAMPAIGNS_DELETE'						=> 'Löschen',
 	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Spenden verwalten',
+	'DONATIONCAMPAIGNS_NO_DONATIONS_YET'			=> 'Es wurden noch keine bestätigten Spenden erfasst.',
 
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Soll diese Kampagne wirklich deaktiviert werden? Sie wird im Thema ausgeblendet; alle Spenden bleiben erhalten.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Soll diese Kampagne wirklich gelöscht werden? Sie enthält keine Spenden und dies kann nicht rückgängig gemacht werden.',

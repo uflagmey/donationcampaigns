@@ -72,6 +72,9 @@ class campaign_controller
 	/** @var \uflagmey\donationcampaigns\repository\campaign_repository */
 	protected $campaigns;
 
+	/** @var \uflagmey\donationcampaigns\repository\donation_repository */
+	protected $donations;
+
 	/** @var \uflagmey\donationcampaigns\repository\topic_repository */
 	protected $topics;
 
@@ -89,6 +92,7 @@ class campaign_controller
 		\uflagmey\donationcampaigns\service\access $access,
 		\uflagmey\donationcampaigns\service\campaign_service $campaign_service,
 		\uflagmey\donationcampaigns\repository\campaign_repository $campaigns,
+		\uflagmey\donationcampaigns\repository\donation_repository $donations,
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
 		\uflagmey\donationcampaigns\service\currency_formatter $formatter
 	)
@@ -103,6 +107,7 @@ class campaign_controller
 		$this->access = $access;
 		$this->campaign_service = $campaign_service;
 		$this->campaigns = $campaigns;
+		$this->donations = $donations;
 		$this->topics = $topics;
 		$this->formatter = $formatter;
 	}
@@ -570,9 +575,59 @@ class campaign_controller
 			'U_ENABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_enable', array('campaign_id' => $campaign_id)),
 			'U_DISABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_disable', array('campaign_id' => $campaign_id)),
 			'U_DELETE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_delete', array('campaign_id' => $campaign_id)),
+			'U_ADD_DONATION'			=> $this->helper->route('uflagmey_donationcampaigns_donation_add', array('campaign_id' => $campaign_id)),
 		));
 
+		// The donation ledger is shown, and its per-row edit/delete offered, only
+		// to a donations holder. Each donation action re-checks the permission
+		// server-side, so these rows are an affordance, not the authority.
+		if ($can_donations)
+		{
+			$this->assign_donation_ledger($campaign, $exponent);
+		}
+
 		return $this->helper->render('donationcampaigns_manage.html', $this->language->lang('DONATIONCAMPAIGNS_MANAGE_CAMPAIGN'));
+	}
+
+	/**
+	 * The campaign's confirmed donations, newest first, each with a link to its
+	 * frontend edit and delete routes. Display only: donor names are labelled
+	 * ("Anonymous" when blank) and escaped in the template like every other
+	 * value, and the amount is formatted from stored minor units.
+	 *
+	 * @param array $campaign
+	 * @param int $exponent
+	 * @return void
+	 */
+	protected function assign_donation_ledger(array $campaign, $exponent)
+	{
+		foreach ($this->donations->find_by_campaign($campaign['campaign_id']) as $donation)
+		{
+			$donation_id = $donation['donation_id'];
+
+			$this->template->assign_block_vars('donationcampaigns_donation', array(
+				'AMOUNT'		=> $this->formatter->format($donation['donation_amount'], $exponent),
+				'DONOR_NAME'	=> $this->donor_label($donation['donor_name']),
+				'S_PUBLIC'		=> (bool) $donation['donation_public'],
+
+				'U_EDIT'		=> $this->helper->route('uflagmey_donationcampaigns_donation_edit', array('donation_id' => $donation_id)),
+				'U_DELETE'		=> $this->helper->route('uflagmey_donationcampaigns_donation_delete', array('donation_id' => $donation_id)),
+			));
+		}
+	}
+
+	/**
+	 * A donation with no donor name is a real, countable donation from someone
+	 * who asked not to be named; it is labelled rather than left blank.
+	 *
+	 * @param string $donor_name
+	 * @return string
+	 */
+	protected function donor_label($donor_name)
+	{
+		$donor_name = trim((string) $donor_name);
+
+		return ($donor_name !== '') ? $donor_name : $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
 	}
 
 	// -------------------------------------------------- the authorization chain

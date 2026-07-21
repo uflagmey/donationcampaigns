@@ -189,6 +189,7 @@ abstract class controller_test_case extends \phpbb_test_case
 			new access(new forum_scoped_auth($this->grants)),
 			$this->campaign_service,
 			$this->campaigns,
+			$this->donations,
 			new topic_repository($this->db, 'phpbb_topics'),
 			new currency_formatter($language)
 		);
