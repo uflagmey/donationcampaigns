@@ -92,6 +92,21 @@ services:
             # Consumed by the frontend controllers and the topic-tools link.
             - '@auth'
 
+    uflagmey.donationcampaigns.controller.campaign:
+        class: uflagmey\donationcampaigns\controller\campaign_controller
+        arguments:
+            - '@controller.helper'
+            - '@template'
+            - '@language'
+            - '@config'
+            - '@request'
+            - '@log'
+            - '@user'
+            - '@uflagmey.donationcampaigns.access'
+            - '@uflagmey.donationcampaigns.campaign_service'
+            - '@uflagmey.donationcampaigns.topic_repository'
+            - '@uflagmey.donationcampaigns.currency_formatter'
+
     uflagmey.donationcampaigns.description_formatter:
         class: uflagmey\donationcampaigns\service\description_formatter
 

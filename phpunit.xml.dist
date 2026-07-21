@@ -55,6 +55,14 @@
 		<testsuite name="acp">
 			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/acp</directory>
 		</testsuite>
+
+		<!--
+			Frontend controllers: the forum-scoped authorization chain, uniform
+			denial, and the campaign-shell actions, over a recording helper.
+		-->
+		<testsuite name="controller">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/controller</directory>
+		</testsuite>
 	</testsuites>
 
 	<coverage>

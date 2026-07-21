@@ -1,0 +1,34 @@
+<!-- INCLUDE overall_header.html -->
+
+<div class="panel">
+	<div class="inner">
+
+	<h2 class="donationcampaigns-heading">{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}</h2>
+	<p>{L_DONATIONCAMPAIGNS_MANAGE_EXPLAIN}</p>
+
+	<dl>
+		<dt>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</dt>
+		<dd><strong><a href="{U_DONATIONCAMPAIGNS_TOPIC}">{DONATIONCAMPAIGNS_TOPIC_TITLE|e}</a></strong></dd>
+	</dl>
+	<dl>
+		<dt>{L_DONATIONCAMPAIGNS_STATUS}{L_COLON}</dt>
+		<dd><!-- IF S_DONATIONCAMPAIGNS_ENABLED -->{L_DONATIONCAMPAIGNS_ENABLED}<!-- ELSE -->{L_DONATIONCAMPAIGNS_DISABLED}<!-- ENDIF --></dd>
+	</dl>
+	<dl>
+		<dt>{L_DONATIONCAMPAIGNS_COLLECTED}{L_COLON}</dt>
+		<dd>{DONATIONCAMPAIGNS_COLLECTED|e} / {DONATIONCAMPAIGNS_TARGET|e}</dd>
+	</dl>
+	<dl>
+		<dt>{L_DONATIONCAMPAIGNS_LIST_DONATIONS}{L_COLON}</dt>
+		<dd>{DONATIONCAMPAIGNS_COUNT}</dd>
+	</dl>
+
+	<p class="submit-buttons">
+		<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE --><a href="{U_EDIT}" class="button1">{L_DONATIONCAMPAIGNS_EDIT}</a>&nbsp;<!-- ENDIF -->
+		<a href="{U_BACK}" class="button2">{L_BACK}</a>
+	</p>
+
+	</div>
+</div>
+
+<!-- INCLUDE overall_footer.html -->

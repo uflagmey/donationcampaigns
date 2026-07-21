@@ -1,0 +1,76 @@
+<!-- INCLUDE overall_header.html -->
+
+<div class="panel">
+	<div class="inner">
+
+	<h2 class="donationcampaigns-heading"><!-- IF S_DONATIONCAMPAIGNS_ADD -->{L_DONATIONCAMPAIGNS_ADD_CAMPAIGN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_EDIT_CAMPAIGN}<!-- ENDIF --></h2>
+	<p>{L_DONATIONCAMPAIGNS_FORM_EXPLAIN}</p>
+
+	<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+		<div class="errorbox">
+			<h3>{L_WARNING}</h3>
+			<!-- BEGIN donationcampaigns_error --><p>{donationcampaigns_error.MESSAGE|e}</p><!-- END donationcampaigns_error -->
+		</div>
+	<!-- ENDIF -->
+
+	<form id="donationcampaigns_campaign" method="post" action="{U_ACTION}">
+	<fieldset>
+		<dl>
+			<dt><label for="campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}</span></dt>
+			<dd><input type="text" id="campaign_title" name="campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}" /></dd>
+		</dl>
+
+		<dl>
+			<dt><label>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED}</span></dt>
+			<!-- The topic is decided by the page this form was opened from and is
+			     shown as text. There is deliberately no input: a campaign belongs
+			     to one topic for life. -->
+			<dd><strong><a href="{U_DONATIONCAMPAIGNS_TOPIC}">{DONATIONCAMPAIGNS_TOPIC_TITLE|e}</a></strong></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="campaign_desc">{L_DONATIONCAMPAIGNS_FORM_DESC}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN}</span></dt>
+			<!-- NO |e: generate_text_for_edit() returns text already escaped once,
+			     emitted raw into a textarea exactly as core does with {MESSAGE}. -->
+			<dd><textarea id="campaign_desc" name="campaign_desc" rows="6" cols="60">{DONATIONCAMPAIGNS_DESC}</textarea></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span></dt>
+			<!-- The currency is shown beside the field, not inside it. -->
+			<dd><input type="text" id="target_amount" name="target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}" /> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="external_url">{L_DONATIONCAMPAIGNS_FORM_URL}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_URL_EXPLAIN}</span></dt>
+			<dd><input type="text" id="external_url" name="external_url" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_EXTERNAL_URL|e}" /></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="external_link_text">{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT_EXPLAIN}</span></dt>
+			<dd><input type="text" id="external_link_text" name="external_link_text" size="45" maxlength="100" value="{DONATIONCAMPAIGNS_LINK_TEXT|e}" /></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="show_donor_names">{L_DONATIONCAMPAIGNS_SHOW_DONOR_NAMES}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING}</span></dt>
+			<dd><label><input type="checkbox" id="show_donor_names" name="show_donor_names" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS --> checked="checked"<!-- ENDIF --> /> {L_YES}</label></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="show_donation_count">{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN}</span></dt>
+			<dd><label><input type="checkbox" id="show_donation_count" name="show_donation_count" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT --> checked="checked"<!-- ENDIF --> /> {L_YES}</label></dd>
+		</dl>
+
+		<p class="submit-buttons">
+			<input type="submit" name="submit" id="submit" class="button1" value="{L_SUBMIT}" />&nbsp;
+			<a href="{U_BACK}" class="button2">{L_BACK}</a>
+		</p>
+
+		{S_FORM_TOKEN}
+	</fieldset>
+	</form>
+
+	</div>
+</div>
+
+<!-- INCLUDE overall_footer.html -->

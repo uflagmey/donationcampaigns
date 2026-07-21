@@ -1,0 +1,17 @@
+uflagmey_donationcampaigns_manage:
+    path: /donationcampaigns/topic/{topic_id}
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:manage }
+    requirements:
+        topic_id: \d+
+
+uflagmey_donationcampaigns_campaign_create:
+    path: /donationcampaigns/topic/{topic_id}/create
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:create }
+    requirements:
+        topic_id: \d+
+
+uflagmey_donationcampaigns_campaign_edit:
+    path: /donationcampaigns/campaign/{campaign_id}/edit
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:edit }
+    requirements:
+        campaign_id: \d+
