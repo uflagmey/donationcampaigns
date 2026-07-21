@@ -66,26 +66,18 @@ $lang = array_merge($lang, array(
 	// Add / edit form
 	'DONATIONCAMPAIGNS_EDIT_CAMPAIGN'			=> 'Edit campaign',
 	'DONATIONCAMPAIGNS_FORM_EXPLAIN'			=> 'A campaign is attached to one topic and is shown above that topic\'s first post.',
-	'DONATIONCAMPAIGNS_FORM_CAMPAIGN'			=> 'Campaign',
 	'DONATIONCAMPAIGNS_FORM_TITLE'				=> 'Title',
 	'DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN'		=> 'Shown as the heading of the campaign box. At most 255 characters.',
 	'DONATIONCAMPAIGNS_FORM_TOPIC'				=> 'Topic',
 	// The topic is fixed by the page the form was opened from and is shown as
 	// text, not as an input. A campaign cannot be moved to another topic.
 	'DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED'	=> 'This campaign belongs to this topic and cannot be moved to another one.',
-	'DONATIONCAMPAIGNS_BACK_TO_TOPIC'				=> 'Back to topic',
-	// Both notices report that the world changed between opening the form and
-	// submitting it. Nothing was written in either case.
-	'DONATIONCAMPAIGNS_NOTICE_CAMPAIGN_EXISTS_NOW'	=> 'This topic already has a donation campaign. You are now editing the existing campaign; the values you entered were not saved.',
-	'DONATIONCAMPAIGNS_NOTICE_CAMPAIGN_GONE'		=> 'The campaign for this topic no longer exists. You can create a new one below.',
 	'DONATIONCAMPAIGNS_FORM_DESC'				=> 'Description',
 	'DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN'		=> 'Shown beneath the title. BBCode, smilies and links are permitted.',
 
-	'DONATIONCAMPAIGNS_FORM_MONEY'				=> 'Amounts',
 	'DONATIONCAMPAIGNS_FORM_TARGET'				=> 'Target amount',
 	'DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN'		=> 'The amount being raised, for example 250.00 or 250,00. Must be greater than zero.',
 	'DONATIONCAMPAIGNS_FORM_COLLECTED'			=> 'Collected',
-	'DONATIONCAMPAIGNS_FORM_COLLECTED_EXPLAIN'	=> 'Calculated from the recorded donations. It cannot be edited here; use “Recalculate total” on the campaign list if it looks wrong.',
 	'DONATIONCAMPAIGNS_FORM_URL'				=> 'Donation link',
 	'DONATIONCAMPAIGNS_FORM_URL_EXPLAIN'		=> 'Optional. A full http:// or https:// address where people can donate. Leave empty for no link.',
 	'DONATIONCAMPAIGNS_FORM_LINK_TEXT'			=> 'Link text',
@@ -93,9 +85,6 @@ $lang = array_merge($lang, array(
 	// Offered for a new campaign. Deliberately not provider-specific.
 	'DONATIONCAMPAIGNS_LINK_TEXT_DEFAULT'		=> 'How to donate',
 
-	'DONATIONCAMPAIGNS_FORM_DISPLAY'			=> 'Display',
-	'DONATIONCAMPAIGNS_FORM_ENABLED'			=> 'Enabled',
-	'DONATIONCAMPAIGNS_FORM_ENABLED_EXPLAIN'	=> 'A disabled campaign is hidden from the topic but keeps all of its donation records.',
 	'DONATIONCAMPAIGNS_SHOW_DONOR_NAMES'		=> 'Show donor names',
 	'DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING'	=> 'Donor names on a publicly readable topic are visible to guests and to search engines. You are responsible for having each donor’s consent before publishing their name. Individual donations can be marked private, and a donation with an empty name is shown as “Anonymous”.',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT'			=> 'Show donation count',

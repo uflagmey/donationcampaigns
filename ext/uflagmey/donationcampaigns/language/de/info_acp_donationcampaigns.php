@@ -66,7 +66,6 @@ $lang = array_merge($lang, array(
 	// Formular zum Anlegen und Bearbeiten
 	'DONATIONCAMPAIGNS_EDIT_CAMPAIGN'			=> 'Kampagne bearbeiten',
 	'DONATIONCAMPAIGNS_FORM_EXPLAIN'			=> 'Eine Kampagne gehört zu genau einem Thema und wird über dessen erstem Beitrag angezeigt.',
-	'DONATIONCAMPAIGNS_FORM_CAMPAIGN'			=> 'Kampagne',
 	'DONATIONCAMPAIGNS_FORM_TITLE'				=> 'Titel',
 	'DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN'		=> 'Wird als Überschrift der Kampagnenbox angezeigt. Höchstens 255 Zeichen.',
 	'DONATIONCAMPAIGNS_FORM_TOPIC'				=> 'Thema',
@@ -74,19 +73,12 @@ $lang = array_merge($lang, array(
 	// wurde, und wird als Text angezeigt, nicht als Eingabefeld. Eine Kampagne
 	// kann nicht auf ein anderes Thema verschoben werden.
 	'DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED'	=> 'Diese Kampagne gehört zu diesem Thema und kann nicht auf ein anderes verschoben werden.',
-	'DONATIONCAMPAIGNS_BACK_TO_TOPIC'				=> 'Zurück zum Thema',
-	// Beide Hinweise melden, dass sich zwischen Öffnen und Absenden des
-	// Formulars etwas geändert hat. In beiden Fällen wurde nichts geschrieben.
-	'DONATIONCAMPAIGNS_NOTICE_CAMPAIGN_EXISTS_NOW'	=> 'Für dieses Thema existiert bereits eine Spendenkampagne. Du bearbeitest jetzt die vorhandene Kampagne; deine Eingaben wurden nicht gespeichert.',
-	'DONATIONCAMPAIGNS_NOTICE_CAMPAIGN_GONE'		=> 'Die Kampagne für dieses Thema existiert nicht mehr. Du kannst unten eine neue erstellen.',
 	'DONATIONCAMPAIGNS_FORM_DESC'				=> 'Beschreibung',
 	'DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN'		=> 'Wird unter dem Titel angezeigt. BBCode, Smilies und Links sind erlaubt.',
 
-	'DONATIONCAMPAIGNS_FORM_MONEY'				=> 'Beträge',
 	'DONATIONCAMPAIGNS_FORM_TARGET'				=> 'Spendenziel',
 	'DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN'		=> 'Der angestrebte Betrag, zum Beispiel 250,00 oder 250.00. Muss größer als null sein.',
 	'DONATIONCAMPAIGNS_FORM_COLLECTED'			=> 'Gesammelt',
-	'DONATIONCAMPAIGNS_FORM_COLLECTED_EXPLAIN'	=> 'Wird aus den erfassten Spenden berechnet. Der Wert lässt sich hier nicht bearbeiten; nutze &bdquo;Summe neu berechnen&ldquo; in der Kampagnenliste, falls er nicht stimmt.',
 	'DONATIONCAMPAIGNS_FORM_URL'				=> 'Spendenlink',
 	'DONATIONCAMPAIGNS_FORM_URL_EXPLAIN'		=> 'Optional. Eine vollständige http://- oder https://-Adresse, unter der gespendet werden kann. Leer lassen, wenn keine Schaltfläche erscheinen soll.',
 	'DONATIONCAMPAIGNS_FORM_LINK_TEXT'			=> 'Linktext',
@@ -94,9 +86,6 @@ $lang = array_merge($lang, array(
 	// Vorschlag für eine neue Kampagne. Bewusst ohne Anbieterbezug.
 	'DONATIONCAMPAIGNS_LINK_TEXT_DEFAULT'		=> 'So kannst du spenden',
 
-	'DONATIONCAMPAIGNS_FORM_DISPLAY'			=> 'Anzeige',
-	'DONATIONCAMPAIGNS_FORM_ENABLED'			=> 'Aktiv',
-	'DONATIONCAMPAIGNS_FORM_ENABLED_EXPLAIN'	=> 'Eine deaktivierte Kampagne wird im Thema nicht angezeigt, behält aber alle ihre Spendeneinträge.',
 	'DONATIONCAMPAIGNS_SHOW_DONOR_NAMES'		=> 'Spendernamen anzeigen',
 	'DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING'	=> 'Spendernamen in einem öffentlich lesbaren Thema sind für Gäste und für Suchmaschinen sichtbar. Du bist dafür verantwortlich, dass jeder Spender der Veröffentlichung seines Namens zugestimmt hat. Einzelne Spenden lassen sich als nicht öffentlich kennzeichnen, und eine Spende ohne Namen wird als &bdquo;Anonym&ldquo; angezeigt.',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT'			=> 'Anzahl der Spenden anzeigen',
