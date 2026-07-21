@@ -1,0 +1,6 @@
+parameters:
+    # Physical table names use the abbreviated stem "ufdc" (uflagmey donation
+    # campaigns) because Oracle caps identifiers at 30 bytes and phpBB 3.3
+    # supports Oracle. See ADR-012 and specification section 4.6.8.
+    uflagmey.donationcampaigns.tables.campaigns: '%core.table_prefix%ufdc_campaigns'
+    uflagmey.donationcampaigns.tables.donations: '%core.table_prefix%ufdc_donations'

@@ -1,0 +1,64 @@
+<!-- INCLUDE overall_header.html -->
+
+<a id="maincontent"></a>
+
+<a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">&laquo; {L_BACK}</a>
+
+<h1>{L_ACP_DONATIONCAMPAIGNS_DONATIONS}</h1>
+
+<p>{L_DONATIONCAMPAIGNS_DONATIONS_EXPLAIN}</p>
+
+<p>
+	<strong>{L_DONATIONCAMPAIGNS_LIST_CAMPAIGN}{L_COLON}</strong> {DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}
+	&nbsp;&mdash;&nbsp;
+	<strong>{L_DONATIONCAMPAIGNS_FORM_COLLECTED}{L_COLON}</strong> {DONATIONCAMPAIGNS_COLLECTED_AMOUNT|e}
+</p>
+
+<p><a class="button2" href="{U_DONATIONCAMPAIGNS_ADD}">{L_DONATIONCAMPAIGNS_ADD_DONATION}</a></p>
+
+<fieldset class="tabulated">
+<legend>{L_ACP_DONATIONCAMPAIGNS_DONATIONS}</legend>
+
+<table class="table1 zebra-table">
+<thead>
+<tr>
+	<th scope="col">{L_DONATIONCAMPAIGNS_DONOR}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_AMOUNT}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_RECEIVED_ON}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_RECORDED_ON}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_VISIBILITY}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_ACTIONS}</th>
+</tr>
+</thead>
+<tbody>
+<!-- BEGIN donationcampaigns_donation -->
+	<tr>
+		<td><strong>{donationcampaigns_donation.DONOR_NAME|e}</strong></td>
+		<td>{donationcampaigns_donation.AMOUNT|e}</td>
+		<td>{donationcampaigns_donation.DONATED_AT|e}</td>
+		<td>{donationcampaigns_donation.RECORDED_AT|e}</td>
+		<td>
+			<!-- IF donationcampaigns_donation.S_PUBLIC -->{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}<!-- ELSE -->{L_DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS}<!-- ENDIF -->
+		</td>
+		<td>
+			<a href="{donationcampaigns_donation.U_EDIT}">{L_EDIT}</a>
+			&nbsp;|&nbsp;
+			<a href="{donationcampaigns_donation.U_DELETE}">{L_DELETE}</a>
+		</td>
+	</tr>
+<!-- BEGINELSE -->
+	<tr class="row3">
+		<td colspan="6">{L_ACP_NO_ITEMS}</td>
+	</tr>
+<!-- END donationcampaigns_donation -->
+</tbody>
+</table>
+</fieldset>
+
+<div class="pagination">
+<!-- IF .pagination -->
+	<!-- INCLUDE pagination.html -->
+<!-- ENDIF -->
+</div>
+
+<!-- INCLUDE overall_footer.html -->

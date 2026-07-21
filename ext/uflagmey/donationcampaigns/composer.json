@@ -1,0 +1,34 @@
+{
+    "name": "uflagmey/donationcampaigns",
+    "type": "phpbb-extension",
+    "description": "Attach donation campaigns to phpBB topics. Administrators record confirmed payments manually; the extension processes no payments.",
+    "version": "1.0.0-rc1",
+    "keywords": [
+        "phpbb",
+        "extension",
+        "donation",
+        "campaign",
+        "fundraising"
+    ],
+    "license": "GPL-2.0-only",
+    "authors": [
+        {
+            "name": "uflagmey",
+            "email": "uflagmeyer@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.2 || ^8.0",
+        "composer/installers": "~1.0"
+    },
+    "require-dev": {
+        "phpbb/epv": "dev-master"
+    },
+    "extra": {
+        "display-name": "Donation Campaigns",
+        "soft-require": {
+            "phpbb/phpbb": ">=3.3.16,<4.0.0@dev"
+        }
+    }
+}

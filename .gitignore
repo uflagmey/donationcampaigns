@@ -1,0 +1,61 @@
+# Composer — project-local toolchain, never committed
+/vendor/
+composer.lock
+/composer.phar
+/composer-setup.php
+/composer-setup.sig
+
+# phpBB source used as disposable test infrastructure only.
+# Never committed, never copied into the extension package path.
+/.phpbb-test/
+
+# PHPUnit
+/.phpunit.result.cache
+/phpunit.xml
+/build/
+/tests/coverage/
+
+# phpBB EPV / static analysis caches
+/.php_cs.cache
+/.php-cs-fixer.cache
+/.phpcs-cache
+
+# Node (only if a build step is ever added for assets)
+/node_modules/
+
+# Editors / IDEs
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Claude Code local state (machine-specific, not project framing)
+/.claude/settings.local.json
+
+# Local overrides and scratch
+*.local
+*.log
+/tmp/
+/scratch/
+
+# Local docker testboard
+/Testboard_donation/
+
+# Internal development artefacts — kept locally, never published.
+# The shipped documentation lives under ext/uflagmey/donationcampaigns/docs/.
+/CLAUDE.md
+/decisions.md
+/docs/STATUS.md
+/docs/*-HANDOVER.md
+/docs/*-review.md
+/docs/*-STATUS.md
+/docs/superpowers/

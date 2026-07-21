@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="donationcampaigns">
+	<description>phpBB coding standard for the Donation Campaigns extension.</description>
+
+	<file>ext/uflagmey/donationcampaigns</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/tests/fixtures/*</exclude-pattern>
+	<exclude-pattern>*/license.txt</exclude-pattern>
+
+	<!--
+		The phpBB coding standard is NOT distributed as a Composer package. It
+		ships inside the phpBB source tree, and ruleset-php-extensions.xml is
+		the variant intended for extensions.
+
+		The path points at the disposable phpBB tree fetched for testing; the
+		tree is never committed and never modified.
+	-->
+	<rule ref="./.phpbb-test/phpbb-release-3.3.17/build/code_sniffer/ruleset-php-extensions.xml"/>
+
+	<arg name="encoding" value="utf-8"/>
+	<arg name="extensions" value="php"/>
+	<arg value="p"/>
+</ruleset>

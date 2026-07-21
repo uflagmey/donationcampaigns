@@ -1,0 +1,64 @@
+<!-- INCLUDE overall_header.html -->
+
+<a id="maincontent"></a>
+
+<h1>{L_ACP_DONATIONCAMPAIGNS_CAMPAIGNS}</h1>
+
+<p>{L_DONATIONCAMPAIGNS_LIST_EXPLAIN}</p>
+
+<!-- NO CREATE BUTTON. A campaign is created from the topic it belongs to, via
+     that topic's tools menu. This page lists and manages what already exists,
+     so there is nothing here that would have to ask for a topic id. -->
+
+<fieldset class="tabulated">
+<legend>{L_ACP_DONATIONCAMPAIGNS_CAMPAIGNS}</legend>
+
+<table class="table1 zebra-table">
+<thead>
+<tr>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_CAMPAIGN}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_TOPIC}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_PROGRESS}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_DONATIONS}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_STATUS}</th>
+	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_ACTIONS}</th>
+</tr>
+</thead>
+<tbody>
+<!-- BEGIN donationcampaigns_row -->
+	<tr>
+		<td><strong>{donationcampaigns_row.TITLE|e}</strong></td>
+		<td><a href="{donationcampaigns_row.U_TOPIC}">{donationcampaigns_row.TOPIC_TITLE|e}</a></td>
+		<td>{donationcampaigns_row.COLLECTED|e} / {donationcampaigns_row.TARGET|e} ({donationcampaigns_row.PERCENT}%)</td>
+		<td>{donationcampaigns_row.COUNT}</td>
+		<td>
+			<!-- IF donationcampaigns_row.S_ENABLED -->{L_DONATIONCAMPAIGNS_ENABLED}<!-- ELSE -->{L_DONATIONCAMPAIGNS_DISABLED}<!-- ENDIF -->
+		</td>
+		<td>
+			<a href="{donationcampaigns_row.U_DONATIONS}">{L_ACP_DONATIONCAMPAIGNS_DONATIONS}</a>
+			&nbsp;|&nbsp;
+			<a href="{donationcampaigns_row.U_EDIT}">{L_EDIT}</a>
+			&nbsp;|&nbsp;
+			<a href="{donationcampaigns_row.U_RECALCULATE}">{L_DONATIONCAMPAIGNS_RECALCULATE}</a>
+			&nbsp;|&nbsp;
+			<a href="{donationcampaigns_row.U_DELETE}">{L_DELETE}</a>
+		</td>
+	</tr>
+<!-- BEGINELSE -->
+	<tr class="row3">
+		<!-- An empty list is not a fault, and the one thing missing here is
+		     where to go next. -->
+		<td colspan="6">{L_DONATIONCAMPAIGNS_LIST_EMPTY_EXPLAIN}</td>
+	</tr>
+<!-- END donationcampaigns_row -->
+</tbody>
+</table>
+</fieldset>
+
+<div class="pagination">
+<!-- IF .pagination -->
+	<!-- INCLUDE pagination.html -->
+<!-- ENDIF -->
+</div>
+
+<!-- INCLUDE overall_footer.html -->

@@ -1,0 +1,117 @@
+/* Donation Campaigns - public campaign box.
+
+   Version 1.0 targets prosilver only (ADR-013). Every class is prefixed so it
+   cannot collide with a board style or another extension, and nothing here
+   depends on JavaScript.
+
+   The progress bar's width is expressed as one class per five-percent step
+   rather than an inline style, because ADR-013 forbids inline CSS. The
+   listener only ever emits a multiple of five. */
+
+.donationcampaigns-panel {
+	margin-bottom: 10px;
+}
+
+/* TYPOGRAPHY.
+
+   The box sits in a .panel, which inherits prosilver's 10px body size, while
+   post text resolves to 13px. Left to inherit, the campaign read as a footnote
+   beside the post it belongs to. Sizes below are em against that same 10px
+   base, so they follow a reader who has scaled the board.
+
+   The hierarchy is deliberate and stops short of the post: topic title 2.0em,
+   post subject 1.7em, campaign title 1.5em. The campaign is meant to be
+   noticed, not to compete with the post it introduces. */
+
+.donationcampaigns-title {
+	/* prosilver's h3 rule applies text-transform: uppercase (common.css:44).
+	   A title is the administrator's own words — "Betrieb des Forums" must not
+	   reach the reader as "BETRIEB DES FORUMS". */
+	text-transform: none;
+	font-size: 1.5em;
+	line-height: 1.3;
+	margin: 0 0 6px;
+}
+
+.donationcampaigns-desc {
+	/* Matched to post text, because that is what it reads as. */
+	font-size: 1.3em;
+	line-height: 1.4;
+	margin-bottom: 10px;
+}
+
+/* Fluid, so the box survives a narrow screen and a style with its own
+   container widths. No fixed dimensions anywhere. */
+.donationcampaigns-progress {
+	background-color: #e5e5e5;
+	border: 1px solid #cfcfcf;
+	border-radius: 3px;
+	display: block;
+	height: 1.2em;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.donationcampaigns-bar {
+	background-color: #3d8b3d;
+	display: block;
+	height: 100%;
+}
+
+.donationcampaigns-bar--0 { width: 0%; }
+.donationcampaigns-bar--5 { width: 5%; }
+.donationcampaigns-bar--10 { width: 10%; }
+.donationcampaigns-bar--15 { width: 15%; }
+.donationcampaigns-bar--20 { width: 20%; }
+.donationcampaigns-bar--25 { width: 25%; }
+.donationcampaigns-bar--30 { width: 30%; }
+.donationcampaigns-bar--35 { width: 35%; }
+.donationcampaigns-bar--40 { width: 40%; }
+.donationcampaigns-bar--45 { width: 45%; }
+.donationcampaigns-bar--50 { width: 50%; }
+.donationcampaigns-bar--55 { width: 55%; }
+.donationcampaigns-bar--60 { width: 60%; }
+.donationcampaigns-bar--65 { width: 65%; }
+.donationcampaigns-bar--70 { width: 70%; }
+.donationcampaigns-bar--75 { width: 75%; }
+.donationcampaigns-bar--80 { width: 80%; }
+.donationcampaigns-bar--85 { width: 85%; }
+.donationcampaigns-bar--90 { width: 90%; }
+.donationcampaigns-bar--95 { width: 95%; }
+.donationcampaigns-bar--100 { width: 100%; }
+
+/* The figures are the point of the box, so they read at post-text size
+   rather than at the 1.2em prosilver gives a bare paragraph. */
+.donationcampaigns-figures {
+	font-size: 1.3em;
+	line-height: 1.4;
+	margin: 6px 0 0;
+}
+
+/* Reaching the target is stated in words in the markup; the weight here is
+   emphasis only, never the sole carrier of the information. */
+.donationcampaigns-reached {
+	font-weight: bold;
+	margin: 4px 0 0;
+}
+
+.donationcampaigns-count,
+.donationcampaigns-donors,
+.donationcampaigns-link {
+	margin: 6px 0 0;
+}
+
+.donationcampaigns-donors {
+	word-wrap: break-word;
+}
+
+/* Honour a reader who has asked for more contrast. */
+@media (prefers-contrast: more) {
+	.donationcampaigns-bar {
+		background-color: #1a5c1a;
+	}
+
+	.donationcampaigns-progress {
+		border-color: #000000;
+	}
+}

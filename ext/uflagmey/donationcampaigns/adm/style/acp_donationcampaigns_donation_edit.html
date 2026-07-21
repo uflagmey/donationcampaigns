@@ -1,0 +1,74 @@
+<!-- INCLUDE overall_header.html -->
+
+<a id="maincontent"></a>
+
+<a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">&laquo; {L_BACK}</a>
+
+<!-- IF S_DONATIONCAMPAIGNS_ADD -->
+	<h1>{L_DONATIONCAMPAIGNS_ADD_DONATION}</h1>
+<!-- ELSE -->
+	<h1>{L_DONATIONCAMPAIGNS_EDIT_DONATION}</h1>
+<!-- ENDIF -->
+
+<p>{L_DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN}</p>
+
+<p>
+	<strong>{L_DONATIONCAMPAIGNS_LIST_CAMPAIGN}{L_COLON}</strong> {DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}
+</p>
+
+<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+	<div class="errorbox">
+		<h3>{L_WARNING}</h3>
+		<!-- BEGIN donationcampaigns_error -->
+			<p>{donationcampaigns_error.MESSAGE|e}</p>
+		<!-- END donationcampaigns_error -->
+	</div>
+<!-- ENDIF -->
+
+<form id="donationcampaigns_donation" method="post" action="{U_ACTION}">
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_RECEIPT}</legend>
+
+	<dl>
+		<dt>
+			<label for="donation_amount">{L_DONATIONCAMPAIGNS_AMOUNT}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_AMOUNT_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donation_amount" type="text" size="15" name="donation_amount" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="donation_time">{L_DONATIONCAMPAIGNS_RECEIVED_ON}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_RECEIVED_ON_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donation_time" type="date" name="donation_time" value="{DONATIONCAMPAIGNS_DONATION_TIME|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="donor_name">{L_DONATIONCAMPAIGNS_DONOR}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_DONOR_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donor_name" type="text" size="45" maxlength="255" name="donor_name" value="{DONATIONCAMPAIGNS_DONOR_NAME|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="donation_public">{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donation_public" type="checkbox" class="radio" name="donation_public" value="1"<!-- IF S_DONATIONCAMPAIGNS_PUBLIC --> checked="checked"<!-- ENDIF --> /></dd>
+	</dl>
+</fieldset>
+
+<p class="submit-buttons">
+	<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
+	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+	{S_FORM_TOKEN}
+</p>
+
+</form>
+
+<!-- INCLUDE overall_footer.html -->

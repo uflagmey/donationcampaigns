@@ -1,0 +1,156 @@
+<!-- INCLUDE overall_header.html -->
+
+<a id="maincontent"></a>
+
+<a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">&laquo; <!-- IF S_DONATIONCAMPAIGNS_TOPIC_CONTEXT -->{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}<!-- ELSE -->{L_BACK}<!-- ENDIF --></a>
+
+<!-- IF S_DONATIONCAMPAIGNS_ADD -->
+	<h1>{L_DONATIONCAMPAIGNS_ADD_CAMPAIGN}</h1>
+<!-- ELSE -->
+	<h1>{L_DONATIONCAMPAIGNS_EDIT_CAMPAIGN}</h1>
+<!-- ENDIF -->
+
+<p>{L_DONATIONCAMPAIGNS_FORM_EXPLAIN}</p>
+
+<!-- IF DONATIONCAMPAIGNS_NOTICE -->
+	<!-- Not an error: the administrator did nothing wrong. The world changed
+	     between opening this form and submitting it, and nothing was written. -->
+	<div class="successbox">
+		<p>{DONATIONCAMPAIGNS_NOTICE|e}</p>
+	</div>
+<!-- ENDIF -->
+
+<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+	<div class="errorbox">
+		<h3>{L_WARNING}</h3>
+		<!-- BEGIN donationcampaigns_error -->
+			<p>{donationcampaigns_error.MESSAGE|e}</p>
+		<!-- END donationcampaigns_error -->
+	</div>
+<!-- ENDIF -->
+
+<form id="donationcampaigns_campaign" method="post" action="{U_ACTION}">
+
+<!-- IF S_DONATIONCAMPAIGNS_TOPIC_CONTEXT -->
+	<!-- Which campaign this form was drawn for. The next request compares it
+	     with what actually exists and refuses to write on a mismatch. -->
+	<input type="hidden" name="expected_campaign_id" value="{DONATIONCAMPAIGNS_EXPECTED_CAMPAIGN_ID}" />
+<!-- ENDIF -->
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_FORM_CAMPAIGN}</legend>
+
+	<dl>
+		<dt>
+			<label for="campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}</span>
+		</dt>
+		<dd><input id="campaign_title" type="text" size="45" maxlength="255" name="campaign_title" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<span>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</span>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED}</span>
+		</dt>
+		<!-- The topic is decided by the page this form was opened from and is
+		     shown as text. There is deliberately no input: a campaign belongs
+		     to one topic for life, and a field that does not exist cannot be
+		     tampered with. -->
+		<dd><strong><a href="{U_DONATIONCAMPAIGNS_TOPIC}">{DONATIONCAMPAIGNS_TOPIC_TITLE|e}</a></strong></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="campaign_desc">{L_DONATIONCAMPAIGNS_FORM_DESC}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN}</span>
+		</dt>
+		<dd>
+			<!-- NO |e HERE, DELIBERATELY. generate_text_for_edit() returns text
+			     that is already HTML-escaped exactly once, to be emitted raw
+			     into a textarea; core does the same with {MESSAGE} in
+			     posting_editor.html. Escaping again adds a layer the browser
+			     only half undoes, so every edit/save cycle left one more
+			     &amp; behind until the description filled with entities. -->
+			<textarea id="campaign_desc" name="campaign_desc" rows="6" cols="60">{DONATIONCAMPAIGNS_DESC}</textarea>
+		</dd>
+	</dl>
+</fieldset>
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_FORM_MONEY}</legend>
+
+	<dl>
+		<dt>
+			<label for="target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span>
+		</dt>
+		<!-- The currency is shown beside the field, not inside it: the input
+		     carries only the number the parser will read. -->
+		<dd><input id="target_amount" type="text" size="15" name="target_amount" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}" /> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong></dd>
+	</dl>
+
+	<!-- IF not S_DONATIONCAMPAIGNS_ADD -->
+		<dl>
+			<dt>
+				<span>{L_DONATIONCAMPAIGNS_FORM_COLLECTED}{L_COLON}</span>
+				<br /><span>{L_DONATIONCAMPAIGNS_FORM_COLLECTED_EXPLAIN}</span>
+			</dt>
+			<dd><strong>{DONATIONCAMPAIGNS_COLLECTED_AMOUNT|e}</strong></dd>
+		</dl>
+	<!-- ENDIF -->
+
+	<dl>
+		<dt>
+			<label for="external_url">{L_DONATIONCAMPAIGNS_FORM_URL}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_URL_EXPLAIN}</span>
+		</dt>
+		<dd><input id="external_url" type="text" size="45" maxlength="255" name="external_url" value="{DONATIONCAMPAIGNS_EXTERNAL_URL|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="external_link_text">{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT_EXPLAIN}</span>
+		</dt>
+		<dd><input id="external_link_text" type="text" size="45" maxlength="100" name="external_link_text" value="{DONATIONCAMPAIGNS_LINK_TEXT|e}" /></dd>
+	</dl>
+</fieldset>
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_FORM_DISPLAY}</legend>
+
+	<dl>
+		<dt>
+			<label for="campaign_enabled">{L_DONATIONCAMPAIGNS_FORM_ENABLED}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_ENABLED_EXPLAIN}</span>
+		</dt>
+		<dd><input id="campaign_enabled" type="checkbox" class="radio" name="campaign_enabled" value="1"<!-- IF S_DONATIONCAMPAIGNS_ENABLED --> checked="checked"<!-- ENDIF --> /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="show_donor_names">{L_DONATIONCAMPAIGNS_SHOW_DONOR_NAMES}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING}</span>
+		</dt>
+		<dd><input id="show_donor_names" type="checkbox" class="radio" name="show_donor_names" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS --> checked="checked"<!-- ENDIF --> /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="show_donation_count">{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN}</span>
+		</dt>
+		<dd><input id="show_donation_count" type="checkbox" class="radio" name="show_donation_count" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT --> checked="checked"<!-- ENDIF --> /></dd>
+	</dl>
+</fieldset>
+
+<p class="submit-buttons">
+	<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
+	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+	{S_FORM_TOKEN}
+</p>
+
+</form>
+
+<!-- INCLUDE overall_footer.html -->

@@ -1,0 +1,94 @@
+<!-- INCLUDE overall_header.html -->
+
+<a id="maincontent"></a>
+
+<h1>{L_ACP_DONATIONCAMPAIGNS_SETTINGS}</h1>
+
+<p>{L_DONATIONCAMPAIGNS_SETTINGS_EXPLAIN}</p>
+
+<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+	<div class="errorbox">
+		<h3>{L_WARNING}</h3>
+		<!-- BEGIN donationcampaigns_error -->
+			<p>{donationcampaigns_error.MESSAGE|e}</p>
+		<!-- END donationcampaigns_error -->
+	</div>
+<!-- ENDIF -->
+
+<!-- Exactly one warning is visible at any moment. Before anything is
+     touched: none. Once a currency field receives input: this banner, revealed
+     by donationcampaigns_settings.js. Once the server has refused a change and
+     is asking for confirmation: the validation box above, and this banner is
+     not rendered at all, because the two said the same thing side by side. -->
+<!-- IF S_DONATIONCAMPAIGNS_HAS_AMOUNTS and not S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->
+	<div class="errorbox" id="donationcampaigns_exponent_warning" role="alert" hidden>
+		<h3>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_WARNING_TITLE}</h3>
+		<p>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_WARNING}</p>
+	</div>
+<!-- ENDIF -->
+
+<form id="donationcampaigns_settings" method="post" action="{U_ACTION}">
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_SETTINGS_CURRENCY}</legend>
+
+	<dl>
+		<dt>
+			<label for="donationcampaigns_currency_code">{L_DONATIONCAMPAIGNS_SETTINGS_CODE}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_CODE_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donationcampaigns_currency_code" type="text" size="5" maxlength="3" name="donationcampaigns_currency_code" value="{DONATIONCAMPAIGNS_CURRENCY_CODE|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="donationcampaigns_currency_symbol">{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donationcampaigns_currency_symbol" type="text" size="10" maxlength="10" name="donationcampaigns_currency_symbol" value="{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}" /></dd>
+	</dl>
+
+	<dl>
+		<dt>
+			<label for="donationcampaigns_currency_exponent">{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donationcampaigns_currency_exponent" type="number" min="0" max="4" step="1" size="3" name="donationcampaigns_currency_exponent" value="{DONATIONCAMPAIGNS_CURRENCY_EXPONENT}" /></dd>
+	</dl>
+
+	<!-- IF S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->
+		<dl>
+			<dt>
+				<label for="donationcampaigns_confirm_exponent">{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_CONFIRM}{L_COLON}</label>
+				<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_CONFIRM_EXPLAIN}</span>
+			</dt>
+			<dd><input id="donationcampaigns_confirm_exponent" type="checkbox" class="radio" name="donationcampaigns_confirm_exponent" value="1" /></dd>
+		</dl>
+	<!-- ENDIF -->
+</fieldset>
+
+<fieldset>
+	<legend>{L_DONATIONCAMPAIGNS_SETTINGS_DISPLAY}</legend>
+
+	<dl>
+		<dt>
+			<label for="donationcampaigns_donor_list_limit">{L_DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT_EXPLAIN}</span>
+		</dt>
+		<dd><input id="donationcampaigns_donor_list_limit" type="number" min="1" max="500" step="1" size="5" name="donationcampaigns_donor_list_limit" value="{DONATIONCAMPAIGNS_DONOR_LIST_LIMIT}" /></dd>
+	</dl>
+</fieldset>
+
+<p class="submit-buttons">
+	<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
+	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+	{S_FORM_TOKEN}
+</p>
+
+</form>
+
+<!-- IF S_DONATIONCAMPAIGNS_HAS_AMOUNTS and not S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->
+	<!-- INCLUDEJS donationcampaigns_settings.js -->
+<!-- ENDIF -->
+
+<!-- INCLUDE overall_footer.html -->

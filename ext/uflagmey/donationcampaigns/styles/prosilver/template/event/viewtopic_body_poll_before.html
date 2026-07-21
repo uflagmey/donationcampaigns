@@ -1,0 +1,45 @@
+<!-- IF S_DONATIONCAMPAIGNS_SHOW -->
+<div class="panel donationcampaigns-panel">
+	<div class="inner">
+		<h3 class="donationcampaigns-title">{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}</h3>
+
+		<!-- IF DONATIONCAMPAIGNS_DESC -->
+			<div class="donationcampaigns-desc">{DONATIONCAMPAIGNS_DESC}</div>
+		<!-- ENDIF -->
+
+		<div class="donationcampaigns-progress" role="progressbar" aria-valuenow="{DONATIONCAMPAIGNS_PERCENT}" aria-valuemin="0" aria-valuemax="100" aria-valuetext="{DONATIONCAMPAIGNS_PERCENT_RAW}%" aria-label="{L_DONATIONCAMPAIGNS_PROGRESS_LABEL}">
+			<span class="donationcampaigns-bar donationcampaigns-bar--{DONATIONCAMPAIGNS_PERCENT_STEP}"></span>
+		</div>
+
+		<p class="donationcampaigns-figures">
+			{L_DONATIONCAMPAIGNS_COLLECTED}{L_COLON} <strong>{DONATIONCAMPAIGNS_COLLECTED|e}</strong>
+			&mdash;
+			{L_DONATIONCAMPAIGNS_TARGET}{L_COLON} <strong>{DONATIONCAMPAIGNS_TARGET|e}</strong>
+			&mdash;
+			{DONATIONCAMPAIGNS_PERCENT_RAW}%
+		</p>
+
+		<!-- IF S_DONATIONCAMPAIGNS_REACHED -->
+			<p class="donationcampaigns-reached">{L_DONATIONCAMPAIGNS_TARGET_REACHED}</p>
+		<!-- ENDIF -->
+
+		<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT and DONATIONCAMPAIGNS_COUNT -->
+			<p class="donationcampaigns-count">{DONATIONCAMPAIGNS_COUNT}</p>
+		<!-- ENDIF -->
+
+		<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS and .donationcampaigns_donor -->
+			<p class="donationcampaigns-donors">
+				<strong>{L_DONATIONCAMPAIGNS_DONORS}{L_COLON}</strong>
+				<!-- BEGIN donationcampaigns_donor -->{donationcampaigns_donor.NAME|e}<!-- IF not donationcampaigns_donor.S_LAST_ROW -->, <!-- ENDIF --><!-- END donationcampaigns_donor -->
+				<!-- IF DONATIONCAMPAIGNS_AND_OTHERS -->{DONATIONCAMPAIGNS_AND_OTHERS}<!-- ENDIF -->
+			</p>
+		<!-- ENDIF -->
+
+		<!-- IF DONATIONCAMPAIGNS_URL -->
+			<p class="donationcampaigns-link">
+				<a href="{DONATIONCAMPAIGNS_URL|e}" class="button donationcampaigns-donate" rel="noopener noreferrer nofollow">{DONATIONCAMPAIGNS_LINK_TEXT|e}</a>
+			</p>
+		<!-- ENDIF -->
+	</div>
+</div>
+<!-- ENDIF -->

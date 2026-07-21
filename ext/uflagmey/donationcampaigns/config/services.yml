@@ -1,0 +1,95 @@
+imports:
+    - { resource: tables.yml }
+
+services:
+    uflagmey.donationcampaigns.listener.permission:
+        class: uflagmey\donationcampaigns\event\permission_listener
+        tags:
+            - { name: event.listener }
+
+    uflagmey.donationcampaigns.campaign_repository:
+        class: uflagmey\donationcampaigns\repository\campaign_repository
+        arguments:
+            - '@dbal.conn'
+            - '%uflagmey.donationcampaigns.tables.campaigns%'
+
+    uflagmey.donationcampaigns.donation_repository:
+        class: uflagmey\donationcampaigns\repository\donation_repository
+        arguments:
+            - '@dbal.conn'
+            - '%uflagmey.donationcampaigns.tables.donations%'
+
+    uflagmey.donationcampaigns.topic_repository:
+        class: uflagmey\donationcampaigns\repository\topic_repository
+        arguments:
+            - '@dbal.conn'
+            - '%core.table_prefix%topics'
+
+    uflagmey.donationcampaigns.currency_formatter:
+        class: uflagmey\donationcampaigns\service\currency_formatter
+        arguments:
+            - '@language'
+
+    uflagmey.donationcampaigns.listener.viewtopic:
+        class: uflagmey\donationcampaigns\event\viewtopic_listener
+        arguments:
+            - '@uflagmey.donationcampaigns.campaign_service'
+            - '@uflagmey.donationcampaigns.currency_formatter'
+            - '@config'
+            - '@template'
+            - '@language'
+            # For the administrator's topic tools link only. auth answers two
+            # questions here (a_ and a_donationcampaigns) and user supplies both
+            # is_registered and the session id the ACP requires.
+            - '@auth'
+            - '@user'
+            # Injected, never assembled: the board's admin directory is
+            # configurable and adm/ is only the default.
+            - '%core.adm_relative_path%'
+            - '%core.php_ext%'
+        tags:
+            - { name: event.listener }
+
+    uflagmey.donationcampaigns.listener.topic_delete:
+        class: uflagmey\donationcampaigns\event\topic_delete_listener
+        arguments:
+            - '@uflagmey.donationcampaigns.campaign_service'
+        tags:
+            - { name: event.listener }
+
+    uflagmey.donationcampaigns.listener.forum_delete:
+        class: uflagmey\donationcampaigns\event\forum_delete_listener
+        arguments:
+            - '@uflagmey.donationcampaigns.campaign_service'
+        tags:
+            - { name: event.listener }
+
+    uflagmey.donationcampaigns.donation_service:
+        class: uflagmey\donationcampaigns\service\donation_service
+        arguments:
+            # The connection is injected to open transactions. This service
+            # issues no SQL of its own.
+            - '@dbal.conn'
+            - '@uflagmey.donationcampaigns.campaign_repository'
+            - '@uflagmey.donationcampaigns.donation_repository'
+
+    uflagmey.donationcampaigns.settings_service:
+        class: uflagmey\donationcampaigns\service\settings_service
+        arguments:
+            - '@config'
+            - '@uflagmey.donationcampaigns.campaign_repository'
+            - '@uflagmey.donationcampaigns.donation_repository'
+
+    uflagmey.donationcampaigns.description_formatter:
+        class: uflagmey\donationcampaigns\service\description_formatter
+
+    uflagmey.donationcampaigns.campaign_service:
+        class: uflagmey\donationcampaigns\service\campaign_service
+        arguments:
+            # The connection is injected to open transactions. This service
+            # issues no SQL of its own.
+            - '@dbal.conn'
+            - '@uflagmey.donationcampaigns.campaign_repository'
+            - '@uflagmey.donationcampaigns.donation_repository'
+            - '@uflagmey.donationcampaigns.topic_repository'
+            - '@uflagmey.donationcampaigns.description_formatter'

@@ -1,0 +1,13 @@
+# Files excluded from release archives (composer archive, GitHub tarballs).
+# The shipped package should contain what a board runs, and nothing else.
+
+# The test suite: 50 files, roughly half the repository, and of no use on a
+# live board. It stays in the repository for review and CI.
+/tests            export-ignore
+
+# Contributor and operator documentation. ADMIN_GUIDE and PRIVACY are written
+# for administrators, so they ship; DEVELOPERS is written for contributors.
+/docs/DEVELOPERS.md   export-ignore
+
+# The archive-control file itself has no meaning inside a released package.
+/.gitattributes   export-ignore

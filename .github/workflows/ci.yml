@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  epv:
+    name: EPV (Extension Pre Validator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+      - name: Install EPV
+        run: composer require --dev phpbb/epv:dev-master --no-interaction
+      - name: Run EPV
+        # EPV checks packaging and coding mechanics. It is NOT proof of
+        # compliance with the phpBB Extension Validation Policy, which has
+        # not been verified. See docs/superpowers/specs section 14.
+        run: ./vendor/bin/EPV.php run --dir=ext/uflagmey/donationcampaigns
+
+  unit:
+    name: Unit tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4', '8.0', '8.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Install dev toolchain
+        run: composer install --no-interaction
+      - name: Fetch phpBB test infrastructure
+        # phpBB is read-only test infrastructure: never committed, never
+        # modified, never copied into the extension package.
+        run: |
+          mkdir -p .phpbb-test
+          curl -sSL -o /tmp/phpbb.tar.gz \
+            https://github.com/phpbb/phpbb/archive/refs/tags/release-3.3.17.tar.gz
+          tar xzf /tmp/phpbb.tar.gz -C .phpbb-test
+          composer install --no-dev --no-interaction \
+            --working-dir=.phpbb-test/phpbb-release-3.3.17/phpBB
+      - name: Run unit tests
+        run: ./vendor/bin/phpunit --testsuite unit
+
+  coding-standard:
+    name: phpBB coding standard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: cs2pr
+      - name: Install dev toolchain
+        run: composer install --no-interaction
+      - name: Fetch the phpBB coding standard
+        # The phpBB coding standard is NOT a Composer package. It ships inside
+        # the phpBB source tree at build/code_sniffer/.
+        run: |
+          mkdir -p .phpbb-test
+          curl -sSL -o /tmp/phpbb.tar.gz \
+            https://github.com/phpbb/phpbb/archive/refs/tags/release-3.3.17.tar.gz
+          tar xzf /tmp/phpbb.tar.gz -C .phpbb-test
+      - name: Run phpcs
+        run: ./vendor/bin/phpcs --standard=phpcs.xml --report=checkstyle | cs2pr
+
+  lint:
+    name: PHP lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.2', '8.0', '8.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Syntax check every PHP file
+        run: find ext/uflagmey/donationcampaigns -name '*.php' -print0 | xargs -0 -n1 -P4 php -l

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheResultFile=".phpunit.result.cache"
+         convertDeprecationsToExceptions="false"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         failOnWarning="true">
+
+	<testsuites>
+		<!--
+			Pure unit tests: no database, no phpBB container. These must stay
+			fast and runnable anywhere.
+		-->
+		<!-- suffix follows phpBB's convention (_test.php), not PHPUnit's default -->
+		<testsuite name="unit">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/unit</directory>
+		</testsuite>
+
+		<!--
+			Schema/migration tests. These use a real (sqlite3) database through
+			phpBB's own schema API rather than asserting against returned arrays,
+			because an array can describe a schema the DBAL then refuses to build.
+		-->
+		<testsuite name="migration">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/migration</directory>
+		</testsuite>
+
+		<!-- Repository tests: persistence only, against a real database. -->
+		<testsuite name="repository">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/repository</directory>
+		</testsuite>
+
+		<!--
+			Service tests: business rules, transaction boundaries and cleanup
+			ordering. Run against a real database with the real repositories,
+			because the ordering guarantees are only meaningful when the
+			statements actually execute.
+		-->
+		<testsuite name="service">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/service</directory>
+		</testsuite>
+
+		<!--
+			Event listeners and the shipped prosilver assets. The asset tests
+			read the files as files: a template in the wrong directory, or one
+			naming an event that no longer exists, fails silently at runtime.
+		-->
+		<testsuite name="event">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/event</directory>
+		</testsuite>
+
+		<!-- ACP modules: permission, form key, validation and rendering. -->
+		<testsuite name="acp">
+			<directory suffix="_test.php">ext/uflagmey/donationcampaigns/tests/acp</directory>
+		</testsuite>
+	</testsuites>
+
+	<coverage>
+		<include>
+			<directory suffix=".php">ext/uflagmey/donationcampaigns</directory>
+		</include>
+		<exclude>
+			<directory>ext/uflagmey/donationcampaigns/tests</directory>
+			<directory>ext/uflagmey/donationcampaigns/language</directory>
+		</exclude>
+	</coverage>
+</phpunit>
