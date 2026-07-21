@@ -128,12 +128,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DONATION_DELETED'		=> 'The donation has been deleted and the campaign total recalculated.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION'	=> 'Are you sure you want to delete the confirmed donation of %1$s from %2$s? The campaign total will be recalculated. This cannot be undone.',
 
-	'LOG_DONATIONCAMPAIGNS_SETTINGS_UPDATED'	=> '<strong>Donation campaigns settings updated</strong>',
-	'LOG_DONATIONCAMPAIGNS_DONATION_ADDED'		=> '<strong>Confirmed donation recorded</strong><br />&raquo; %1$s from %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_EDITED'		=> '<strong>Confirmed donation edited</strong><br />&raquo; %1$s from %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_DELETED'	=> '<strong>Confirmed donation deleted</strong><br />&raquo; %1$s from %2$s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED'		=> '<strong>Donation campaign created</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_EDITED'		=> '<strong>Donation campaign edited</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED'	=> '<strong>Donation campaign deleted</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_TOTAL_RECALCULATED'	=> '<strong>Donation campaign total recalculated</strong><br />&raquo; %s',
+	// LOG_ keys moved to language/en/logs.php so they resolve in the MCP
+	// moderator-log viewer as well as the ACP admin-log viewer.
 ));

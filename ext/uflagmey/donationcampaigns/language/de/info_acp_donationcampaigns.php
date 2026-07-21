@@ -129,12 +129,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DONATION_DELETED'		=> 'Die Spende wurde gelöscht und die Summe der Kampagne neu berechnet.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION'	=> 'Soll die bestätigte Spende über %1$s von %2$s wirklich gelöscht werden? Die Summe der Kampagne wird neu berechnet. Das lässt sich nicht rückgängig machen.',
 
-	'LOG_DONATIONCAMPAIGNS_SETTINGS_UPDATED'	=> '<strong>Einstellungen für Spendenkampagnen geändert</strong>',
-	'LOG_DONATIONCAMPAIGNS_DONATION_ADDED'		=> '<strong>Bestätigte Spende erfasst</strong><br />&raquo; %1$s von %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_EDITED'		=> '<strong>Bestätigte Spende bearbeitet</strong><br />&raquo; %1$s von %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_DELETED'	=> '<strong>Bestätigte Spende gelöscht</strong><br />&raquo; %1$s von %2$s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED'		=> '<strong>Spendenkampagne angelegt</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_EDITED'		=> '<strong>Spendenkampagne bearbeitet</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED'	=> '<strong>Spendenkampagne gelöscht</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_TOTAL_RECALCULATED'	=> '<strong>Summe einer Spendenkampagne neu berechnet</strong><br />&raquo; %s',
+	// LOG_-Schlüssel liegen jetzt in language/de/logs.php, damit sie auch im
+	// MCP-Moderator-Log aufgelöst werden.
 ));

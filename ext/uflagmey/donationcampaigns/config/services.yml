@@ -7,6 +7,11 @@ services:
         tags:
             - { name: event.listener }
 
+    uflagmey.donationcampaigns.listener.user_setup:
+        class: uflagmey\donationcampaigns\event\user_setup_listener
+        tags:
+            - { name: event.listener }
+
     uflagmey.donationcampaigns.campaign_repository:
         class: uflagmey\donationcampaigns\repository\campaign_repository
         arguments:
