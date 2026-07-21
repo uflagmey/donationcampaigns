@@ -125,6 +125,46 @@ class topic_repository_test extends \phpbb_test_case
 		$this->assertFalse($this->repository->topic_exists(-1));
 	}
 
+	// ------------------------------------------------------------------- find
+
+	public function test_find_returns_the_topic_with_its_current_forum_and_title()
+	{
+		$this->assertSame(
+			array('topic_id' => 10, 'forum_id' => 2, 'topic_title' => 'Topic 10'),
+			$this->repository->find(10)
+		);
+		$this->assertSame(3, $this->repository->find(30)['forum_id']);
+	}
+
+	public function test_find_returns_null_for_an_unknown_topic()
+	{
+		$this->assertNull($this->repository->find(99999));
+	}
+
+	/**
+	 * A moved shadow is treated as non-existent, exactly as topic_exists() and
+	 * core's own viewtopic do — so a campaign action on one is refused.
+	 */
+	public function test_find_returns_null_for_a_moved_shadow()
+	{
+		$this->assertNull($this->repository->find(40));
+	}
+
+	public function test_find_returns_null_for_a_zero_or_negative_id()
+	{
+		$this->assertNull($this->repository->find(0));
+		$this->assertNull($this->repository->find(-1));
+	}
+
+	public function test_find_types_its_result()
+	{
+		$topic = $this->repository->find(10);
+
+		$this->assertIsInt($topic['topic_id']);
+		$this->assertIsInt($topic['forum_id']);
+		$this->assertIsString($topic['topic_title']);
+	}
+
 	public function test_find_topic_ids_by_forum_returns_every_topic()
 	{
 		$ids = $this->repository->find_topic_ids_by_forum(2);

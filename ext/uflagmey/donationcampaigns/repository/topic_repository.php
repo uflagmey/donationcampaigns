@@ -82,6 +82,48 @@ class topic_repository
 	}
 
 	/**
+	 * A readable topic's id, current forum and title, or null.
+	 *
+	 * This is the authorization anchor for the frontend controllers: they load
+	 * the topic here, derive its CURRENT forum_id from the loaded row (never
+	 * from the request), and authorize against that forum. A moved shadow is
+	 * excluded exactly as topic_exists() excludes it — core answers 404 for a
+	 * shadow, so a campaign action on one is refused as not-found, and a topic
+	 * that has been moved is authorized in its destination forum on the next
+	 * request because forum_id is re-read here each time.
+	 *
+	 * @param int $topic_id
+	 * @return array{topic_id:int,forum_id:int,topic_title:string}|null
+	 */
+	public function find($topic_id)
+	{
+		$topic_id = (int) $topic_id;
+
+		if ($topic_id <= 0)
+		{
+			return null;
+		}
+
+		$sql = 'SELECT topic_id, forum_id, topic_title FROM ' . $this->topics_table . '
+			WHERE topic_id = ' . (int) $topic_id . '
+				AND topic_moved_id = 0';
+		$result = $this->db->sql_query_limit($sql, 1);
+		$row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		if ($row === false)
+		{
+			return null;
+		}
+
+		return array(
+			'topic_id'		=> (int) $row['topic_id'],
+			'forum_id'		=> (int) $row['forum_id'],
+			'topic_title'	=> (string) $row['topic_title'],
+		);
+	}
+
+	/**
 	 * Topic titles, keyed by topic id.
 	 *
 	 * The ACP campaign list names topics rather than making an administrator
