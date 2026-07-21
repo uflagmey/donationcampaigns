@@ -23,8 +23,27 @@
 		<dd>{DONATIONCAMPAIGNS_COUNT}</dd>
 	</dl>
 
+	<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE -->
+		<p class="submit-buttons">
+			<a href="{U_EDIT}" class="button1">{L_DONATIONCAMPAIGNS_EDIT}</a>
+			<!-- IF S_DONATIONCAMPAIGNS_ENABLED -->
+				<a href="{U_DISABLE}" class="button2">{L_DONATIONCAMPAIGNS_DISABLE}</a>
+			<!-- ENDIF -->
+			<a href="{U_DELETE}" class="button2">{L_DONATIONCAMPAIGNS_DELETE}</a>
+		</p>
+		<!-- IF not S_DONATIONCAMPAIGNS_ENABLED -->
+			<!-- Enable is a direct write, so it is a POST form behind a form key
+			     rather than a link. -->
+			<form method="post" action="{U_ENABLE}">
+			<p class="submit-buttons">
+				<input type="submit" class="button2" value="{L_DONATIONCAMPAIGNS_ENABLE}" />
+				{S_FORM_TOKEN}
+			</p>
+			</form>
+		<!-- ENDIF -->
+	<!-- ENDIF -->
+
 	<p class="submit-buttons">
-		<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE --><a href="{U_EDIT}" class="button1">{L_DONATIONCAMPAIGNS_EDIT}</a>&nbsp;<!-- ENDIF -->
 		<a href="{U_BACK}" class="button2">{L_BACK}</a>
 	</p>
 

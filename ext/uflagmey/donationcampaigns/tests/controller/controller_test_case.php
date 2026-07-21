@@ -179,6 +179,7 @@ abstract class controller_test_case extends \phpbb_test_case
 			$user,
 			new access(new forum_scoped_auth($this->grants)),
 			$this->campaign_service,
+			$this->campaigns,
 			new topic_repository($this->db, 'phpbb_topics'),
 			new currency_formatter($language)
 		);
@@ -253,10 +254,13 @@ abstract class controller_test_case extends \phpbb_test_case
 
 	protected function set_globals()
 	{
-		global $phpbb_root_path, $phpEx, $auth, $language, $user, $request, $template, $config, $phpbb_dispatcher;
+		global $phpbb_root_path, $phpEx, $auth, $language, $user, $request, $template, $config, $phpbb_dispatcher, $db;
 
 		// add_form_key()/check_form_key() dispatch through the global dispatcher.
 		$phpbb_dispatcher = new \phpbb_mock_event_dispatcher();
+
+		// confirm_box() resets user_last_confirm_key through the global $db.
+		$db = $this->db;
 
 		$loader = new \phpbb\language\language_file_loader($phpbb_root_path, $phpEx);
 		$loader->set_extension_manager(new \phpbb_mock_extension_manager($phpbb_root_path, array(
@@ -270,8 +274,15 @@ abstract class controller_test_case extends \phpbb_test_case
 		$auth = new forum_scoped_auth(array());
 
 		$user = new \phpbb_mock_user();
-		$user->data = array('user_id' => 2, 'user_form_salt' => 'test_salt', 'is_registered' => true);
+		$user->data = array(
+			'user_id'				=> 2,
+			'user_form_salt'		=> 'test_salt',
+			'is_registered'			=> true,
+			// confirm_box() validates a confirmation against this.
+			'user_last_confirm_key'	=> 'confirm_key_value',
+		);
 		$user->ip = '127.0.0.1';
+		$user->session_id = 'test_session';
 
 		$request = new \phpbb_mock_request();
 		$template = $this->template;
@@ -315,6 +326,66 @@ abstract class controller_test_case extends \phpbb_test_case
 			'submit'		=> 'Submit',
 		), $values));
 		$this->rebuild();
+	}
+
+	/**
+	 * A POST carrying the enable toggle's form key.
+	 *
+	 * @param bool $valid_token
+	 * @return void
+	 */
+	protected function post_toggle($valid_token = true)
+	{
+		global $request, $user;
+
+		$creation_time = time() - 60;
+		$token = $valid_token
+			? sha1($creation_time . $user->data['user_form_salt'] . 'donationcampaigns_toggle')
+			: 'a_wrong_token';
+
+		$request = new \phpbb_mock_request(array(), array(
+			'creation_time'	=> $creation_time,
+			'form_token'	=> $token,
+			'submit'		=> 'Enable',
+		));
+		$this->rebuild();
+	}
+
+	/**
+	 * A request carrying a valid confirm_box confirmation.
+	 *
+	 * @return void
+	 */
+	protected function confirmed()
+	{
+		global $request, $user, $language;
+
+		$request = new \phpbb_mock_request(array(), array(
+			'confirm'		=> $language->lang('YES'),
+			'confirm_uid'	=> $user->data['user_id'],
+			'sess'			=> $user->session_id,
+			'confirm_key'	=> $user->data['user_last_confirm_key'],
+		));
+		$this->rebuild();
+	}
+
+	/**
+	 * Run an action, swallowing the render/exit a confirm_box dialog raises in
+	 * the test harness. Used for the "unconfirmed" path, where nothing is written.
+	 *
+	 * @param callable $action
+	 * @return void
+	 */
+	protected function swallow_dialog(callable $action)
+	{
+		try
+		{
+			$action();
+		}
+		catch (\Throwable $e)
+		{
+			// confirm_box(false) renders the dialog and, in the harness, unwinds.
+		}
 	}
 
 	/**

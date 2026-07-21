@@ -15,3 +15,25 @@ uflagmey_donationcampaigns_campaign_edit:
     defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:edit }
     requirements:
         campaign_id: \d+
+
+# Enable is a direct write, so it is POST-only: a GET cannot mutate.
+uflagmey_donationcampaigns_campaign_enable:
+    path: /donationcampaigns/campaign/{campaign_id}/enable
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:enable }
+    requirements:
+        campaign_id: \d+
+    methods: [POST]
+
+# Disable and delete confirm first: the GET renders the confirm_box dialog (no
+# mutation) and only the confirmed POST writes.
+uflagmey_donationcampaigns_campaign_disable:
+    path: /donationcampaigns/campaign/{campaign_id}/disable
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:disable }
+    requirements:
+        campaign_id: \d+
+
+uflagmey_donationcampaigns_campaign_delete:
+    path: /donationcampaigns/campaign/{campaign_id}/delete
+    defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:delete }
+    requirements:
+        campaign_id: \d+

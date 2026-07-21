@@ -69,6 +69,9 @@ class campaign_controller
 	/** @var \uflagmey\donationcampaigns\service\campaign_service */
 	protected $campaign_service;
 
+	/** @var \uflagmey\donationcampaigns\repository\campaign_repository */
+	protected $campaigns;
+
 	/** @var \uflagmey\donationcampaigns\repository\topic_repository */
 	protected $topics;
 
@@ -85,6 +88,7 @@ class campaign_controller
 		$user,
 		\uflagmey\donationcampaigns\service\access $access,
 		\uflagmey\donationcampaigns\service\campaign_service $campaign_service,
+		\uflagmey\donationcampaigns\repository\campaign_repository $campaigns,
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
 		\uflagmey\donationcampaigns\service\currency_formatter $formatter
 	)
@@ -98,6 +102,7 @@ class campaign_controller
 		$this->user = $user;
 		$this->access = $access;
 		$this->campaign_service = $campaign_service;
+		$this->campaigns = $campaigns;
 		$this->topics = $topics;
 		$this->formatter = $formatter;
 	}
@@ -201,6 +206,146 @@ class campaign_controller
 		$this->require_manage($topic['forum_id']);
 
 		return $this->render_form($topic, $campaign, $topic['forum_id']);
+	}
+
+	/**
+	 * Enable a campaign. A direct POST behind a form key — no confirmation, and
+	 * no GET path (the route is POST-only).
+	 *
+	 * @param int $campaign_id
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	public function enable($campaign_id)
+	{
+		$this->load_language();
+
+		list($campaign, $topic) = $this->load_campaign_in_topic((int) $campaign_id);
+		$this->require_manage($topic['forum_id']);
+
+		if (!check_form_key('donationcampaigns_toggle'))
+		{
+			throw $this->not_available();
+		}
+
+		$this->set_enabled($campaign, $topic, true, 'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ENABLED');
+
+		return $this->message($this->language->lang(
+			'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN',
+			'<a href="' . $this->topic_url($topic['topic_id']) . '">',
+			'</a>'
+		));
+	}
+
+	/**
+	 * Disable a campaign. Requires an explicit confirmation; the confirmed step
+	 * is a POST carrying confirm_box's key. Nothing is written until then.
+	 *
+	 * @param int $campaign_id
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	public function disable($campaign_id)
+	{
+		$this->load_language();
+
+		list($campaign, $topic) = $this->load_campaign_in_topic((int) $campaign_id);
+		$this->require_manage($topic['forum_id']);
+
+		if (confirm_box(true))
+		{
+			$this->set_enabled($campaign, $topic, false, 'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DISABLED');
+
+			return $this->message($this->language->lang(
+				'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN',
+				'<a href="' . $this->topic_url($topic['topic_id']) . '">',
+				'</a>'
+			));
+		}
+
+		confirm_box(false, 'DONATIONCAMPAIGNS_CONFIRM_DISABLE', '', 'confirm_body.html', $this->helper->route(
+			'uflagmey_donationcampaigns_campaign_disable',
+			array('campaign_id' => $campaign['campaign_id'])
+		));
+
+		// In production confirm_box(false) renders the dialog and exits; this is
+		// the unreachable safety net that keeps the return type honest.
+		return $this->empty_response();
+	}
+
+	/**
+	 * Delete an EMPTY campaign. A non-empty one is refused here — disable it, or
+	 * an administrator hard-deletes it in the ACP. The empty check runs before
+	 * the confirmation, so a refused delete never even offers a dialog. A
+	 * donations-only holder never reaches here: delete requires can_manage.
+	 *
+	 * @param int $campaign_id
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	public function delete($campaign_id)
+	{
+		$this->load_language();
+
+		list($campaign, $topic) = $this->load_campaign_in_topic((int) $campaign_id);
+		$this->require_manage($topic['forum_id']);
+
+		if ($this->campaign_service->count_donations($campaign['campaign_id']) > 0)
+		{
+			return $this->message(
+				$this->language->lang('DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED')
+				. '<br /><br />' . $this->return_link($topic['topic_id'])
+			);
+		}
+
+		if (confirm_box(true))
+		{
+			$this->campaign_service->delete_campaign($campaign['campaign_id']);
+			$this->log_campaign('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED', $topic['forum_id'], $topic['topic_id'], $campaign['campaign_title']);
+
+			return $this->message($this->language->lang(
+				'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN',
+				'<a href="' . $this->topic_url($topic['topic_id']) . '">',
+				'</a>'
+			));
+		}
+
+		confirm_box(false, 'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY', '', 'confirm_body.html', $this->helper->route(
+			'uflagmey_donationcampaigns_campaign_delete',
+			array('campaign_id' => $campaign['campaign_id'])
+		));
+
+		return $this->empty_response();
+	}
+
+	/**
+	 * Flip a campaign's enabled flag WITHOUT touching its description.
+	 *
+	 * Going through campaign_service::update_campaign() would decode and then
+	 * re-encode the description with no browser in between, double-encoding it —
+	 * the RC1 escaping-accumulation hazard. Enabling is a one-column change, so
+	 * it is written directly through the repository; the service is untouched and
+	 * the stored description is left exactly as it is.
+	 *
+	 * @param array $campaign
+	 * @param array $topic
+	 * @param bool $enabled
+	 * @param string $log_key
+	 * @return void
+	 */
+	protected function set_enabled(array $campaign, array $topic, $enabled, $log_key)
+	{
+		$this->campaigns->update($campaign['campaign_id'], array(
+			'campaign_enabled'	=> $enabled ? 1 : 0,
+			'campaign_updated'	=> time(),
+		));
+
+		$this->log_campaign($log_key, $topic['forum_id'], $topic['topic_id'], $campaign['campaign_title']);
+	}
+
+	/**
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	protected function empty_response()
+	{
+		return new \Symfony\Component\HttpFoundation\Response('');
 	}
 
 	// ------------------------------------------------------- the shared form
@@ -399,6 +544,12 @@ class campaign_controller
 	{
 		$exponent = (int) $this->config['donationcampaigns_currency_exponent'];
 
+		// Enable is a direct POST from a button on this page, so it carries a
+		// form key. Disable and delete go through confirm_box, which supplies its
+		// own key, so their affordances are plain links.
+		add_form_key('donationcampaigns_toggle');
+		$campaign_id = $campaign['campaign_id'];
+
 		$this->template->assign_vars(array(
 			// Only-authorised affordances. The template shows an action only when
 			// its flag is set, and the action itself re-checks server-side, so a
@@ -415,7 +566,10 @@ class campaign_controller
 
 			'U_BACK'					=> $this->topic_url($topic['topic_id']),
 			'U_DONATIONCAMPAIGNS_TOPIC'	=> $this->topic_url($topic['topic_id']),
-			'U_EDIT'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_edit', array('campaign_id' => $campaign['campaign_id'])),
+			'U_EDIT'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_edit', array('campaign_id' => $campaign_id)),
+			'U_ENABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_enable', array('campaign_id' => $campaign_id)),
+			'U_DISABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_disable', array('campaign_id' => $campaign_id)),
+			'U_DELETE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_delete', array('campaign_id' => $campaign_id)),
 		));
 
 		return $this->helper->render('donationcampaigns_manage.html', $this->language->lang('DONATIONCAMPAIGNS_MANAGE_CAMPAIGN'));

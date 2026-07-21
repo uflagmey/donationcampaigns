@@ -43,6 +43,11 @@ class campaign_controller_test extends controller_test_case
 		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_A)));
 	}
 
+	protected function as_donations_b()
+	{
+		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_B)));
+	}
+
 	protected function as_nobody()
 	{
 		$this->as_actor(array());
@@ -406,6 +411,199 @@ class campaign_controller_test extends controller_test_case
 		});
 		$this->assert_denied(function () {
 			$this->controller->manage(40);
+		});
+	}
+
+	// ------------------------------------------------------------------ enable
+
+	public function test_a_manager_enables_a_disabled_campaign()
+	{
+		// Campaign 2 is disabled, on topic 20 in forum B.
+		$this->as_manager_b();
+		$this->post_toggle();
+		$this->controller->enable(2);
+
+		$this->assertTrue($this->campaigns->find_by_id(2)['campaign_enabled']);
+
+		$this->assertContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_ENABLED', $this->log->operations);
+		$entry = end($this->log->entries);
+		$this->assertSame('mod', $entry[0]);
+		$this->assertSame(self::FORUM_B, $entry[5]['forum_id']);
+		$this->assertSame(20, $entry[5]['topic_id']);
+	}
+
+	public function test_enable_without_a_valid_form_key_is_denied()
+	{
+		$this->as_manager_b();
+		$this->post_toggle(false);
+
+		$this->assert_denied(function () {
+			$this->controller->enable(2);
+		});
+		$this->assertFalse($this->campaigns->find_by_id(2)['campaign_enabled'], 'Enable ran without a valid form key');
+	}
+
+	public function test_enable_is_denied_to_a_manager_of_another_forum()
+	{
+		$this->as_manager_a();
+		$this->post_toggle();
+
+		$this->assert_denied(function () {
+			$this->controller->enable(2);
+		});
+		$this->assertFalse($this->campaigns->find_by_id(2)['campaign_enabled']);
+	}
+
+	public function test_enable_is_denied_to_a_donations_only_user()
+	{
+		$this->as_donations_b();
+		$this->post_toggle();
+
+		$this->assert_denied(function () {
+			$this->controller->enable(2);
+		});
+		$this->assertFalse($this->campaigns->find_by_id(2)['campaign_enabled']);
+	}
+
+	// ----------------------------------------------------------------- disable
+
+	public function test_a_manager_disables_a_campaign_after_confirming()
+	{
+		// Campaign 1 is enabled, on topic 10 in forum A.
+		$this->as_manager_a();
+		$this->confirmed();
+		$this->controller->disable(1);
+
+		$this->assertFalse($this->campaigns->find_by_id(1)['campaign_enabled']);
+
+		$this->assertContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DISABLED', $this->log->operations);
+		$entry = end($this->log->entries);
+		$this->assertSame('mod', $entry[0]);
+		$this->assertSame(self::FORUM_A, $entry[5]['forum_id']);
+		$this->assertSame(10, $entry[5]['topic_id']);
+	}
+
+	public function test_disable_without_confirmation_changes_nothing()
+	{
+		$this->as_manager_a();
+		$this->request();
+		$this->swallow_dialog(function () {
+			$this->controller->disable(1);
+		});
+
+		$this->assertTrue($this->campaigns->find_by_id(1)['campaign_enabled'], 'An unconfirmed disable changed the campaign');
+		$this->assertNotContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DISABLED', $this->log->operations);
+	}
+
+	public function test_disable_with_a_forged_confirmation_changes_nothing()
+	{
+		global $request, $user, $language;
+
+		$this->as_manager_a();
+		$request = new \phpbb_mock_request(array(), array(
+			'confirm'		=> $language->lang('YES'),
+			'confirm_uid'	=> $user->data['user_id'],
+			'sess'			=> $user->session_id,
+			'confirm_key'	=> 'the_wrong_key',
+		));
+		$this->rebuild();
+
+		$this->swallow_dialog(function () {
+			$this->controller->disable(1);
+		});
+
+		$this->assertTrue($this->campaigns->find_by_id(1)['campaign_enabled'], 'A forged confirmation disabled the campaign');
+	}
+
+	public function test_disable_is_denied_to_a_manager_of_another_forum()
+	{
+		$this->as_manager_b();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->controller->disable(1);
+		});
+		$this->assertTrue($this->campaigns->find_by_id(1)['campaign_enabled']);
+	}
+
+	public function test_disable_is_denied_to_a_donations_only_user()
+	{
+		$this->as_donations_a();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->controller->disable(1);
+		});
+		$this->assertTrue($this->campaigns->find_by_id(1)['campaign_enabled']);
+	}
+
+	// ------------------------------------------------------------------ delete
+
+	public function test_a_manager_deletes_an_empty_campaign_after_confirming()
+	{
+		// Campaign 2 has no donations.
+		$this->as_manager_b();
+		$this->confirmed();
+		$this->controller->delete(2);
+
+		$this->assertNull($this->campaigns->find_by_id(2), 'The empty campaign was not deleted');
+		$this->assertContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED', $this->log->operations);
+		$this->assertSame(self::FORUM_B, end($this->log->entries)[5]['forum_id']);
+	}
+
+	public function test_delete_without_confirmation_changes_nothing()
+	{
+		$this->as_manager_b();
+		$this->request();
+		$this->swallow_dialog(function () {
+			$this->controller->delete(2);
+		});
+
+		$this->assertNotNull($this->campaigns->find_by_id(2), 'An unconfirmed delete removed the campaign');
+	}
+
+	public function test_deleting_a_non_empty_campaign_is_refused_and_keeps_the_campaign()
+	{
+		// Campaign 1 has a donation.
+		$this->as_manager_a();
+		$this->confirmed();
+		$this->controller->delete(1);
+
+		$this->assertNotNull($this->campaigns->find_by_id(1), 'A non-empty campaign was hard-deleted from the frontend');
+		$this->assertNotNull($this->helper->message);
+		$this->assertStringContainsString('cannot be deleted here', $this->helper->message);
+		$this->assertNotContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED', $this->log->operations);
+	}
+
+	public function test_delete_is_denied_to_a_manager_of_another_forum()
+	{
+		$this->as_manager_a();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->controller->delete(2);
+		});
+		$this->assertNotNull($this->campaigns->find_by_id(2));
+	}
+
+	public function test_delete_is_denied_to_a_donations_only_user()
+	{
+		$this->as_donations_b();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->controller->delete(2);
+		});
+		$this->assertNotNull($this->campaigns->find_by_id(2), 'A donations-only user must never delete a campaign');
+	}
+
+	public function test_delete_of_an_unknown_campaign_is_denied()
+	{
+		$this->as_admin();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->controller->delete(99999);
 		});
 	}
 }
