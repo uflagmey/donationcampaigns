@@ -388,6 +388,42 @@ class campaigns_mode_test extends campaign_acp_test_case
 		$this->assertContains('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED', $this->log->operations);
 	}
 
+	/**
+	 * The ACP delete is an administrator act, so it is recorded in the ADMIN log
+	 * — not the moderator log the frontend campaign and donation actions use.
+	 * This is the audit-by-surface split: who did it is read from where it is
+	 * logged.
+	 */
+	public function test_the_delete_is_recorded_in_the_admin_log()
+	{
+		$this->request(array('action' => 'delete', 'campaign_id' => 1), true);
+
+		$this->run_and_catch();
+
+		$entry = end($this->log->entries);
+		$this->assertSame('admin', $entry[0], 'The ACP campaign delete must log to the administrator log');
+		$this->assertSame('LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED', $entry[3]);
+	}
+
+	/**
+	 * The policy that distinguishes the ACP delete from the frontend one: the
+	 * frontend refuses to delete a campaign that has confirmed donations (it must
+	 * be disabled instead), but an administrator may hard-delete a NON-EMPTY
+	 * campaign here, cascading its donations. Campaign 1 has donations, so this
+	 * exercises exactly the case the frontend forbids.
+	 */
+	public function test_an_admin_may_hard_delete_a_non_empty_campaign()
+	{
+		$this->assertGreaterThan(0, $this->donations->count_by_campaign(1), 'Fixture precondition: campaign 1 must have donations');
+
+		$this->request(array('action' => 'delete', 'campaign_id' => 1), true);
+
+		$this->run_and_catch();
+
+		$this->assertNull($this->campaigns->find_by_id(1), 'A non-empty campaign was not hard-deleted in the ACP');
+		$this->assertSame(0, $this->donations->count_by_campaign(1), 'The donations were not cascaded');
+	}
+
 	public function test_a_delete_reports_success_from_a_language_file()
 	{
 		$this->request(array('action' => 'delete', 'campaign_id' => 1), true);
