@@ -95,6 +95,9 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_NOT_AVAILABLE'				=> 'The requested page is not available.',
 	'DONATIONCAMPAIGNS_NO_CAMPAIGN_YET'				=> 'This topic has no donation campaign yet.',
 	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sReturn to the topic%s',
+	// A plain button/link label. 'BACK' is not a phpBB core key, so {L_BACK}
+	// would render the raw key name; this is the extension's own translated label.
+	'DONATIONCAMPAIGNS_BACK_TO_TOPIC'				=> 'Back to topic',
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'The campaign has been saved.<br /><br />%sReturn to the topic%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'The campaign has been deleted.<br /><br />%sReturn to the topic%s',
 	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'The confirmed donation has been saved and the campaign total recalculated.<br /><br />%sReturn to the topic%s',

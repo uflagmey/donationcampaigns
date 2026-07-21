@@ -42,12 +42,11 @@
 			<dt><label for="donation_public">{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}</span></dt>
 			<dd><input id="donation_public" type="checkbox" class="radio" name="donation_public" value="1"<!-- IF S_DONATIONCAMPAIGNS_PUBLIC --> checked="checked"<!-- ENDIF --> /></dd>
 		</dl>
+	</fieldset>
 
-		<p class="submit-buttons">
-			<input type="submit" name="submit" id="submit" class="button1" value="{L_SUBMIT}" />&nbsp;
-			<a href="{U_BACK}" class="button2">{L_BACK}</a>
-		</p>
-
+	<fieldset class="submit-buttons">
+		<input type="submit" name="submit" id="submit" class="button" value="{L_SUBMIT}" />&nbsp;
+		<a href="{U_BACK}" class="button">{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}</a>
 		{S_FORM_TOKEN}
 	</fieldset>
 	</form>

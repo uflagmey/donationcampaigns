@@ -96,6 +96,9 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_NOT_AVAILABLE'				=> 'Die angeforderte Seite ist nicht verfügbar.',
 	'DONATIONCAMPAIGNS_NO_CAMPAIGN_YET'				=> 'Für dieses Thema besteht noch keine Spendenkampagne.',
 	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sZurück zum Thema%s',
+	// 'BACK' ist kein phpBB-Kernschlüssel; {L_BACK} würde den rohen Schlüssel
+	// anzeigen. Dies ist das eigene übersetzte Label der Erweiterung.
+	'DONATIONCAMPAIGNS_BACK_TO_TOPIC'				=> 'Zurück zum Thema',
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'Die Kampagne wurde gespeichert.<br /><br />%sZurück zum Thema%s',
 	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'Die Kampagne wurde gelöscht.<br /><br />%sZurück zum Thema%s',
 	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'Die bestätigte Spende wurde gespeichert und die Kampagnensumme neu berechnet.<br /><br />%sZurück zum Thema%s',
