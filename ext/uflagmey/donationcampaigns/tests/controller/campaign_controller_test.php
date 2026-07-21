@@ -671,4 +671,22 @@ class campaign_controller_test extends controller_test_case
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_CAN_DONATIONS']);
 		$this->assertCount(1, $this->template->block('donationcampaigns_donation'));
 	}
+
+	/**
+	 * REGRESSION. The controller is served under app.php/donationcampaigns/...,
+	 * so a bare "viewtopic.php?t=N" resolves against that path and 404s. The
+	 * topic link must be built from the web root instead.
+	 */
+	public function test_the_back_link_is_built_from_the_web_root_not_relative()
+	{
+		$this->as_manager_a();
+		$this->request();
+
+		$this->controller->manage(10);
+
+		$back = $this->template->vars['U_BACK'];
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $back, 'The topic link is not resolved from the web root');
+		$this->assertStringContainsString('viewtopic.', $back);
+		$this->assertStringContainsString('t=10', $back);
+	}
 }

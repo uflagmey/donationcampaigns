@@ -92,6 +92,7 @@ services:
         class: uflagmey\donationcampaigns\controller\campaign_controller
         arguments:
             - '@controller.helper'
+            - '@path_helper'
             - '@template'
             - '@language'
             - '@config'
@@ -109,6 +110,7 @@ services:
         class: uflagmey\donationcampaigns\controller\donation_controller
         arguments:
             - '@controller.helper'
+            - '@path_helper'
             - '@template'
             - '@language'
             - '@config'

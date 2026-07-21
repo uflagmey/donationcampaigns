@@ -539,6 +539,25 @@ class donation_controller_test extends controller_test_case
 		$this->assertStringContainsString('&lt;script&gt;', $data);
 	}
 
+	// ---------------------------------------------------------------- web-root links
+
+	/**
+	 * REGRESSION. Like the campaign controller, this runs under app.php/... so a
+	 * bare "viewtopic.php" 404s; the topic link is built from the web root.
+	 */
+	public function test_the_form_back_link_is_built_from_the_web_root()
+	{
+		$this->as_donations_a();
+		$this->request();
+
+		$this->donation_controller->add(1);
+
+		$back = $this->template->vars['U_BACK'];
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $back, 'The topic link is not resolved from the web root');
+		$this->assertStringContainsString('viewtopic.', $back);
+		$this->assertStringContainsString('t=10', $back);
+	}
+
 	public function test_a_donor_name_in_a_delete_log_entry_is_escaped()
 	{
 		$this->donations->update(1, array('donor_name' => '<script>alert(1)</script>'));

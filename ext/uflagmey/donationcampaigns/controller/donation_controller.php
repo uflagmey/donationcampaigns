@@ -44,6 +44,9 @@ class donation_controller
 	/** @var \phpbb\controller\helper */
 	protected $helper;
 
+	/** @var \phpbb\path_helper */
+	protected $path_helper;
+
 	/** @var \phpbb\template\template */
 	protected $template;
 
@@ -82,6 +85,7 @@ class donation_controller
 
 	public function __construct(
 		\phpbb\controller\helper $helper,
+		\phpbb\path_helper $path_helper,
 		\phpbb\template\template $template,
 		\phpbb\language\language $language,
 		\phpbb\config\config $config,
@@ -97,6 +101,7 @@ class donation_controller
 	)
 	{
 		$this->helper = $helper;
+		$this->path_helper = $path_helper;
 		$this->template = $template;
 		$this->language = $language;
 		$this->config = $config;
@@ -560,7 +565,11 @@ class donation_controller
 	 */
 	protected function topic_url($topic_id)
 	{
-		return append_sid('viewtopic.' . $this->php_ext(), 't=' . (int) $topic_id);
+		// Built from the board's web root, not relative to the current page. This
+		// controller is served under app.php/donationcampaigns/..., where a bare
+		// "viewtopic.php" would resolve against that path and 404;
+		// get_web_root_path() returns the correct prefix back to the board root.
+		return append_sid($this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext(), 't=' . (int) $topic_id);
 	}
 
 	/**

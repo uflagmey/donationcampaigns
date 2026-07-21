@@ -180,6 +180,7 @@ abstract class controller_test_case extends \phpbb_test_case
 
 		$this->controller = new campaign_controller(
 			$this->helper,
+			new fake_path_helper(),
 			$template,
 			$language,
 			$config,
@@ -196,6 +197,7 @@ abstract class controller_test_case extends \phpbb_test_case
 
 		$this->donation_controller = new donation_controller(
 			$this->helper,
+			new fake_path_helper(),
 			$template,
 			$language,
 			$config,
