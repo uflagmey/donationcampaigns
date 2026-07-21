@@ -539,23 +539,30 @@ class donation_controller_test extends controller_test_case
 		$this->assertStringContainsString('&lt;script&gt;', $data);
 	}
 
-	// ---------------------------------------------------------------- web-root links
+	// ---------------------------------------------------------------- cancel / web-root
 
 	/**
-	 * REGRESSION. Like the campaign controller, this runs under app.php/... so a
-	 * bare "viewtopic.php" 404s; the topic link is built from the web root.
+	 * REGRESSION. Like the campaign controller, this runs under app.php/..., so
+	 * the Cancel redirect must be built from the web root (a bare "viewtopic.php"
+	 * would 404). Cancel abandons the form and saves nothing.
 	 */
-	public function test_the_form_back_link_is_built_from_the_web_root()
+	public function test_cancel_returns_to_the_topic_without_saving()
 	{
 		$this->as_donations_a();
-		$this->request();
+		$before = $this->donations->count_by_campaign(1);
 
-		$this->donation_controller->add(1);
+		global $request;
+		$request = new \phpbb_mock_request(array(), array('cancel' => 'Cancel', 'donation_amount' => '9.99'));
+		$this->rebuild();
 
-		$back = $this->template->vars['U_BACK'];
-		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $back, 'The topic link is not resolved from the web root');
-		$this->assertStringContainsString('viewtopic.', $back);
-		$this->assertStringContainsString('t=10', $back);
+		$response = $this->donation_controller->add(1);
+
+		$this->assertInstanceOf('Symfony\Component\HttpFoundation\RedirectResponse', $response);
+		$target = $response->getTargetUrl();
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $target);
+		$this->assertStringContainsString('viewtopic.', $target);
+		$this->assertStringContainsString('t=10', $target);
+		$this->assertSame($before, $this->donations->count_by_campaign(1), 'Cancel must not record a donation');
 	}
 
 	public function test_a_donor_name_in_a_delete_log_entry_is_escaped()

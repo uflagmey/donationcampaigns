@@ -8,6 +8,7 @@
 
 namespace uflagmey\donationcampaigns\controller;
 
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use uflagmey\donationcampaigns\exception\donationcampaigns_exception;
 
 /**
@@ -257,6 +258,14 @@ class donation_controller
 			);
 		}
 
+		// Cancel is a submit button, like phpBB's own forms: it abandons the form
+		// and returns to the topic. It writes nothing, so it is handled before —
+		// and independently of — the form-key check.
+		if ($this->request->is_set_post('cancel'))
+		{
+			return new RedirectResponse($this->topic_url($topic['topic_id']));
+		}
+
 		$errors = array();
 
 		if ($this->request->is_set_post('submit'))
@@ -345,7 +354,6 @@ class donation_controller
 			'U_ACTION'	=> $is_new
 				? $this->helper->route('uflagmey_donationcampaigns_donation_add', array('campaign_id' => $campaign['campaign_id']))
 				: $this->helper->route('uflagmey_donationcampaigns_donation_edit', array('donation_id' => $donation['donation_id'])),
-			'U_BACK'	=> $this->topic_url($topic['topic_id']),
 
 			// The campaign title is shown as trusted text, escaped in the template.
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> $campaign['campaign_title'],

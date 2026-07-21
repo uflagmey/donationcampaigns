@@ -25,22 +25,23 @@
 
 	<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE -->
 		<fieldset class="submit-buttons">
-			<a href="{U_EDIT}" class="button">{L_DONATIONCAMPAIGNS_EDIT}</a>
-			<!-- IF S_DONATIONCAMPAIGNS_ENABLED -->
-				<a href="{U_DISABLE}" class="button">{L_DONATIONCAMPAIGNS_DISABLE}</a>
-			<!-- ENDIF -->
-			<a href="{U_DELETE}" class="button">{L_DONATIONCAMPAIGNS_DELETE}</a>
-		</fieldset>
-		<!-- IF not S_DONATIONCAMPAIGNS_ENABLED -->
-			<!-- Enable is a direct write, so it is a POST form behind a form key
-			     rather than a link. -->
-			<form method="post" action="{U_ENABLE}">
-			<fieldset class="submit-buttons">
-				<input type="submit" class="button" value="{L_DONATIONCAMPAIGNS_ENABLE}" />
-				{S_FORM_TOKEN}
-			</fieldset>
+			<!-- Each button navigates to its own action (formaction). Edit renders
+			     the edit form; Disable and Delete open their confirmation. -->
+			<form method="get" action="{U_EDIT}">
+				<input type="submit" formaction="{U_EDIT}" class="button1" value="{L_DONATIONCAMPAIGNS_EDIT}" />
+				<!-- IF S_DONATIONCAMPAIGNS_ENABLED -->
+					<input type="submit" formaction="{U_DISABLE}" class="button2" value="{L_DONATIONCAMPAIGNS_DISABLE}" />
+				<!-- ENDIF -->
+				<input type="submit" formaction="{U_DELETE}" class="button2" value="{L_DONATIONCAMPAIGNS_DELETE}" />
 			</form>
-		<!-- ENDIF -->
+			<!-- IF not S_DONATIONCAMPAIGNS_ENABLED -->
+				<!-- Enable is a direct write, so it is a POST behind a form key. -->
+				<form method="post" action="{U_ENABLE}">
+					<input type="submit" class="button1" value="{L_DONATIONCAMPAIGNS_ENABLE}" />
+					{S_FORM_TOKEN}
+				</form>
+			<!-- ENDIF -->
+		</fieldset>
 	<!-- ENDIF -->
 
 	</div>
@@ -85,7 +86,9 @@
 	<div class="panel">
 		<div class="inner">
 			<fieldset class="submit-buttons">
-				<a href="{U_ADD_DONATION}" class="button">{L_DONATIONCAMPAIGNS_ADD_DONATION}</a>
+				<form method="get" action="{U_ADD_DONATION}">
+					<input type="submit" class="button1" value="{L_DONATIONCAMPAIGNS_ADD_DONATION}" />
+				</form>
 			</fieldset>
 		</div>
 	</div>
@@ -94,7 +97,12 @@
 <div class="panel">
 	<div class="inner">
 		<fieldset class="submit-buttons">
-			<a href="{U_BACK}" class="button">{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}</a>
+			<!-- A GET form discards a query string on its action, so the topic id
+			     is a hidden field rather than part of the URL. -->
+			<form method="get" action="{U_VIEWTOPIC}">
+				<input type="hidden" name="t" value="{DONATIONCAMPAIGNS_TOPIC_ID}" />
+				<input type="submit" class="button2" value="{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}" />
+			</form>
 		</fieldset>
 	</div>
 </div>

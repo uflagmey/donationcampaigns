@@ -406,6 +406,14 @@ class campaign_controller
 			);
 		}
 
+		// Cancel is a submit button, like phpBB's own forms: it abandons the form
+		// and returns to the topic. It writes nothing, so it is handled before —
+		// and independently of — the form-key check.
+		if ($this->request->is_set_post('cancel'))
+		{
+			return new RedirectResponse($this->topic_url($topic['topic_id']));
+		}
+
 		$errors = array();
 
 		if ($this->request->is_set_post('submit'))
@@ -495,7 +503,6 @@ class campaign_controller
 			'U_ACTION'	=> $is_new
 				? $this->helper->route('uflagmey_donationcampaigns_campaign_create', array('topic_id' => $topic['topic_id']))
 				: $this->helper->route('uflagmey_donationcampaigns_campaign_edit', array('campaign_id' => $campaign['campaign_id'])),
-			'U_BACK'	=> $this->topic_url($topic['topic_id']),
 
 			// The topic is shown as trusted text and is never an input: read from
 			// the loaded topic, escaped in the template like every other value.
@@ -574,7 +581,12 @@ class campaign_controller
 			'DONATIONCAMPAIGNS_COLLECTED'		=> $this->formatter->format($campaign['collected_amount'], $exponent),
 			'DONATIONCAMPAIGNS_COUNT'			=> $this->campaign_service->count_donations($campaign['campaign_id']),
 
-			'U_BACK'					=> $this->topic_url($topic['topic_id']),
+			// The topic-title link is a plain <a>. The Back button is a GET form
+			// submit (classic phpBB button styling needs an <input>), so its target
+			// is split into a query-free action and a hidden topic id — a GET form
+			// discards a query string on its action.
+			'DONATIONCAMPAIGNS_TOPIC_ID'	=> (int) $topic['topic_id'],
+			'U_VIEWTOPIC'				=> $this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext(),
 			'U_DONATIONCAMPAIGNS_TOPIC'	=> $this->topic_url($topic['topic_id']),
 			'U_EDIT'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_edit', array('campaign_id' => $campaign_id)),
 			'U_ENABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_enable', array('campaign_id' => $campaign_id)),

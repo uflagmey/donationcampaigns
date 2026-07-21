@@ -674,19 +674,45 @@ class campaign_controller_test extends controller_test_case
 
 	/**
 	 * REGRESSION. The controller is served under app.php/donationcampaigns/...,
-	 * so a bare "viewtopic.php?t=N" resolves against that path and 404s. The
-	 * topic link must be built from the web root instead.
+	 * so a bare "viewtopic.php" resolves against that path and 404s. The landing's
+	 * topic links (the title link and the Back button's form action) must be built
+	 * from the web root instead.
 	 */
-	public function test_the_back_link_is_built_from_the_web_root_not_relative()
+	public function test_the_landing_topic_links_are_built_from_the_web_root()
 	{
 		$this->as_manager_a();
 		$this->request();
 
 		$this->controller->manage(10);
 
-		$back = $this->template->vars['U_BACK'];
-		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $back, 'The topic link is not resolved from the web root');
-		$this->assertStringContainsString('viewtopic.', $back);
-		$this->assertStringContainsString('t=10', $back);
+		$viewtopic = $this->template->vars['U_VIEWTOPIC'];
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $viewtopic, 'The Back form action is not resolved from the web root');
+		$this->assertStringContainsString('viewtopic.', $viewtopic);
+		$this->assertSame(10, $this->template->vars['DONATIONCAMPAIGNS_TOPIC_ID']);
+
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $this->template->vars['U_DONATIONCAMPAIGNS_TOPIC']);
+	}
+
+	/**
+	 * Cancel is a submit button that abandons the form and returns to the topic —
+	 * writing nothing — like phpBB's own forms. The redirect target is built from
+	 * the web root so it resolves from under app.php/...
+	 */
+	public function test_cancel_returns_to_the_topic_without_saving()
+	{
+		$this->as_manager_a();
+
+		global $request;
+		$request = new \phpbb_mock_request(array(), array('cancel' => 'Cancel', 'campaign_title' => 'Must not be saved'));
+		$this->rebuild();
+
+		$response = $this->controller->edit(1);
+
+		$this->assertInstanceOf('Symfony\Component\HttpFoundation\RedirectResponse', $response);
+		$target = $response->getTargetUrl();
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT, $target);
+		$this->assertStringContainsString('viewtopic.', $target);
+		$this->assertStringContainsString('t=10', $target);
+		$this->assertSame('Server fund', $this->campaigns->find_by_id(1)['campaign_title'], 'Cancel must not save');
 	}
 }
