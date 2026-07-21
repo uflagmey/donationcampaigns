@@ -85,4 +85,27 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ERROR_EXPONENT_RANGE'		=> 'The number of decimal places must be between 0 and 4.',
 	'DONATIONCAMPAIGNS_ERROR_EXPONENT_CONFIRM'		=> 'This board already has recorded amounts. Confirm that you understand how changing the number of decimal places affects them.',
 	'DONATIONCAMPAIGNS_ERROR_DONOR_LIMIT_RANGE'		=> 'The donor list limit must be between 1 and 500.',
+
+	// Frontend campaign management, reached from the topic tools. The campaign
+	// form labels themselves are reused from info_acp_donationcampaigns, which
+	// the controller loads alongside common; only the strings unique to the
+	// frontend workflow live here.
+	'DONATIONCAMPAIGNS_MANAGE_CAMPAIGN'				=> 'Manage donation campaign',
+	'DONATIONCAMPAIGNS_MANAGE_EXPLAIN'				=> 'Manage the donation campaign for this topic.',
+	'DONATIONCAMPAIGNS_NOT_AVAILABLE'				=> 'The requested page is not available.',
+	'DONATIONCAMPAIGNS_NO_CAMPAIGN_YET'				=> 'This topic has no donation campaign yet.',
+	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sReturn to the topic%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'The campaign has been saved.<br /><br />%sReturn to the topic%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'The campaign has been deleted.<br /><br />%sReturn to the topic%s',
+
+	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
+	'DONATIONCAMPAIGNS_EDIT'						=> 'Edit campaign',
+	'DONATIONCAMPAIGNS_ENABLE'						=> 'Enable',
+	'DONATIONCAMPAIGNS_DISABLE'						=> 'Disable',
+	'DONATIONCAMPAIGNS_DELETE'						=> 'Delete',
+	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Manage donations',
+
+	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Are you sure you want to disable this campaign? It will be hidden from the topic; all donation records are kept.',
+	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Are you sure you want to delete this campaign? It has no donations and this cannot be undone.',
+	'DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED'	=> 'This campaign has confirmed donations and cannot be deleted here. Disable it instead, or ask an administrator to delete it.',
 ));

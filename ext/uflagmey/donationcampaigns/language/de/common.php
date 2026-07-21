@@ -86,4 +86,27 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ERROR_EXPONENT_RANGE'		=> 'Die Anzahl der Dezimalstellen muss zwischen 0 und 4 liegen.',
 	'DONATIONCAMPAIGNS_ERROR_EXPONENT_CONFIRM'		=> 'Für dieses Board sind bereits Beträge erfasst. Bestätige, dass dir klar ist, wie sich eine Änderung der Dezimalstellen auf sie auswirkt.',
 	'DONATIONCAMPAIGNS_ERROR_DONOR_LIMIT_RANGE'		=> 'Die Anzahl angezeigter Spender muss zwischen 1 und 500 liegen.',
+
+	// Frontend-Kampagnenverwaltung, erreichbar über die Themenwerkzeuge. Die
+	// Formularbeschriftungen selbst werden aus info_acp_donationcampaigns
+	// wiederverwendet, das der Controller zusammen mit common lädt; hier stehen
+	// nur die für den Frontend-Ablauf spezifischen Texte.
+	'DONATIONCAMPAIGNS_MANAGE_CAMPAIGN'				=> 'Spendenkampagne verwalten',
+	'DONATIONCAMPAIGNS_MANAGE_EXPLAIN'				=> 'Verwalte die Spendenkampagne für dieses Thema.',
+	'DONATIONCAMPAIGNS_NOT_AVAILABLE'				=> 'Die angeforderte Seite ist nicht verfügbar.',
+	'DONATIONCAMPAIGNS_NO_CAMPAIGN_YET'				=> 'Für dieses Thema besteht noch keine Spendenkampagne.',
+	'DONATIONCAMPAIGNS_RETURN_TO_TOPIC'				=> '%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'Die Kampagne wurde gespeichert.<br /><br />%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'Die Kampagne wurde gelöscht.<br /><br />%sZurück zum Thema%s',
+
+	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
+	'DONATIONCAMPAIGNS_EDIT'						=> 'Kampagne bearbeiten',
+	'DONATIONCAMPAIGNS_ENABLE'						=> 'Aktivieren',
+	'DONATIONCAMPAIGNS_DISABLE'						=> 'Deaktivieren',
+	'DONATIONCAMPAIGNS_DELETE'						=> 'Löschen',
+	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Spenden verwalten',
+
+	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Soll diese Kampagne wirklich deaktiviert werden? Sie wird im Thema ausgeblendet; alle Spenden bleiben erhalten.',
+	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Soll diese Kampagne wirklich gelöscht werden? Sie enthält keine Spenden und dies kann nicht rückgängig gemacht werden.',
+	'DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED'	=> 'Diese Kampagne enthält bestätigte Spenden und kann hier nicht gelöscht werden. Deaktiviere sie stattdessen oder bitte einen Administrator, sie zu löschen.',
 ));
