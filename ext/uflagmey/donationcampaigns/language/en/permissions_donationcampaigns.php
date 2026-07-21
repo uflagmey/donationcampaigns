@@ -21,5 +21,13 @@ if (empty($lang) || !is_array($lang))
 }
 
 $lang = array_merge($lang, array(
-	'ACL_A_DONATIONCAMPAIGNS'	=> 'Can manage donation campaigns',
+	'ACL_CAT_DONATIONCAMPAIGNS'			=> 'Donation Campaigns',
+
+	'ACL_A_DONATIONCAMPAIGNS'			=> 'Can globally administer donation campaigns',
+
+	'ACL_M_DONATIONCAMPAIGNS_MANAGE'	=> 'Can manage donation campaigns (create, edit, enable/disable, delete empty campaigns)',
+
+	// The description must make the privacy reach explicit: granting this lets
+	// the holder see donor names, private donor identities and confirmed amounts.
+	'ACL_M_DONATIONCAMPAIGNS_DONATIONS'	=> 'Can manage confirmed donations (add, edit and delete receipts). Grants access to donor names, private donor identities and the confirmed amount of each donation.',
 ));
