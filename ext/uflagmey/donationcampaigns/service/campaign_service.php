@@ -174,6 +174,26 @@ class campaign_service
 	}
 
 	/**
+	 * The campaign attached to a topic, in ANY state.
+	 *
+	 * Unlike get_campaign_for_topic(), which hides a disabled campaign for the
+	 * public box, this returns the row whatever its enabled flag. The management
+	 * landing needs it: it must show a disabled campaign so a manager can
+	 * re-enable it, and must never offer to create a SECOND campaign over a
+	 * topic that already has one — the unique index would reject that, but the
+	 * landing should not present the option at all.
+	 *
+	 * TRANSACTION BOUNDARY: none.
+	 *
+	 * @param int $topic_id
+	 * @return array|null
+	 */
+	public function get_campaign_by_topic($topic_id)
+	{
+		return $this->campaigns->find_by_topic_id($topic_id);
+	}
+
+	/**
 	 * The donations a campaign may list by name, most recent first.
 	 *
 	 * TRANSACTION BOUNDARY: none.

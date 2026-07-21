@@ -715,6 +715,32 @@ class campaign_service_test extends \phpbb_test_case
 		$this->assertNull($this->service->get_campaign_for_topic(30));
 	}
 
+	/**
+	 * The management getter returns a campaign in any state — including the
+	 * disabled one the public getter hides — so the frontend landing can manage
+	 * and re-enable it.
+	 */
+	public function test_get_campaign_by_topic_returns_an_enabled_campaign()
+	{
+		$campaign = $this->service->get_campaign_by_topic(10);
+
+		$this->assertNotNull($campaign);
+		$this->assertTrue($campaign['campaign_enabled']);
+	}
+
+	public function test_get_campaign_by_topic_returns_a_disabled_campaign()
+	{
+		$campaign = $this->service->get_campaign_by_topic(20);
+
+		$this->assertNotNull($campaign, 'The management getter must not hide a disabled campaign');
+		$this->assertFalse($campaign['campaign_enabled']);
+	}
+
+	public function test_get_campaign_by_topic_returns_null_for_a_topic_without_a_campaign()
+	{
+		$this->assertNull($this->service->get_campaign_by_topic(30));
+	}
+
 	public function test_get_campaign_for_topic_preserves_the_repository_typing()
 	{
 		$campaign = $this->service->get_campaign_for_topic(10);
@@ -1024,6 +1050,7 @@ class campaign_service_test extends \phpbb_test_case
 		return array(
 			'get_campaign'				=> array('get_campaign', array(1)),
 			'get_campaign_for_topic'	=> array('get_campaign_for_topic', array(10)),
+			'get_campaign_by_topic'		=> array('get_campaign_by_topic', array(10)),
 			'get_public_donor_list'		=> array('get_public_donor_list', array(1, 25)),
 			'get_donor_list'			=> array('get_donor_list', array(1, 25)),
 			'validate'					=> array('validate', array(array('campaign_title' => 'x', 'topic_id' => 30, 'target_amount' => 1))),
