@@ -11,7 +11,7 @@ namespace uflagmey\donationcampaigns\event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use uflagmey\donationcampaigns\service\campaign_service;
 use uflagmey\donationcampaigns\service\currency_formatter;
-use uflagmey\donationcampaigns\acp\main_module as acp_main_module;
+use uflagmey\donationcampaigns\service\access;
 
 /**
  * Renders the campaign box above the first post of a topic.
@@ -70,17 +70,14 @@ class viewtopic_listener implements EventSubscriberInterface
 	/** @var \phpbb\language\language */
 	protected $language;
 
-	/** @var \phpbb\auth\auth */
-	protected $auth;
+	/** @var access */
+	protected $access;
 
 	/** @var \phpbb\user */
 	protected $user;
 
-	/** @var string */
-	protected $admin_path;
-
-	/** @var string */
-	protected $php_ext;
+	/** @var \phpbb\controller\helper */
+	protected $helper;
 
 	public function __construct(
 		campaign_service $campaign_service,
@@ -88,10 +85,9 @@ class viewtopic_listener implements EventSubscriberInterface
 		\phpbb\config\config $config,
 		\phpbb\template\template $template,
 		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
+		access $access,
 		$user,
-		$admin_path,
-		$php_ext
+		\phpbb\controller\helper $helper
 	)
 	{
 		$this->campaign_service = $campaign_service;
@@ -99,10 +95,9 @@ class viewtopic_listener implements EventSubscriberInterface
 		$this->config = $config;
 		$this->template = $template;
 		$this->language = $language;
-		$this->auth = $auth;
+		$this->access = $access;
 		$this->user = $user;
-		$this->admin_path = $admin_path;
-		$this->php_ext = $php_ext;
+		$this->helper = $helper;
 	}
 
 	/**
@@ -123,10 +118,11 @@ class viewtopic_listener implements EventSubscriberInterface
 	{
 		$topic_id = (int) $event['topic_id'];
 
-		// FIRST, and deliberately before the early return below: the
-		// administrator's entry point must appear on topics that have NO
-		// campaign, because that is the only way one is ever created.
-		$this->assign_topic_tools_link($topic_id);
+		// FIRST, and deliberately before the early return below: the manager's
+		// entry point must appear on topics that have NO campaign, because that
+		// is the only way one is ever created. The forum comes from the event's
+		// already-loaded topic, so this still issues no query of its own.
+		$this->assign_topic_tools_link($topic_id, (int) $event['forum_id']);
 
 		$campaign = $this->campaign_service->get_campaign_for_topic($topic_id);
 
@@ -205,23 +201,23 @@ class viewtopic_listener implements EventSubscriberInterface
 	 * verb decided here would be a guess about the future. The ACP resolves
 	 * the real state when the request arrives (ADR-014).
 	 *
-	 * The consequence is that this method issues NO query. It runs on every
-	 * topic view on the board, and the neutral label is what keeps it free.
+	 * The consequence is that this method issues NO query of its own: the forum
+	 * is handed in from the event's already-loaded topic. It runs on every topic
+	 * view on the board, and the neutral label is what keeps it free.
 	 *
-	 * TWO permissions, not one. a_ is a real ACL option, not a prefix
-	 * wildcard: an administrator holding a_donationcampaigns without a_ is
-	 * refused by adm/index.php with a 403, so showing them a link would be
-	 * showing them a dead end. Both checks are VISIBILITY only — the module
-	 * enforces access itself, and this grants nothing.
+	 * VISIBILITY, forum-scoped. The link is shown to anyone who may manage the
+	 * campaign shell OR the donations in THIS topic's forum — the same rule the
+	 * controller enforces on arrival through the access service. Showing it is
+	 * not granting it: every controller action re-checks server-side.
 	 *
 	 * @param int $topic_id
+	 * @param int $forum_id
 	 * @return void
 	 */
-	protected function assign_topic_tools_link($topic_id)
+	protected function assign_topic_tools_link($topic_id, $forum_id)
 	{
 		if (empty($this->user->data['is_registered'])
-			|| !$this->auth->acl_get('a_')
-			|| !$this->auth->acl_get('a_donationcampaigns'))
+			|| (!$this->access->can_manage($forum_id) && !$this->access->can_manage_donations($forum_id)))
 		{
 			return;
 		}
@@ -230,43 +226,18 @@ class viewtopic_listener implements EventSubscriberInterface
 
 		$this->template->assign_vars(array(
 			'S_DONATIONCAMPAIGNS_TOPIC_LINK'	=> true,
-			'U_DONATIONCAMPAIGNS_TOPIC_LINK'	=> $this->acp_campaign_url($topic_id),
+			// The neutral frontend management route for this topic. The controller
+			// resolves the real state (create form, or manage) on arrival.
+			'U_DONATIONCAMPAIGNS_TOPIC_LINK'	=> $this->helper->route(
+				'uflagmey_donationcampaigns_manage',
+				array('topic_id' => (int) $topic_id)
+			),
 
 			// Core references this in viewtopic_topic_tools.html but assigns it
 			// nowhere: it exists so an extension can force the wrench dropdown
 			// to render when no core tool would have opened it.
 			'S_DISPLAY_TOPIC_TOOLS'				=> true,
 		));
-	}
-
-	/**
-	 * The ACP campaign URL for one topic.
-	 *
-	 * Modelled on core's only precedent for linking from the board into a
-	 * specific ACP module with parameters — U_USER_ADMIN in memberlist.php.
-	 * Four properties are copied from it deliberately: the admin path is
-	 * injected rather than hard-coded, the parameters are joined with &amp;,
-	 * the session id is passed explicitly because the ACP defines NEED_SID,
-	 * and the link is emitted only for a specifically authorised user.
-	 *
-	 * The module identifier is DERIVED, never written out. phpBB maps a class
-	 * name to a URL token by replacing backslashes with dashes
-	 * (functions_module.php::get_module_identifier), so the class constant is
-	 * the source of truth and a rename cannot leave a stale string behind.
-	 *
-	 * @param int $topic_id
-	 * @return string
-	 */
-	protected function acp_campaign_url($topic_id)
-	{
-		$identifier = str_replace('\\', '-', '\\' . ltrim(acp_main_module::class, '\\'));
-
-		return append_sid(
-			$this->admin_path . 'index.' . $this->php_ext,
-			'i=' . $identifier . '&amp;mode=campaigns&amp;t=' . (int) $topic_id,
-			true,
-			$this->user->session_id
-		);
 	}
 
 	/**

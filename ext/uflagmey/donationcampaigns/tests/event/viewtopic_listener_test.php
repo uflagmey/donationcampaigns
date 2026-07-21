@@ -122,7 +122,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 		global $user;
 
 		// No permissions by default: the pre-existing tests are about the
-		// public box, and an administrator's link must not leak into them.
+		// public box, and a manager's link must not leak into them.
 		// authorise() rebuilds the listener when a test needs one.
 		$this->listener = new viewtopic_listener(
 			$service,
@@ -130,10 +130,9 @@ class viewtopic_listener_test extends \phpbb_test_case
 			$this->config,
 			$this->template,
 			$language,
-			new selective_auth(array()),
+			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth(array())),
 			$user,
-			'adm/',
-			'php'
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
 		);
 	}
 
@@ -256,10 +255,10 @@ class viewtopic_listener_test extends \phpbb_test_case
 	 * @param int $topic_id
 	 * @return void
 	 */
-	protected function view($topic_id)
+	protected function view($topic_id, $forum_id = 2)
 	{
 		$this->listener->assign_campaign_vars(
-			new \phpbb\event\data(array('topic_id' => $topic_id))
+			new \phpbb\event\data(array('topic_id' => $topic_id, 'forum_id' => $forum_id))
 		);
 	}
 
@@ -595,14 +594,13 @@ class viewtopic_listener_test extends \phpbb_test_case
 			$this->config,
 			$this->template,
 			$language,
-			new selective_auth(array()),
+			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth(array())),
 			$user,
-			'adm/',
-			'php'
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
 		);
 
 		$german_listener->assign_campaign_vars(
-			new \phpbb\event\data(array('topic_id' => 10))
+			new \phpbb\event\data(array('topic_id' => 10, 'forum_id' => 2))
 		);
 
 		$rows = $this->template->block('donationcampaigns_donor');
@@ -1211,21 +1209,18 @@ class viewtopic_listener_test extends \phpbb_test_case
 	// ------------------------------------------------- the topic tools link
 
 	/**
-	 * Rebuild the listener with a specific set of granted permissions.
+	 * Rebuild the listener with a specific set of forum-scoped grants.
 	 *
-	 * @param string[] $granted
+	 * @param array<string, true|int[]> $grants forum_scoped_auth format
 	 * @param bool $registered
-	 * @return selective_auth
+	 * @return void
 	 */
-	protected function authorise(array $granted, $registered = true)
+	protected function authorise(array $grants, $registered = true)
 	{
-		global $user, $auth;
-
-		$auth = new selective_auth($granted);
+		global $user;
 
 		$user->data['is_registered'] = $registered;
 		$user->data['user_id'] = $registered ? 2 : 1;
-		$user->session_id = 'testsessionid';
 
 		$language = $this->language();
 
@@ -1235,35 +1230,28 @@ class viewtopic_listener_test extends \phpbb_test_case
 			$this->config,
 			$this->template,
 			$language,
-			$auth,
+			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth($grants)),
 			$user,
-			'adm/',
-			'php'
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
 		);
-
-		return $auth;
 	}
 
-	/**
-	 * Both permissions, which is what an ordinary board administrator holds.
-	 *
-	 * @return selective_auth
-	 */
-	protected function authorise_admin()
+	/** A shell manager of forum 2 (the forum view() puts topics in). */
+	protected function as_manager()
 	{
-		return $this->authorise(array('a_', 'a_donationcampaigns'));
+		$this->authorise(array('m_donationcampaigns_manage' => array(2)));
 	}
 
 	/**
 	 * THE decisive test for the neutral label.
 	 *
-	 * The link must render on a topic that has NO campaign, which is exactly
-	 * the case the old early return skipped. If this passes only when a
-	 * campaign exists, campaigns can never be created.
+	 * The link must render on a topic that has NO campaign, which is the only
+	 * way a campaign is ever created. If it appeared only when one exists, none
+	 * could be created.
 	 */
-	public function test_the_link_is_offered_on_a_topic_with_no_campaign()
+	public function test_the_link_is_offered_to_a_manager_on_a_topic_with_no_campaign()
 	{
-		$this->authorise_admin();
+		$this->as_manager();
 		$this->view(30);
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
@@ -1271,7 +1259,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 	public function test_the_link_is_offered_on_a_topic_with_an_enabled_campaign()
 	{
-		$this->authorise_admin();
+		$this->as_manager();
 		$this->view(10);
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
@@ -1283,7 +1271,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 	 */
 	public function test_the_link_is_offered_on_a_topic_with_a_disabled_campaign()
 	{
-		$this->authorise_admin();
+		$this->as_manager();
 		$this->view(20);
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
@@ -1291,77 +1279,89 @@ class viewtopic_listener_test extends \phpbb_test_case
 	}
 
 	/**
-	 * The label carries no verb, so the URL must carry no action either. The
-	 * three states must be indistinguishable from the topic page.
+	 * A donations-only holder may open the landing (to reach donation
+	 * management), so the link is shown to them too.
 	 */
-	public function test_the_link_is_identical_in_all_three_campaign_states()
+	public function test_the_link_is_offered_to_a_donations_only_holder()
 	{
-		$urls = array();
+		$this->authorise(array('m_donationcampaigns_donations' => array(2)));
+		$this->view(10);
 
-		foreach (array(10, 20, 30) as $topic_id)
-		{
-			$this->template->vars = array();
-			$this->authorise_admin();
-			$this->view($topic_id);
-
-			$urls[$topic_id] = $this->template->vars['U_DONATIONCAMPAIGNS_TOPIC_LINK'];
-		}
-
-		// Same shape everywhere; only the topic id differs.
-		foreach ($urls as $topic_id => $url)
-		{
-			$this->assertStringNotContainsString('action=', $url, 'A verb in the URL can go stale');
-			$this->assertStringContainsString('t=' . $topic_id, $url);
-		}
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
 	}
 
-	public function test_the_link_names_the_campaigns_mode_of_this_extensions_module()
+	public function test_the_admin_override_shows_the_link()
 	{
-		$this->authorise_admin();
+		$this->authorise(array('a_donationcampaigns' => true));
+		$this->view(30);
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
+	}
+
+	/**
+	 * The link points at the neutral frontend management route for the topic —
+	 * no ACP, no action verb, only the topic id.
+	 */
+	public function test_the_link_points_at_the_frontend_manage_route()
+	{
+		$this->as_manager();
 		$this->view(30);
 
 		$url = $this->template->vars['U_DONATIONCAMPAIGNS_TOPIC_LINK'];
 
-		$this->assertStringContainsString('mode=campaigns', $url);
-		$this->assertStringContainsString('adm/', $url);
+		$this->assertStringContainsString('uflagmey_donationcampaigns_manage', $url);
+		$this->assertStringContainsString('topic_id=30', $url);
+		$this->assertStringNotContainsString('action=', $url, 'A verb in the URL can go stale');
+		$this->assertStringNotContainsString('adm/', $url, 'The link must no longer point at the ACP');
 	}
 
-	/**
-	 * LOAD-BEARING. The topic tools link is now the ONLY route to campaign
-	 * creation, so a module identifier that does not resolve does not degrade
-	 * the feature — it removes it. And it would fail at runtime, in
-	 * production, only for administrators.
-	 *
-	 * This reverses phpBB's own mapping (functions_module.php:495-498 turns
-	 * dashes back into backslashes) and asserts the result is the real ACP
-	 * module class.
-	 */
-	public function test_the_generated_url_resolves_to_this_extensions_acp_module()
+	public function test_the_topic_tools_wrapper_is_forced_open_for_the_link()
 	{
-		$this->authorise_admin();
+		$this->as_manager();
 		$this->view(30);
 
-		$url = $this->template->vars['U_DONATIONCAMPAIGNS_TOPIC_LINK'];
+		$this->assertTrue($this->template->vars['S_DISPLAY_TOPIC_TOOLS']);
+	}
 
-		$this->assertSame(1, preg_match('/[?&]i=([^&]+)/', $url, $matches), 'The link carries no module identifier');
+	public function test_a_user_with_neither_permission_sees_no_link()
+	{
+		$this->authorise(array());
+		$this->view(30);
 
-		// phpBB's reverse mapping, applied to what we emitted.
-		$class = str_replace('-', '\\', urldecode($matches[1]));
+		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
+		$this->assertArrayNotHasKey('S_DISPLAY_TOPIC_TOOLS', $this->template->vars);
+	}
 
-		$this->assertTrue(
-			class_exists($class),
-			"The module identifier does not name a real class: {$class}"
-		);
-		$this->assertSame(
-			ltrim(\uflagmey\donationcampaigns\acp\main_module::class, '\\'),
-			ltrim($class, '\\'),
-			'The link does not resolve to this extension ACP module'
-		);
+	public function test_a_guest_sees_no_link()
+	{
+		$this->authorise(array('m_donationcampaigns_manage' => array(2)), false);
+		$this->view(30);
+
+		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
 	}
 
 	/**
-	 * The dashed form is derived, never written down. A literal would survive
-	 * a class rename and silently stop resolving.
+	 * Forum-scoped: a manager of another forum sees no link on this forum's
+	 * topic, and the forum is taken from the event — moving the topic moves the
+	 * link with it.
+	 */
+	public function test_a_manager_of_another_forum_sees_no_link_here()
+	{
+		$this->authorise(array('m_donationcampaigns_manage' => array(3)));
+
+		$this->view(30, 2);
+		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
+
+		// The same manager DOES see it once the topic is in their forum.
+		$this->template->vars = array();
+		$this->view(30, 3);
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
+	}
+
+	/**
+	 * The dashed ACP module identifier must not be hard-coded anywhere in
+	 * production: after the cutover the topic-tools link no longer uses it, and
+	 * a literal would survive a class rename and silently stop resolving.
 	 */
 	public function test_no_production_file_hardcodes_the_dashed_module_identifier()
 	{
@@ -1388,72 +1388,10 @@ class viewtopic_listener_test extends \phpbb_test_case
 		$this->assertSame(array(), $found, 'The dashed module identifier is hard-coded');
 	}
 
-	public function test_the_link_carries_a_session_id()
-	{
-		$this->authorise_admin();
-		$this->view(30);
-
-		// The ACP defines NEED_SID; a link without one cannot be followed.
-		$this->assertStringContainsString('sid=testsessionid', $this->template->vars['U_DONATIONCAMPAIGNS_TOPIC_LINK']);
-	}
-
-	/**
-	 * The dropdown wrapper is conditional on a core tool being present. This
-	 * variable is core's own escape hatch and is assigned nowhere in core PHP.
-	 */
-	public function test_the_topic_tools_wrapper_is_forced_open_for_the_link()
-	{
-		$this->authorise_admin();
-		$this->view(30);
-
-		$this->assertTrue($this->template->vars['S_DISPLAY_TOPIC_TOOLS']);
-	}
-
-	public function test_a_user_without_the_extension_permission_sees_no_link()
-	{
-		$this->authorise(array('a_'));
-		$this->view(30);
-
-		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
-		$this->assertArrayNotHasKey('S_DISPLAY_TOPIC_TOOLS', $this->template->vars);
-	}
-
-	/**
-	 * a_ is a real, separate ACL option, not a prefix wildcard: holding
-	 * a_donationcampaigns alone does NOT grant ACP entry. Rendering the link
-	 * for this administrator would send them to a 403.
-	 */
-	public function test_an_administrator_who_cannot_enter_the_acp_sees_no_link()
-	{
-		$this->authorise(array('a_donationcampaigns'));
-		$this->view(30);
-
-		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
-	}
-
-	public function test_a_guest_sees_no_link()
-	{
-		$this->authorise(array('a_', 'a_donationcampaigns'), false);
-		$this->view(30);
-
-		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
-	}
-
-	public function test_both_permissions_are_actually_consulted()
-	{
-		$auth = $this->authorise_admin();
-		$this->view(30);
-
-		// Proving the link is hidden does not prove the right questions were
-		// asked. These are the two that matter.
-		$this->assertContains('a_', $auth->checked);
-		$this->assertContains('a_donationcampaigns', $auth->checked);
-	}
-
 	/**
 	 * The link must not cost a campaign lookup. This listener runs on every
-	 * topic view on the board, and the neutral label exists precisely so that
-	 * no query is needed to choose it.
+	 * topic view on the board, and the forum comes from the event, so choosing
+	 * the link needs no query of its own.
 	 */
 	public function test_an_ordinary_reader_triggers_no_campaign_query_for_the_link()
 	{

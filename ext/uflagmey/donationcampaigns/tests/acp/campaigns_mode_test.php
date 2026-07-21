@@ -169,7 +169,10 @@ class campaigns_mode_test extends campaign_acp_test_case
 
 		$row = $this->row_for('Server fund');
 
-		$this->assertStringContainsString('action=edit', $row['U_EDIT']);
+		// Edit moved to the frontend controller in the RC2 cutover; the list
+		// links out to that route. Delete and recalculate stay in the ACP.
+		$this->assertStringContainsString('uflagmey_donationcampaigns_campaign_edit', $row['U_EDIT']);
+		$this->assertStringNotContainsString('action=edit', $row['U_EDIT']);
 		$this->assertStringContainsString('action=delete', $row['U_DELETE']);
 		$this->assertStringContainsString('action=recalculate', $row['U_RECALCULATE']);
 	}

@@ -240,7 +240,9 @@ class architecture_test extends \phpbb_test_case
 	 */
 	public function test_the_description_textarea_does_not_double_escape()
 	{
-		$form = file_get_contents($this->package . '/adm/style/acp_donationcampaigns_campaign_edit.html');
+		// The campaign form moved to the frontend in the RC2 cutover; the
+		// textarea contract is unchanged.
+		$form = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
 
 		$this->assertStringContainsString(
 			'{DONATIONCAMPAIGNS_DESC}</textarea>',
@@ -249,17 +251,10 @@ class architecture_test extends \phpbb_test_case
 		);
 		$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC|e}', $form);
 
-		// And nowhere else in the ACP may render it unescaped.
+		// No ACP template renders the description at all now.
 		foreach (glob($this->package . '/adm/style/*.html') as $file)
 		{
-			$contents = file_get_contents($file);
-
-			if (basename($file) === 'acp_donationcampaigns_campaign_edit.html')
-			{
-				continue;
-			}
-
-			$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC}', $contents, basename($file));
+			$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC}', file_get_contents($file), basename($file));
 		}
 	}
 

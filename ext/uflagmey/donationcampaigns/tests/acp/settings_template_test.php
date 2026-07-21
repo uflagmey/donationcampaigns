@@ -613,12 +613,13 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	protected function form_template()
 	{
-		return file_get_contents($this->package . '/adm/style/acp_donationcampaigns_campaign_edit.html');
+		return file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
 	}
 
 	public function test_the_campaign_form_template_exists()
 	{
-		$this->assertFileExists($this->package . '/adm/style/acp_donationcampaigns_campaign_edit.html');
+		// The campaign form moved to the topic frontend in the RC2 cutover.
+		$this->assertFileExists($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
 	}
 
 	public function test_the_campaign_form_has_no_inline_css_or_javascript()
@@ -637,10 +638,14 @@ class settings_template_test extends \phpbb_test_case
 	{
 		$t = $this->form_template();
 
-		foreach (array('campaign_title', 'campaign_desc', 'target_amount', 'external_url', 'campaign_enabled', 'show_donor_names', 'show_donation_count') as $field)
+		// No campaign_enabled: enable/disable are separate actions on the
+		// management landing, not a checkbox on this form.
+		foreach (array('campaign_title', 'campaign_desc', 'target_amount', 'external_url', 'show_donor_names', 'show_donation_count') as $field)
 		{
 			$this->assertStringContainsString('name="' . $field . '"', $t, "Field {$field} is missing");
 		}
+
+		$this->assertStringNotContainsString('name="campaign_enabled"', $t, 'The enabled checkbox must not be on the edit form');
 
 		// The topic is NOT among them. It is shown as a linked title and can
 		// never be retyped, so there is no input to find.
@@ -652,11 +657,14 @@ class settings_template_test extends \phpbb_test_case
 	 * The collected total is derived. Rendering it as an input would invite
 	 * exactly the tampering the service is built to prevent.
 	 */
+	/**
+	 * The collected total is derived. The frontend edit form does not show it at
+	 * all (the landing does), so it certainly is never an input here.
+	 */
 	public function test_the_collected_total_is_never_an_input()
 	{
 		$t = $this->form_template();
 
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_COLLECTED_AMOUNT|e}', $t);
 		$this->assertStringNotContainsString('name="collected_amount"', $t);
 		$this->assertDoesNotMatchRegularExpression('/<input[^>]*collected/i', $t);
 	}

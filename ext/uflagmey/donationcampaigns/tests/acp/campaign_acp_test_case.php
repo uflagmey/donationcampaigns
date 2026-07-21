@@ -269,6 +269,8 @@ abstract class campaign_acp_test_case extends \phpbb_test_case
 		$phpbb_container->set('uflagmey.donationcampaigns.campaign_repository', $this->campaigns);
 		$phpbb_container->set('uflagmey.donationcampaigns.topic_repository', new topic_repository($this->db, 'phpbb_topics'));
 		$phpbb_container->set('pagination', new stub_pagination());
+		// The campaign list's Edit link is generated as a frontend route.
+		$phpbb_container->set('controller.helper', new \uflagmey\donationcampaigns\tests\controller\recording_helper());
 	}
 
 	/**

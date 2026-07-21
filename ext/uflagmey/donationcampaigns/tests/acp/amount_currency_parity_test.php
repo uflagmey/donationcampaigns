@@ -9,16 +9,15 @@
 namespace uflagmey\donationcampaigns\tests\acp;
 
 /**
- * Amount inputs and their currency label, across every ACP form that has one.
+ * Amount inputs and their currency label, across every form that has one.
  *
- * The campaign target field gained a currency label beside its input during
- * the RC polish; the donation amount field was missed and shipped in
- * 1.0.0-rc1 without one. This reads the shipped templates as files and asserts
- * that every editable amount input is followed by the SAME currency label, so
- * the two presentations cannot drift apart again.
+ * The campaign target field (now on the frontend campaign form) and the
+ * donation amount field (still in the ACP) must both show the configured
+ * currency the same way, so the two presentations cannot drift apart. This
+ * reads the shipped templates as files, wherever they live.
  *
  * It is deliberately a file-level test: the drift is a template inconsistency,
- * and a rendered-output test driving one mode cannot see the other template.
+ * and a rendered-output test driving one surface cannot see the other template.
  */
 class amount_currency_parity_test extends \phpbb_test_case
 {
@@ -30,23 +29,23 @@ class amount_currency_parity_test extends \phpbb_test_case
 	const CURRENCY_LABEL = '<strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong>';
 
 	/**
-	 * @return array label => [template file, amount input name]
+	 * @return array label => [template path relative to the package, amount input name]
 	 */
 	public function amount_inputs()
 	{
 		return array(
-			'campaign target'	=> array('acp_donationcampaigns_campaign_edit.html', 'target_amount'),
-			'donation amount'	=> array('acp_donationcampaigns_donation_edit.html', 'donation_amount'),
+			'campaign target'	=> array('styles/prosilver/template/donationcampaigns_campaign_form.html', 'target_amount'),
+			'donation amount'	=> array('adm/style/acp_donationcampaigns_donation_edit.html', 'donation_amount'),
 		);
 	}
 
 	/**
-	 * @param string $file
+	 * @param string $path Relative to the extension package root
 	 * @return string
 	 */
-	private function template($file)
+	private function template($path)
 	{
-		return file_get_contents(dirname(dirname(__DIR__)) . '/adm/style/' . $file);
+		return file_get_contents(dirname(dirname(__DIR__)) . '/' . $path);
 	}
 
 	/**
