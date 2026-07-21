@@ -833,4 +833,83 @@ class donations_mode_test extends campaign_acp_test_case
 
 		$this->assertSame('Server fund', $this->template->vars['DONATIONCAMPAIGNS_CAMPAIGN_TITLE']);
 	}
+
+	// --------------------------------------------- the configured currency
+
+	/**
+	 * @param string $action add or edit
+	 * @param int $donation_id
+	 * @return void
+	 */
+	protected function open_form($action, $donation_id = 0)
+	{
+		$this->request(array('campaign_id' => 1, 'action' => $action, 'donation_id' => $donation_id));
+		$this->run_donations();
+	}
+
+	/**
+	 * RC1 REGRESSION — found on the German live board.
+	 *
+	 * The campaign target field names the configured currency beside its input;
+	 * the donation amount field shipped without it, so an administrator
+	 * recording "50,00" saw no symbol and no clue which currency was meant. It
+	 * is read from the board's existing setting, exactly as the campaign form
+	 * does, and never stored a second time.
+	 */
+	public function test_the_add_form_names_the_configured_currency()
+	{
+		$this->open_form('add');
+
+		$this->assertSame('€', $this->template->vars['DONATIONCAMPAIGNS_CURRENCY_SYMBOL']);
+	}
+
+	public function test_the_edit_form_names_the_configured_currency()
+	{
+		$this->open_form('edit', 1);
+
+		$this->assertSame('€', $this->template->vars['DONATIONCAMPAIGNS_CURRENCY_SYMBOL']);
+	}
+
+	public function test_the_donation_currency_follows_the_board_setting()
+	{
+		$this->config->set('donationcampaigns_currency_symbol', 'CHF');
+
+		$this->open_form('add');
+
+		$this->assertSame('CHF', $this->template->vars['DONATIONCAMPAIGNS_CURRENCY_SYMBOL']);
+	}
+
+	/**
+	 * The symbol is a label beside the input, not a character inside its value:
+	 * the parser still reads only the number the administrator typed. Donation 1
+	 * is 1000 minor units, so the field shows "10.00" and the € is a sibling.
+	 */
+	public function test_the_currency_sits_beside_the_amount_input_not_inside_it()
+	{
+		$this->open_form('edit', 1);
+
+		$html = $this->render('donation_edit');
+
+		$this->assertMatchesRegularExpression(
+			'#name="donation_amount"[^>]*/>\s*<strong>€</strong>#',
+			$html,
+			'The currency label is not rendered beside the amount input'
+		);
+
+		preg_match('#name="donation_amount"[^>]*value="([^"]*)"#', $html, $m);
+
+		$this->assertSame('10.00', $m[1]);
+		$this->assertStringNotContainsString('€', $m[1], 'The currency symbol leaked into the editable amount value');
+	}
+
+	/**
+	 * No duplicate: the symbol appears exactly once beside the amount field and
+	 * nowhere else in the donation form.
+	 */
+	public function test_the_currency_symbol_is_not_duplicated_on_the_form()
+	{
+		$this->open_form('add');
+
+		$this->assertSame(1, substr_count($this->render('donation_edit'), '<strong>€</strong>'));
+	}
 }

@@ -35,7 +35,10 @@
 			<label for="donation_amount">{L_DONATIONCAMPAIGNS_AMOUNT}{L_COLON}</label>
 			<br /><span>{L_DONATIONCAMPAIGNS_AMOUNT_EXPLAIN}</span>
 		</dt>
-		<dd><input id="donation_amount" type="text" size="15" name="donation_amount" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}" /></dd>
+		<!-- The currency is shown beside the field, not inside it: the input
+		     carries only the number the parser will read. Same pattern as the
+		     campaign target field. -->
+		<dd><input id="donation_amount" type="text" size="15" name="donation_amount" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}" /> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong></dd>
 	</dl>
 
 	<dl>

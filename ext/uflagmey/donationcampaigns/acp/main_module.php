@@ -1206,6 +1206,11 @@ class main_module
 			// Escaped here: phpBB disables Twig autoescaping.
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> $campaign['campaign_title'],
 			'DONATIONCAMPAIGNS_DONATION_AMOUNT'	=> $values['donation_amount'],
+			// A label beside the amount field, read from the board's existing
+			// setting — the same currency the campaign form shows, not a second
+			// copy. The stored value stays integer minor units and the parser
+			// never sees this.
+			'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'	=> (string) $config['donationcampaigns_currency_symbol'],
 			'DONATIONCAMPAIGNS_DONOR_NAME'		=> $values['donor_name'],
 			'DONATIONCAMPAIGNS_DONATION_TIME'	=> $values['donation_time'],
 		));
