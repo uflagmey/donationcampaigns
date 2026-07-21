@@ -55,3 +55,11 @@ uflagmey_donationcampaigns_donation_edit:
     defaults: { _controller: uflagmey.donationcampaigns.controller.donation:edit }
     requirements:
         donation_id: \d+
+
+# Delete confirms first: the GET renders the confirm_box dialog (no mutation)
+# and only the confirmed POST removes the receipt.
+uflagmey_donationcampaigns_donation_delete:
+    path: /donationcampaigns/donation/{donation_id}/delete
+    defaults: { _controller: uflagmey.donationcampaigns.controller.donation:delete }
+    requirements:
+        donation_id: \d+

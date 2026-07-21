@@ -154,6 +154,63 @@ class donation_controller
 		return $this->render_form($campaign, $topic, $donation);
 	}
 
+	/**
+	 * Delete a confirmed donation.
+	 *
+	 * Requires an explicit confirmation naming the receipt being destroyed; the
+	 * confirmed step is a POST carrying confirm_box's key. Nothing is written
+	 * until then. The service recomputes the campaign total inside its own
+	 * transaction, so the box never describes a total the table does not hold.
+	 *
+	 * @param int $donation_id
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	public function delete($donation_id)
+	{
+		$this->load_language();
+
+		list($donation, $campaign, $topic) = $this->load_donation_in_topic((int) $donation_id);
+		$this->require_donations($topic['forum_id']);
+
+		$exponent = (int) $this->config['donationcampaigns_currency_exponent'];
+
+		if (confirm_box(true))
+		{
+			$this->donation_service->delete_donation($donation['donation_id']);
+			$this->log_donation('LOG_DONATIONCAMPAIGNS_DONATION_DELETED', $topic['forum_id'], $topic['topic_id'], $donation['donation_amount'], $donation['donor_name'], $exponent);
+
+			return $this->message($this->language->lang(
+				'DONATIONCAMPAIGNS_DONATION_DELETED_RETURN',
+				'<a href="' . $this->topic_url($topic['topic_id']) . '">',
+				'</a>'
+			));
+		}
+
+		// Escaped HERE, not at a list boundary: phpBB renders confirm_box's
+		// message as raw HTML, so a donor name carrying markup would execute in
+		// the dialog. The dialog names the exact receipt: "are you sure" answers
+		// nothing.
+		$amount = $this->escape_for_message($this->formatter->format($donation['donation_amount'], $exponent));
+		$label = $this->escape_for_message($this->donor_label($donation['donor_name']));
+
+		confirm_box(false, $this->language->lang('DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION', $amount, $label), '', 'confirm_body.html', $this->helper->route(
+			'uflagmey_donationcampaigns_donation_delete',
+			array('donation_id' => $donation['donation_id'])
+		));
+
+		// In production confirm_box(false) renders the dialog and exits; this is
+		// the unreachable safety net that keeps the return type honest.
+		return $this->empty_response();
+	}
+
+	/**
+	 * @return \Symfony\Component\HttpFoundation\Response
+	 */
+	protected function empty_response()
+	{
+		return new \Symfony\Component\HttpFoundation\Response('');
+	}
+
 	// --------------------------------------------------------- the shared form
 
 	/**

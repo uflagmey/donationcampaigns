@@ -390,4 +390,131 @@ class donation_controller_test extends controller_test_case
 			$this->donation_controller->edit(999);
 		});
 	}
+
+	// ---------------------------------------------------------------- delete
+
+	public function test_a_donations_holder_deletes_a_donation_after_confirming()
+	{
+		$this->as_donations_a();
+		$this->confirmed();
+
+		$this->donation_controller->delete(1);
+
+		$this->assertNull($this->donations->find_by_id(1), 'The donation was not deleted');
+		$this->assertContains('LOG_DONATIONCAMPAIGNS_DONATION_DELETED', $this->log->operations);
+	}
+
+	public function test_deleting_a_donation_recomputes_the_campaign_total()
+	{
+		$this->as_donations_a();
+		$this->confirmed();
+
+		// Campaign 1's only donation is removed, so the recomputed total is 0.
+		$this->donation_controller->delete(1);
+
+		$this->assertSame(0, $this->collected(1));
+	}
+
+	public function test_deleting_a_donation_is_logged_to_the_moderator_log_with_context()
+	{
+		$this->as_donations_a();
+		$this->confirmed();
+
+		$this->donation_controller->delete(1);
+
+		$entry = end($this->log->entries);
+		$this->assertSame('mod', $entry[0]);
+		$this->assertSame('LOG_DONATIONCAMPAIGNS_DONATION_DELETED', $entry[3]);
+		$this->assertSame(self::FORUM_A, $entry[5]['forum_id']);
+		$this->assertSame(10, $entry[5]['topic_id']);
+	}
+
+	public function test_delete_without_confirmation_changes_nothing()
+	{
+		$this->as_donations_a();
+		$this->request();
+
+		$this->swallow_dialog(function () {
+			$this->donation_controller->delete(1);
+		});
+
+		$this->assertNotNull($this->donations->find_by_id(1), 'An unconfirmed delete removed the donation');
+		$this->assertNotContains('LOG_DONATIONCAMPAIGNS_DONATION_DELETED', $this->log->operations);
+	}
+
+	public function test_delete_with_a_forged_confirmation_deletes_nothing()
+	{
+		$this->as_donations_a();
+
+		// A confirmation whose key does not match the session is not a confirmation:
+		// confirm_box(true) returns false and only the dialog is offered.
+		global $request;
+		$request = new \phpbb_mock_request(array(), array(
+			'confirm'		=> 'YES',
+			'confirm_key'	=> 'a_forged_key',
+		));
+		$this->rebuild();
+
+		$this->swallow_dialog(function () {
+			$this->donation_controller->delete(1);
+		});
+
+		$this->assertNotNull($this->donations->find_by_id(1), 'A forged confirmation deleted the donation');
+	}
+
+	public function test_delete_admin_may_delete_a_donation()
+	{
+		$this->as_admin();
+		$this->confirmed();
+
+		$this->donation_controller->delete(1);
+
+		$this->assertNull($this->donations->find_by_id(1));
+	}
+
+	public function test_delete_is_denied_to_a_manage_only_holder()
+	{
+		$this->as_manage_a();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->donation_controller->delete(1);
+		});
+
+		$this->assertNotNull($this->donations->find_by_id(1), 'Nothing may be deleted');
+	}
+
+	public function test_delete_is_denied_to_a_donations_holder_of_another_forum()
+	{
+		$this->as_donations_b();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->donation_controller->delete(1);
+		});
+
+		$this->assertNotNull($this->donations->find_by_id(1));
+	}
+
+	public function test_delete_is_denied_to_a_user_with_no_permission()
+	{
+		$this->as_nobody();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->donation_controller->delete(1);
+		});
+
+		$this->assertNotNull($this->donations->find_by_id(1));
+	}
+
+	public function test_delete_on_a_missing_donation_is_denied()
+	{
+		$this->as_donations_a();
+		$this->confirmed();
+
+		$this->assert_denied(function () {
+			$this->donation_controller->delete(999);
+		});
+	}
 }
