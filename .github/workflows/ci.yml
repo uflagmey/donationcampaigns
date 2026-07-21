@@ -67,7 +67,12 @@ jobs:
             https://github.com/phpbb/phpbb/archive/refs/tags/release-3.3.17.tar.gz
           tar xzf /tmp/phpbb.tar.gz -C .phpbb-test
       - name: Run phpcs
-        run: ./vendor/bin/phpcs --standard=phpcs.xml --report=checkstyle | cs2pr
+        # -q suppresses the progress output that phpcs.xml enables via
+        # <arg value="p"/>. Those progress dots go to stdout ahead of the
+        # checkstyle report and would otherwise corrupt the XML that cs2pr
+        # parses ("Start tag expected"). The report itself is unaffected, so
+        # real violations are still annotated and still fail the build.
+        run: ./vendor/bin/phpcs --standard=phpcs.xml --report=checkstyle -q | cs2pr
 
   lint:
     name: PHP lint (PHP ${{ matrix.php }})
