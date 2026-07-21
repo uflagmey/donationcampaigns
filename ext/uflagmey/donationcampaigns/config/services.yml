@@ -80,6 +80,13 @@ services:
             - '@uflagmey.donationcampaigns.campaign_repository'
             - '@uflagmey.donationcampaigns.donation_repository'
 
+    uflagmey.donationcampaigns.access:
+        class: uflagmey\donationcampaigns\service\access
+        arguments:
+            # The single source of the forum-scoped campaign authorization rule.
+            # Consumed by the frontend controllers and the topic-tools link.
+            - '@auth'
+
     uflagmey.donationcampaigns.description_formatter:
         class: uflagmey\donationcampaigns\service\description_formatter
 
