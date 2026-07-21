@@ -2,7 +2,7 @@
     "name": "uflagmey/donationcampaigns",
     "type": "phpbb-extension",
     "description": "Attach donation campaigns to phpBB topics. Administrators record confirmed payments manually; the extension processes no payments.",
-    "version": "1.0.0-rc1",
+    "version": "1.0.0-beta1",
     "keywords": [
         "phpbb",
         "extension",

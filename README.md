@@ -2,11 +2,13 @@
 
 A phpBB 3.3 extension that attaches a fundraising campaign to a topic and shows
 its progress — target, amount collected and a progress bar — above the first
-post. Donations are **confirmed receipts recorded by an administrator**; the
-extension processes no payments and stores no payment data.
+post. Donations are **confirmed receipts recorded from the topic by an
+administrator or an authorised forum moderator**; the extension processes no
+payments and stores no payment data.
 
-> **Status:** `1.0.0-rc1` — feature complete, release-candidate. Not yet
-> submitted to the phpBB Extension Database.
+> **Status:** `1.0.0-beta1` — management moved from the ACP to the topic, with
+> forum-scoped moderator permissions. Not yet submitted to the phpBB Extension
+> Database.
 
 ## The extension lives here
 

@@ -11,13 +11,15 @@ its progress above the first post.
 
 ## What it does
 
-An administrator creates a campaign, points it at an existing topic, and sets a
-target amount. The topic then shows a box above its first post with the target,
-the amount collected, a progress bar, and — optionally — the number of
-donations and the names of donors who agreed to be named.
+An administrator — or an authorised forum moderator — creates a campaign,
+points it at an existing topic, and sets a target amount. The topic then shows
+a box above its first post with the target, the amount collected, a progress
+bar, and — optionally — the number of donations and the names of donors who
+agreed to be named.
 
-As money arrives, the administrator records each payment in the ACP. The public
-total is the sum of those records and nothing else.
+As money arrives, an administrator or an authorised forum moderator records
+each payment from the topic. The public total is the sum of those records and
+nothing else.
 
 ## What it does not do
 
@@ -31,8 +33,9 @@ extension is and what people often assume a "donation extension" is.
   *already arrived* and that an administrator has verified. It is bookkeeping,
   not a transaction.
 - **No visitor or member can submit or confirm a donation.** There is no public
-  form. Every entry is made in the ACP by someone holding the
-  `a_donationcampaigns` permission.
+  form. Every entry is made from the topic by someone holding the appropriate
+  permission — an administrator, or a forum moderator granted the forum-scoped
+  donation permission for that forum.
 - **It does not verify anything.** It cannot check a bank statement or a
   provider's records. Whether the money truly arrived is the administrator's
   judgement, and the extension records that judgement.
@@ -71,7 +74,7 @@ and it is intentional rather than unfinished — see
 | PHP | 7.2 – 8.x |
 | Database | See below |
 | Style | prosilver |
-| Language | English |
+| Language | English and German |
 
 ### Verified versus designed-for
 
@@ -106,9 +109,9 @@ php bin/phpbbcli.php cache:purge
 
 | Action | Effect |
 |---|---|
-| **Enable** | Creates two tables, four configuration settings, the permission, and the ACP menu |
+| **Enable** | Creates two tables, four configuration settings, the three permissions and their permission category, and the ACP menu |
 | **Disable** | Hides the campaign box and the ACP menu. **All data is kept**, and re-enabling restores everything |
-| **Purge** | **Destroys all campaigns and donations**, and removes the tables, settings and permission. This cannot be undone |
+| **Purge** | **Destroys all campaigns and donations**, and removes the tables, settings and permissions. This cannot be undone |
 | **Upgrade** | Replace the files and run `php bin/phpbbcli.php db:migrate`. Migrations are idempotent and safe to re-run |
 
 Take a database backup before purging. "Disable" is the reversible one; "purge"
@@ -116,12 +119,35 @@ is not.
 
 ## Permissions
 
-One permission: **`a_donationcampaigns`** — *"Can manage donation campaigns"*,
-under **Permissions → Global permissions → Miscellaneous**.
+Three permissions, grouped under a dedicated **Donation Campaigns** category in
+the permissions UI:
 
-It is granted to `ROLE_ADMIN_FULL` and `ROLE_ADMIN_STANDARD` on installation, if
-those roles exist. It governs every ACP page and every create, edit and delete
-action. There is no separate read-only or per-campaign permission.
+- **`a_donationcampaigns`** — administrator, **global**. Full access: the ACP
+  settings and read-only oversight lists, the admin-only maintenance
+  (recalculate a total; hard-delete a non-empty campaign), and — as an override
+  — every frontend campaign and donation action on every forum. Granted to
+  `ROLE_ADMIN_FULL` and `ROLE_ADMIN_STANDARD` on installation, if those roles
+  exist.
+- **`m_donationcampaigns_manage`** — moderator, **forum-scoped**. Lets the
+  holder manage the campaign *shell* on topics in that forum: create, edit,
+  enable/disable, and delete an *empty* campaign. It does **not** grant donation
+  management.
+- **`m_donationcampaigns_donations`** — moderator, **forum-scoped**. Lets the
+  holder manage the donation *ledger* on topics in that forum: add, edit and
+  delete confirmed donations. ⚠️ This permission exposes donor names, private
+  donor identities and confirmed amounts — grant it only to people you trust
+  with that personal data.
+
+The two `m_` permissions are **independent**: holding one does not grant the
+other. `a_donationcampaigns` overrides both everywhere; it is not granted on
+install to non-admins.
+
+**Granting either `m_` permission makes the grantee a forum moderator.** phpBB
+defines a forum moderator as anyone holding an `m_` permission on that forum, so
+a user or group you grant a donation permission to appears in that forum's
+**Moderator** list on topic and forum views and gains moderator standing there.
+This is inherent to phpBB and is not a silent, invisible grant — treat it as
+promoting the grantee to a limited moderator of that forum.
 
 ## Configuration
 
@@ -141,15 +167,24 @@ unless you confirm it. See the [administrator guide](docs/ADMIN_GUIDE.md).
 
 ## Campaign workflow
 
-1. Open the topic the campaign is for.
-2. **Topic tools → Donation campaign**. The topic is already fixed; there is
-   nothing to type and no ID to look up.
-3. Enter a title, an optional BBCode description, and the target.
-4. Optionally add a donation link (`http://` or `https://` only).
-5. Choose whether to show donor names and the donation count.
-6. Save, then **Back to topic** — the box is there.
+Campaigns are managed **from the topic**, not the ACP.
 
-The ACP lists and manages existing campaigns. It cannot create one.
+1. Open the topic the campaign is for.
+2. **Topic tools (the wrench) → Donation campaign**. This opens the management
+   landing page for that topic; the topic is already fixed, with nothing to type
+   and no ID to look up.
+3. The landing resolves the current state: with no campaign yet (and permission
+   to manage the shell) you get the create form; with a campaign already there
+   you get its summary plus only the actions you are authorised for.
+4. On the create/edit form, enter a title, an optional BBCode description, and
+   the target; optionally add a donation link (`http://` or `https://` only);
+   and choose whether to show donor names and the donation count.
+5. Save, then **Back to topic** — the box is there.
+
+Campaign actions (create, edit, enable/disable, delete an empty campaign)
+require `a_donationcampaigns` or `m_donationcampaigns_manage` in that forum. The
+ACP shows a read-only oversight list of campaigns and admin-only maintenance; it
+cannot create or edit one.
 
 One campaign per topic, enforced by a unique database index. A campaign cannot
 be attached to the stub left behind by a moved topic — phpBB treats such a stub
@@ -158,7 +193,11 @@ as non-existent, so a campaign there would be unreachable.
 ## Donation workflow
 
 1. **Wait for the money to actually arrive.**
-2. **ACP → Donation campaigns → Campaigns → Donations → Add confirmed donation**.
+2. On the topic, **Topic tools → Donation campaign** to open the management
+   landing, then **Add confirmed donation**. The donation ledger — the button
+   and the per-row Edit/Delete controls — is shown only to holders of
+   `a_donationcampaigns` or `m_donationcampaigns_donations` in that forum; a
+   manage-only holder does not see it.
 3. Enter the amount received, the date it arrived, and the donor's display name.
 4. Decide whether the donor may be named publicly — see
    [PRIVACY.md](docs/PRIVACY.md) before ticking that box.
@@ -170,25 +209,28 @@ total and the count; only the name is withheld.
 
 The total is always recomputed as the sum of the donation rows, never adjusted
 by arithmetic, so a figure that has somehow drifted is corrected by the next
-edit — or immediately, using **Recalculate total** on the campaign list.
+edit — or immediately, using **Recalculate total** in the ACP.
+
+The ACP shows a read-only oversight list of donations; recording, editing and
+deleting them happens on the topic.
 
 ## Known limitations
 
 - No payment processing, and no provider-specific integration. Any provider
   can be linked to; none is integrated with. This is a design decision, not a
   gap — see [DEVELOPERS.md](docs/DEVELOPERS.md).
-- No public donation form; every entry is made by an administrator.
-- **Campaigns can only be created from their topic.** A style that does not
+- No public donation form; every entry is made from the topic by an
+  administrator or an authorised forum moderator.
+- **Campaigns can only be managed from their topic.** A style that does not
   provide the `viewtopic_topic_tools_after` template event therefore offers no
   way to create one — see the prosilver note above.
 - **A campaign cannot be moved to another topic** once created.
 - Donation dates are date-only and stored as UTC midnight; the board's timezone
   is not applied to them.
 - prosilver only.
-- English only. A German translation is planned but not included.
-- No per-campaign or read-only permission.
 - No bulk deletion of donations.
-- The campaign list and donation list paginate at 25 rows; there is no search.
+- The ACP campaign list and donation list paginate at 25 rows; there is no
+  search.
 - **Not yet reviewed in a browser across styles and screen sizes.**
 - Databases other than SQLite and MariaDB have not been executed.
 - The phpBB validation and development policies have not been reviewed, so no

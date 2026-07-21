@@ -232,7 +232,7 @@ Verified against core source, not inferred from names.
 | `core.delete_forum_content_before_query` | `acp_forums.php:2011` | Before core's `DELETE ... WHERE forum_id` at 2013 |
 | `viewtopic_topic_tools_after` (template) | `viewtopic_topic_tools.html:46` | Last item in the wrench dropdown. That file is `INCLUDE`d **twice** (`viewtopic_body.html:44` and `:418`), so anything in it renders in both action bars — the entry therefore carries **no `id` attribute** |
 | `S_DISPLAY_TOPIC_TOOLS` | `viewtopic_topic_tools.html:1` | Referenced by the wrapper condition and assigned **nowhere in core PHP**. It exists so an extension can force the dropdown open when no core tool would have |
-| `core.permissions` | — | Declares the permission to the ACP UI |
+| `core.permissions` | — | Declares the three permissions (`a_donationcampaigns` plus the two forum-scoped `m_donationcampaigns_*`) and their category to the ACP UI |
 | `overall_header_head_append` (template) | — | `INCLUDECSS` for the stylesheet |
 
 ## The escaping contract
@@ -298,6 +298,12 @@ a bug; the columns are still required by the display and edit functions.
 
 ### ADR-014 — Campaigns are created only from their topic, and the ACP resolves state at request time
 
+> **Superseded by ADR-015.** Management no longer lives in the ACP: campaign and
+> donation actions moved to frontend controllers reached from the topic, under
+> forum-scoped moderator permissions. ADR-014 is kept as the historical record
+> of the topic-context creation decision, whose reasoning ADR-015 carries
+> forward.
+
 Creation used to mean reading a topic's numeric id out of its address and
 typing it into the ACP. Nothing else in phpBB asks that, and the field it was
 typed into was the one place a campaign could be pointed at the wrong topic.
@@ -351,6 +357,77 @@ a regression test asserts the root path is present.
 ADR-013 that style is outside v1.0's supported presentation scope. A weaker ACP
 form was explicitly rejected as a fallback, because it would have preserved the
 raw topic-id workflow this decision exists to remove.
+
+### ADR-015 — Frontend-primary management with forum-scoped moderator permissions
+
+Campaign **and** donation management moved out of the ACP into frontend
+controllers reached from the topic. The topic-tools **Donation campaign** entry
+now opens a management landing (`/app.php/donationcampaigns/topic/{topic_id}`)
+that resolves state on arrival — the create form when there is no campaign and
+you may make one, otherwise a campaign summary plus only the actions you are
+authorised for. This supersedes ADR-014.
+
+**Why.** A public extension needs *forum moderators*, not only board
+administrators, to run donations — the person who manages a fundraising topic is
+usually its moderator, not someone with ACP access. The old model could not
+express that: it had a single global `a_donationcampaigns` and did every write
+in the ACP, so the only way to let someone manage donations was to make them an
+administrator of the whole board. The ACP-only shape also did not feel like
+native phpBB, where topic-level work happens on the topic.
+
+**The three-permission model, forum-scoped.** One global admin permission plus
+two forum-scoped moderator permissions:
+
+- `a_donationcampaigns` — global admin, granted to the admin roles on install.
+  Full ACP access and an override for every frontend action on every forum.
+- `m_donationcampaigns_manage` — forum-scoped. The campaign shell: create, edit,
+  enable/disable, delete an *empty* campaign.
+- `m_donationcampaigns_donations` — forum-scoped. The donation ledger: add, edit
+  and delete confirmed donations.
+
+The two `m_` permissions are independent and neither is granted on install;
+`a_donationcampaigns` overrides both. All three sit in a dedicated **Donation
+Campaigns** permission category. Authorisation is checked per forum, resolved
+from the campaign's topic.
+
+**The layering did not change.** `Repository → Service → Controller` mirrors the
+old `Repository → Service → ACP module`: the service layer was left untouched.
+The frontend controllers are thin coordinators that read input, call the same
+services and render, exactly as the ACP module did. No business rule moved into a
+controller.
+
+**Deletion policy is split deliberately.** From the topic only an *empty*
+campaign may be deleted; a non-empty one is refused, to protect records of money
+received from a forum moderator's cleanup. The ACP keeps an admin-only
+hard-delete that cascades a *non-empty* campaign's donations — that is the
+administrator's tool for the case the frontend refuses. Donations are deleted
+individually behind a confirmation naming the amount and donor.
+
+**Audit is by surface.** Frontend actions (campaign create/edit/enable/disable/
+delete; donation add/edit/delete) are written to the **moderator log**, scoped
+to the forum and topic, so they surface in the MCP alongside other moderator
+activity. ACP actions (hard-delete, recalculate, settings) are written to the
+**administrator log**. The log an entry lands in identifies where the action was
+performed.
+
+**Denial is a uniform 404.** An unauthorised or malformed request — a forum the
+caller cannot manage, a missing topic or campaign, a mismatched id — answers
+with the same "not found" response rather than distinguishing "forbidden" from
+"does not exist", so the frontend never discloses whether a given campaign or
+donation exists to someone not entitled to know.
+
+**The ACP became read-only oversight plus admin maintenance.** It keeps
+settings, a read-only campaign list and a read-only donation list, and the
+admin-only maintenance (recalculate a total, hard-delete a non-empty campaign).
+Its former create/edit forms are gone; the list rows link out to the frontend
+routes on the topic.
+
+**Consequence, accepted deliberately.** phpBB treats any holder of an `m_`
+permission on a forum as a moderator of it, so granting either donation
+permission lists the grantee among that forum's moderators and gives them
+moderator standing there. This is inherent to phpBB's definition of a moderator
+and is documented for board owners as a real (if limited) promotion, not a
+hidden grant.
 
 ## Styles
 
