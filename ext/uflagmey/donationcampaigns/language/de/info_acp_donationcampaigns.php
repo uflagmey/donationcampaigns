@@ -95,6 +95,12 @@ $lang = array_merge($lang, array(
 
 	// Spenden. Jede Zeile ist ein BESTÄTIGTER Eingang: bereits erhaltenes Geld.
 	'DONATIONCAMPAIGNS_DONATIONS_EXPLAIN'		=> 'Bestätigte Spenden für diese Kampagne. Erfasse eine Spende erst, wenn das Geld tatsächlich eingegangen ist — die öffentliche Summe wird ausschließlich aus diesen Einträgen berechnet. Nur Administratoren können hier eine Spende anlegen oder bestätigen.',
+	// Der Spendenmodus ist eine schreibgeschützte Übersicht: Erfassen, Bearbeiten
+	// und Löschen einer Spende geschehen im Thema, abgesichert durch die
+	// forenbezogene Spendenberechtigung.
+	'DONATIONCAMPAIGNS_DONATIONS_OVERSIGHT_EXPLAIN'	=> 'Bestätigte Spenden für diese Kampagne. Die öffentliche Summe wird ausschließlich aus diesen Einträgen berechnet. Das Erfassen, Bearbeiten und Löschen einer Spende geschieht im Thema — diese Ansicht dient nur der Übersicht.',
+	'DONATIONCAMPAIGNS_MANAGE_ON_TOPIC'			=> 'Spenden im Thema verwalten',
+	'DONATIONCAMPAIGNS_EDIT_ON_TOPIC'			=> 'Im Thema bearbeiten',
 	'DONATIONCAMPAIGNS_ADD_DONATION'			=> 'Bestätigte Spende erfassen',
 	'DONATIONCAMPAIGNS_EDIT_DONATION'			=> 'Bestätigte Spende bearbeiten',
 	'DONATIONCAMPAIGNS_RECEIPT'					=> 'Spende',
@@ -114,8 +120,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_PUBLIC_EXPLAIN'			=> 'Ohne Häkchen zählt die Spende weiterhin zur Summe, der Spender wird aber als &bdquo;Anonym&ldquo; angezeigt. Veröffentliche einen Namen nur mit Zustimmung des Spenders.',
 	'DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN'	=> 'Erfasse eine Zahlung, die bereits eingegangen und geprüft ist. Diese Erweiterung wickelt keine Zahlungen ab und nimmt nie Kontakt zu einem Zahlungsanbieter auf.',
 
-	'DONATIONCAMPAIGNS_DONATION_SAVED'			=> 'Die bestätigte Spende wurde gespeichert und die Summe der Kampagne neu berechnet.',
-	'DONATIONCAMPAIGNS_DONATION_DELETED'		=> 'Die Spende wurde gelöscht und die Summe der Kampagne neu berechnet.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION'	=> 'Soll die bestätigte Spende über %1$s von %2$s wirklich gelöscht werden? Die Summe der Kampagne wird neu berechnet. Das lässt sich nicht rückgängig machen.',
 
 	// LOG_-Schlüssel liegen jetzt in language/de/logs.php, damit sie auch im

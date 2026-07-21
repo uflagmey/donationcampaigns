@@ -334,20 +334,6 @@ class main_module
 		) . adm_back_link($this->u_action));
 	}
 
-
-	/**
-	 * @param string $key
-	 * @return string
-	 */
-	protected function raw_text($key)
-	{
-		global $request;
-
-		$value = $request->raw_variable($key, '');
-
-		return is_scalar($value) ? (string) $value : '';
-	}
-
 	/**
 	 * @param \uflagmey\donationcampaigns\service\campaign_service $campaign_service
 	 * @return void
@@ -489,18 +475,16 @@ class main_module
 	 */
 	protected function donations_mode()
 	{
-		global $request, $template, $language, $config, $phpbb_log, $user, $phpbb_container;
+		global $request, $language, $phpbb_container;
 
 		$this->tpl_name = 'acp_donationcampaigns_donations';
 		$this->page_title = $language->lang('ACP_DONATIONCAMPAIGNS_DONATIONS');
 
 		$campaign_service = $phpbb_container->get('uflagmey.donationcampaigns.campaign_service');
-		$donation_service = $phpbb_container->get('uflagmey.donationcampaigns.donation_service');
 		$donations = $phpbb_container->get('uflagmey.donationcampaigns.donation_repository');
 		$formatter = $phpbb_container->get('uflagmey.donationcampaigns.currency_formatter');
 
 		$campaign_id = (int) $request->variable('campaign_id', 0);
-		$action = (string) $request->variable('action', '');
 
 		// Two distinct failures, and conflating them is what made this mode
 		// look like data loss. No campaign in the URL means the page was
@@ -528,241 +512,12 @@ class main_module
 
 		$base = $this->u_action . '&amp;campaign_id=' . $campaign_id;
 
-		switch ($action)
-		{
-			case 'delete':
-				$this->delete_donation_action($donation_service, $donations, $formatter, $campaign_id, $base);
-			break;
-
-			case 'add':
-			case 'edit':
-				$this->donation_edit_form($donation_service, $donations, $campaign, $action, $base);
-			return;
-		}
-
+		// Read-only oversight (decision 1). Recording, editing and deleting a
+		// confirmed donation now live on the topic, behind the forum-scoped
+		// m_donationcampaigns_donations permission, so an administrator who is
+		// not a moderator of the forum does not silently gain that power here.
+		// This mode shows the current stored state and links to the topic.
 		$this->assign_donation_list($donations, $formatter, $campaign, $campaign_id, $base);
-	}
-
-	/**
-	 * @param \uflagmey\donationcampaigns\service\donation_service $donation_service
-	 * @param \uflagmey\donationcampaigns\repository\donation_repository $donations
-	 * @param \uflagmey\donationcampaigns\service\currency_formatter $formatter
-	 * @param int $campaign_id
-	 * @param string $base
-	 * @return void
-	 */
-	protected function delete_donation_action($donation_service, $donations, $formatter, $campaign_id, $base)
-	{
-		global $request, $language, $config, $phpbb_log, $user;
-
-		$donation_id = (int) $request->variable('donation_id', 0);
-		$donation = $donations->find_by_id($donation_id);
-
-		// Refused before any confirmation is offered, so a destructive path is
-		// never entered with an id that resolves to nothing. Also refuses a
-		// donation belonging to a different campaign than the one in the URL.
-		if ($donation === null || $donation['campaign_id'] !== $campaign_id)
-		{
-			trigger_error(
-				$language->lang('DONATIONCAMPAIGNS_ERROR_DONATION_NOT_FOUND') . adm_back_link($base),
-				E_USER_WARNING
-			);
-		}
-
-		// Escaped HERE, not at the list boundary: phpBB renders confirm_box's
-		// message text and the ACP log viewer's entries as raw HTML, so a
-		// donor name carrying markup would execute in either place.
-		$label = $this->escape_for_message($this->donor_label($donation['donor_name']));
-		$amount = $this->escape_for_message($formatter->format($donation['donation_amount'], (int) $config['donationcampaigns_currency_exponent']));
-
-		if (!confirm_box(true))
-		{
-			// Names the receipt being destroyed: "are you sure" answers nothing.
-			confirm_box(false, $language->lang('DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION', $amount, $label), build_hidden_fields(array(
-				'action'		=> 'delete',
-				'campaign_id'	=> $campaign_id,
-				'donation_id'	=> $donation_id,
-			)));
-
-			return;
-		}
-
-		$donation_service->delete_donation($donation_id);
-
-		$phpbb_log->add(
-			'admin',
-			$user->data['user_id'],
-			$user->ip,
-			'LOG_DONATIONCAMPAIGNS_DONATION_DELETED',
-			time(),
-			array($amount, $label)
-		);
-
-		trigger_error($language->lang('DONATIONCAMPAIGNS_DONATION_DELETED') . adm_back_link($base));
-	}
-
-	/**
-	 * @param \uflagmey\donationcampaigns\service\donation_service $donation_service
-	 * @param \uflagmey\donationcampaigns\repository\donation_repository $donations
-	 * @param array $campaign
-	 * @param string $action
-	 * @param string $base
-	 * @return void
-	 */
-	protected function donation_edit_form($donation_service, $donations, array $campaign, $action, $base)
-	{
-		global $request, $template, $language, $config, $phpbb_log, $user, $phpbb_container;
-
-		$this->tpl_name = 'acp_donationcampaigns_donation_edit';
-		$this->page_title = $language->lang('ACP_DONATIONCAMPAIGNS_DONATIONS');
-
-		$formatter = $phpbb_container->get('uflagmey.donationcampaigns.currency_formatter');
-		$exponent = (int) $config['donationcampaigns_currency_exponent'];
-		$is_new = ($action === 'add');
-
-		$form_key = 'donationcampaigns_donation';
-		add_form_key($form_key);
-
-		$donation_id = (int) $request->variable('donation_id', 0);
-
-		if ($is_new)
-		{
-			$values = array(
-				'donation_amount'	=> '',
-				'donor_name'		=> '',
-				'donation_time'		=> gmdate('Y-m-d'),
-				'donation_public'	=> true,
-			);
-		}
-		else
-		{
-			$donation = $donations->find_by_id($donation_id);
-
-			// A donation belongs to the campaign that recorded it. Refusing a
-			// mismatch stops a crafted URL from editing another campaign's
-			// receipt through this one's page.
-			if ($donation === null || $donation['campaign_id'] !== $campaign['campaign_id'])
-			{
-				trigger_error(
-					$language->lang('DONATIONCAMPAIGNS_ERROR_DONATION_NOT_FOUND') . adm_back_link($base),
-					E_USER_WARNING
-				);
-			}
-
-			$values = array(
-				// Into a form field: no grouping, or the parser refuses it on save.
-				'donation_amount'	=> $formatter->format_for_input($donation['donation_amount'], $exponent),
-				'donor_name'		=> $donation['donor_name'],
-				'donation_time'		=> gmdate('Y-m-d', $donation['donation_time']),
-				'donation_public'	=> $donation['donation_public'],
-			);
-		}
-
-		$errors = array();
-
-		if ($request->is_set_post('submit'))
-		{
-			if (!check_form_key($form_key))
-			{
-				trigger_error($language->lang('FORM_INVALID') . adm_back_link($base), E_USER_WARNING);
-			}
-
-			$values = array(
-				'donation_amount'	=> $this->raw_text('donation_amount'),
-				'donor_name'		=> $this->raw_text('donor_name'),
-				'donation_time'		=> $this->raw_text('donation_time'),
-				'donation_public'	=> (bool) $request->variable('donation_public', 0),
-			);
-
-			$input = array(
-				'donor_name'		=> $values['donor_name'],
-				'donation_public'	=> $values['donation_public'],
-			);
-
-			try
-			{
-				$input['donation_amount'] = $formatter->parse($values['donation_amount'], $exponent);
-			}
-			catch (donationcampaigns_exception $e)
-			{
-				$errors[] = $e->get_language_key();
-			}
-
-			$timestamp = $this->parse_date($values['donation_time']);
-
-			if ($timestamp === null)
-			{
-				$errors[] = 'DONATIONCAMPAIGNS_ERROR_TIME_INVALID';
-			}
-			else
-			{
-				$input['donation_time'] = $timestamp;
-			}
-
-			if (empty($errors))
-			{
-				try
-				{
-					if ($is_new)
-					{
-						// The campaign comes from the verified page context,
-						// never from the request body.
-						$donation_service->add_donation($campaign['campaign_id'], $input);
-						$log_key = 'LOG_DONATIONCAMPAIGNS_DONATION_ADDED';
-					}
-					else
-					{
-						$donation_service->edit_donation($donation_id, $input);
-						$log_key = 'LOG_DONATIONCAMPAIGNS_DONATION_EDITED';
-					}
-
-					$phpbb_log->add(
-						'admin',
-						$user->data['user_id'],
-						$user->ip,
-						$log_key,
-						time(),
-						array(
-							$this->escape_for_message($formatter->format($input['donation_amount'], $exponent)),
-							$this->escape_for_message($this->donor_label($input['donor_name'])),
-						)
-					);
-
-					trigger_error($language->lang('DONATIONCAMPAIGNS_DONATION_SAVED') . adm_back_link($base));
-				}
-				catch (donationcampaigns_exception $e)
-				{
-					$errors[] = $e->get_language_key();
-				}
-			}
-		}
-
-		foreach ($errors as $error)
-		{
-			$template->assign_block_vars('donationcampaigns_error', array(
-				'MESSAGE'	=> $language->lang($error),
-			));
-		}
-
-		$template->assign_vars(array(
-			'U_ACTION'	=> $base . '&amp;action=' . ($is_new ? 'add' : 'edit') . '&amp;donation_id=' . $donation_id,
-			'U_BACK'	=> $base,
-
-			'S_DONATIONCAMPAIGNS_ADD'		=> $is_new,
-			'S_DONATIONCAMPAIGNS_ERROR'		=> !empty($errors),
-			'S_DONATIONCAMPAIGNS_PUBLIC'	=> (bool) $values['donation_public'],
-
-			// Escaped here: phpBB disables Twig autoescaping.
-			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> $campaign['campaign_title'],
-			'DONATIONCAMPAIGNS_DONATION_AMOUNT'	=> $values['donation_amount'],
-			// A label beside the amount field, read from the board's existing
-			// setting — the same currency the campaign form shows, not a second
-			// copy. The stored value stays integer minor units and the parser
-			// never sees this.
-			'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'	=> (string) $config['donationcampaigns_currency_symbol'],
-			'DONATIONCAMPAIGNS_DONOR_NAME'		=> $values['donor_name'],
-			'DONATIONCAMPAIGNS_DONATION_TIME'	=> $values['donation_time'],
-		));
 	}
 
 	/**
@@ -777,6 +532,7 @@ class main_module
 	{
 		global $request, $template, $config, $user, $phpbb_container;
 
+		$helper = $phpbb_container->get('controller.helper');
 		$exponent = (int) $config['donationcampaigns_currency_exponent'];
 		$start = max(0, (int) $request->variable('start', 0));
 		$total = $donations->count_by_campaign($campaign_id);
@@ -793,8 +549,9 @@ class main_module
 				'RECORDED_AT'	=> $user->format_date($donation['donation_created']),
 				'S_PUBLIC'		=> $donation['donation_public'],
 
-				'U_EDIT'		=> $base . '&amp;action=edit&amp;donation_id=' . $donation_id,
-				'U_DELETE'		=> $base . '&amp;action=delete&amp;donation_id=' . $donation_id,
+				// Oversight only: editing a receipt happens on the topic, behind
+				// the forum-scoped donations permission.
+				'U_EDIT'		=> $helper->route('uflagmey_donationcampaigns_donation_edit', array('donation_id' => $donation_id)),
 			));
 		}
 
@@ -810,8 +567,9 @@ class main_module
 		$template->assign_vars(array
 		(
 			'U_ACTION'						=> $base,
-			'U_DONATIONCAMPAIGNS_ADD'		=> $base . '&amp;action=add',
 			'U_BACK'						=> $this->campaigns_url(),
+			// Recording a donation happens on the topic; the list links there.
+			'U_DONATIONCAMPAIGNS_MANAGE'	=> $helper->route('uflagmey_donationcampaigns_manage', array('topic_id' => (int) $campaign['topic_id'])),
 
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'		=> $campaign['campaign_title'],
 			// Derived from the receipts below. Displayed, never editable.
@@ -832,35 +590,6 @@ class main_module
 		$donor_name = trim((string) $donor_name);
 
 		return ($donor_name !== '') ? $donor_name : $language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
-	}
-
-	/**
-	 * A date as typed, in the ISO form the date input produces.
-	 *
-	 * Interpreted as UTC midnight, matching how the board stores timestamps.
-	 * Returns null rather than a fallback, so an unusable date is reported as
-	 * an error instead of silently becoming today.
-	 *
-	 * @param string $value
-	 * @return int|null
-	 */
-	protected function parse_date($value)
-	{
-		$value = trim((string) $value);
-
-		if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $parts))
-		{
-			return null;
-		}
-
-		if (!checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1]))
-		{
-			return null;
-		}
-
-		$timestamp = gmmktime(0, 0, 0, (int) $parts[2], (int) $parts[3], (int) $parts[1]);
-
-		return ($timestamp > 0) ? $timestamp : null;
 	}
 
 	/**

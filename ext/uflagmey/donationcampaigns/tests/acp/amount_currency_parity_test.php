@@ -11,10 +11,10 @@ namespace uflagmey\donationcampaigns\tests\acp;
 /**
  * Amount inputs and their currency label, across every form that has one.
  *
- * The campaign target field (now on the frontend campaign form) and the
- * donation amount field (still in the ACP) must both show the configured
- * currency the same way, so the two presentations cannot drift apart. This
- * reads the shipped templates as files, wherever they live.
+ * The campaign target field and the donation amount field — both now on the
+ * frontend forms — must show the configured currency the same way, so the two
+ * presentations cannot drift apart. This reads the shipped templates as files,
+ * wherever they live.
  *
  * It is deliberately a file-level test: the drift is a template inconsistency,
  * and a rendered-output test driving one surface cannot see the other template.
@@ -35,7 +35,7 @@ class amount_currency_parity_test extends \phpbb_test_case
 	{
 		return array(
 			'campaign target'	=> array('styles/prosilver/template/donationcampaigns_campaign_form.html', 'target_amount'),
-			'donation amount'	=> array('adm/style/acp_donationcampaigns_donation_edit.html', 'donation_amount'),
+			'donation amount'	=> array('styles/prosilver/template/donationcampaigns_donation_form.html', 'donation_amount'),
 		);
 	}
 

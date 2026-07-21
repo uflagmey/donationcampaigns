@@ -517,4 +517,39 @@ class donation_controller_test extends controller_test_case
 			$this->donation_controller->delete(999);
 		});
 	}
+
+	// ---------------------------------------------------------------- log escaping
+
+	/**
+	 * REGRESSION. The mod-log viewer renders entries as raw HTML (Twig
+	 * autoescaping is off board-wide), so a donor name carrying markup would
+	 * execute there. Every value interpolated into a log entry is escaped at the
+	 * point it is put in, exactly like every other output.
+	 */
+	public function test_a_donor_name_in_an_add_log_entry_is_escaped()
+	{
+		$this->as_donations_a();
+
+		$this->post_donation($this->donation_form(array('donor_name' => '<script>alert(1)</script>')));
+		$this->donation_controller->add(1);
+
+		$data = implode(' ', (array) end($this->log->entries)[5]);
+
+		$this->assertStringNotContainsString('<script>', $data, 'A log entry carried unescaped markup');
+		$this->assertStringContainsString('&lt;script&gt;', $data);
+	}
+
+	public function test_a_donor_name_in_a_delete_log_entry_is_escaped()
+	{
+		$this->donations->update(1, array('donor_name' => '<script>alert(1)</script>'));
+
+		$this->as_donations_a();
+		$this->confirmed();
+		$this->donation_controller->delete(1);
+
+		$data = implode(' ', (array) end($this->log->entries)[5]);
+
+		$this->assertStringNotContainsString('<script>', $data);
+		$this->assertStringContainsString('&lt;script&gt;', $data);
+	}
 }

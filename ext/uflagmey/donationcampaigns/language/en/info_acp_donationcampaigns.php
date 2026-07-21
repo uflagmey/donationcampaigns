@@ -94,6 +94,12 @@ $lang = array_merge($lang, array(
 
 	// Donations. Every row is a CONFIRMED receipt: money already received.
 	'DONATIONCAMPAIGNS_DONATIONS_EXPLAIN'		=> 'Confirmed donations for this campaign. Record a donation only after the money has actually been received — the public total is calculated from these entries alone. Nobody but an administrator can create or confirm a donation here.',
+	// The donations mode is a read-only oversight view: recording, editing and
+	// deleting a donation happen on the topic, behind the forum-scoped donations
+	// permission, so these strings link there rather than offering a form here.
+	'DONATIONCAMPAIGNS_DONATIONS_OVERSIGHT_EXPLAIN'	=> 'Confirmed donations for this campaign. The public total is calculated from these entries alone. Recording, editing and deleting a donation happens on the topic — this view is read-only oversight.',
+	'DONATIONCAMPAIGNS_MANAGE_ON_TOPIC'			=> 'Manage donations on the topic',
+	'DONATIONCAMPAIGNS_EDIT_ON_TOPIC'			=> 'Edit on the topic',
 	'DONATIONCAMPAIGNS_ADD_DONATION'			=> 'Add confirmed donation',
 	'DONATIONCAMPAIGNS_EDIT_DONATION'			=> 'Edit confirmed donation',
 	'DONATIONCAMPAIGNS_RECEIPT'					=> 'Donation',
@@ -113,8 +119,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_PUBLIC_EXPLAIN'			=> 'When off, the donation still counts towards the total but the donor is shown as “Anonymous”. Only publish a name with that donor’s consent.',
 	'DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN'	=> 'Record a payment that has already been received and verified. This extension does not process payments and never contacts a payment provider.',
 
-	'DONATIONCAMPAIGNS_DONATION_SAVED'			=> 'The confirmed donation has been saved and the campaign total recalculated.',
-	'DONATIONCAMPAIGNS_DONATION_DELETED'		=> 'The donation has been deleted and the campaign total recalculated.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION'	=> 'Are you sure you want to delete the confirmed donation of %1$s from %2$s? The campaign total will be recalculated. This cannot be undone.',
 
 	// LOG_ keys moved to language/en/logs.php so they resolve in the MCP

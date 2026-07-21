@@ -254,7 +254,7 @@ class settings_template_test extends \phpbb_test_case
 	public function test_the_visibility_column_shows_a_state_not_an_instruction()
 	{
 		$list = $this->donation_template('donations');
-		$form = $this->donation_template('donation_edit');
+		$form = $this->donation_template('donation_form');
 
 		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}', $list);
 		$this->assertStringNotContainsString('{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}', $list);
@@ -755,14 +755,26 @@ class settings_template_test extends \phpbb_test_case
 	 * @param string $name
 	 * @return string
 	 */
+	protected function donation_template_path($name)
+	{
+		// The list is an ACP oversight page; the form moved to the frontend with
+		// the donation ledger. Both are checked here so neither drifts.
+		$map = array(
+			'donations'		=> 'adm/style/acp_donationcampaigns_donations.html',
+			'donation_form'	=> 'styles/prosilver/template/donationcampaigns_donation_form.html',
+		);
+
+		return $this->package . '/' . $map[$name];
+	}
+
 	protected function donation_template($name)
 	{
-		return file_get_contents($this->package . '/adm/style/acp_donationcampaigns_' . $name . '.html');
+		return file_get_contents($this->donation_template_path($name));
 	}
 
 	public function donation_template_data()
 	{
-		return array('list' => array('donations'), 'form' => array('donation_edit'));
+		return array('list' => array('donations'), 'form' => array('donation_form'));
 	}
 
 	/**
@@ -770,7 +782,7 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_donation_template_exists($name)
 	{
-		$this->assertFileExists($this->package . '/adm/style/acp_donationcampaigns_' . $name . '.html');
+		$this->assertFileExists($this->donation_template_path($name));
 	}
 
 	/**
@@ -822,12 +834,12 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_donation_form_carries_a_csrf_token()
 	{
-		$this->assertStringContainsString('{S_FORM_TOKEN}', $this->donation_template('donation_edit'));
+		$this->assertStringContainsString('{S_FORM_TOKEN}', $this->donation_template('donation_form'));
 	}
 
 	public function test_the_donation_form_offers_every_field()
 	{
-		$t = $this->donation_template('donation_edit');
+		$t = $this->donation_template('donation_form');
 
 		foreach (array('donation_amount', 'donor_name', 'donation_time', 'donation_public') as $field)
 		{
@@ -842,7 +854,7 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_donation_form_never_offers_a_campaign_or_total_input()
 	{
-		$t = $this->donation_template('donation_edit');
+		$t = $this->donation_template('donation_form');
 
 		$this->assertStringNotContainsString('name="campaign_id"', $t);
 		$this->assertStringNotContainsString('name="collected_amount"', $t);
@@ -855,13 +867,13 @@ class settings_template_test extends \phpbb_test_case
 	{
 		$this->assertMatchesRegularExpression(
 			'/<input[^>]*id="donation_amount"[^>]*type="text"/',
-			$this->donation_template('donation_edit')
+			$this->donation_template('donation_form')
 		);
 	}
 
 	public function test_every_donation_form_input_has_a_label()
 	{
-		$t = $this->donation_template('donation_edit');
+		$t = $this->donation_template('donation_form');
 
 		preg_match_all('/<input[^>]*\sid="([^"]+)"/', $t, $inputs);
 
@@ -882,7 +894,7 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_consent_reminder_is_beside_the_visibility_control()
 	{
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}', $this->donation_template('donation_edit'));
+		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}', $this->donation_template('donation_form'));
 	}
 
 	/**
