@@ -1,0 +1,223 @@
+/*
+ * Stylesheet for the bundled "Complete Documentation" PDF.
+ *
+ * Rendered by tools/build-documentation-pdf.sh: pandoc turns the Markdown
+ * sources into a single HTML document (title block -> cover page, --toc ->
+ * Contents), Chrome prints that HTML to PDF. The look mirrors the original
+ * beta1 build: HelveticaNeue body, steel-blue headings (#244f7d), zebra
+ * tables, grey inline code.
+ */
+
+@page {
+	size: Letter;
+	margin: 0.7in 0.85in;
+}
+
+/* Chrome drops background colours in print unless this is set. The table
+ * header fill, zebra striping and inline-code chips all depend on it. */
+* {
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+html {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 11pt;
+	line-height: 1.5;
+	color: #3f4750;
+}
+
+body {
+	margin: 0;
+}
+
+/* ---- Cover page (pandoc title block) ---- */
+#title-block-header {
+	min-height: calc(100vh - 1.4in);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	page-break-after: always;
+}
+
+#title-block-header .title {
+	font-size: 34pt;
+	font-weight: 700;
+	color: #244f7d;
+	margin: 0 0 0.35em;
+	border: none;
+	padding: 0;
+}
+
+#title-block-header .subtitle {
+	font-size: 16pt;
+	font-weight: 400;
+	color: #52606d;
+	margin: 0 0 1.4em;
+}
+
+#title-block-header .date {
+	font-size: 11pt;
+	color: #6b7580;
+	margin: 0;
+}
+
+/* ---- Table of contents ---- */
+nav#TOC {
+	page-break-after: always;
+}
+
+nav#TOC > h1,
+nav#TOC > h2 {
+	font-size: 20pt;
+	color: #244f7d;
+	border: none;
+	margin: 0 0 0.8em;
+}
+
+nav#TOC ul {
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+nav#TOC li {
+	margin: 0.18em 0;
+}
+
+nav#TOC a {
+	color: #244f7d;
+	text-decoration: none;
+}
+
+/* Top level (each source document) sits flush; sub-sections indent once. */
+nav#TOC > ul > li > ul {
+	padding-left: 1.4em;
+}
+
+/* ---- Headings ---- */
+h1, h2, h3, h4 {
+	color: #244f7d;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+/* Each bundled document (its H1) starts on a fresh page. */
+body > h1 {
+	font-size: 22pt;
+	page-break-before: always;
+	margin: 0 0 0.6em;
+}
+
+body > h1:first-of-type {
+	page-break-before: avoid;
+}
+
+h2 {
+	font-size: 15pt;
+	margin: 1.6em 0 0.6em;
+	padding-bottom: 0.25em;
+	border-bottom: 1px solid #e2e8ee;
+}
+
+h3 {
+	font-size: 12.5pt;
+	margin: 1.4em 0 0.5em;
+}
+
+h4 {
+	font-size: 11pt;
+	margin: 1.2em 0 0.4em;
+}
+
+h2, h3, tr, img {
+	page-break-inside: avoid;
+}
+
+/* ---- Body text ---- */
+p {
+	margin: 0 0 0.8em;
+}
+
+a {
+	color: #244f7d;
+}
+
+strong {
+	color: #2c333b;
+}
+
+blockquote {
+	margin: 0.9em 0;
+	padding: 0.1em 1em;
+	border-left: 3px solid #c7d2de;
+	background: #f7fafb;
+	color: #4a535d;
+}
+
+/* ---- Code ---- */
+code {
+	font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 0.86em;
+	background: #eef1f4;
+	padding: 0.12em 0.35em;
+	border-radius: 3px;
+	color: #33404d;
+}
+
+pre {
+	background: #f5f7f9;
+	border: 1px solid #e2e8ee;
+	border-radius: 4px;
+	padding: 0.8em 1em;
+	overflow-x: auto;
+	page-break-inside: avoid;
+}
+
+pre code {
+	background: none;
+	padding: 0;
+	font-size: 0.82em;
+}
+
+/* ---- Tables ---- */
+table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1em 0;
+	font-size: 0.95em;
+}
+
+th, td {
+	border: 1px solid #dbe2ea;
+	padding: 0.45em 0.7em;
+	text-align: left;
+	vertical-align: top;
+}
+
+thead th {
+	background: #edf1f6;
+	color: #244f7d;
+	font-weight: 700;
+}
+
+tbody tr:nth-child(even) {
+	background: #f7fafb;
+}
+
+hr {
+	border: none;
+	border-top: 1px solid #e2e8ee;
+	margin: 1.6em 0;
+}
+
+ul, ol {
+	margin: 0 0 0.8em;
+	padding-left: 1.5em;
+}
+
+li {
+	margin: 0.2em 0;
+}
