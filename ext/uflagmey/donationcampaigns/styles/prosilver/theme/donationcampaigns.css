@@ -12,6 +12,13 @@
 	margin-bottom: 10px;
 }
 
+/* The donation ledger on the management landing. prosilver centres table
+   headers by default, which reads as misaligned above the left-aligned cells
+   below them; the headers are aligned with their column's data instead. */
+.donationcampaigns-ledger thead th {
+	text-align: left;
+}
+
 /* TYPOGRAPHY.
 
    The box sits in a .panel, which inherits prosilver's 10px body size, while
