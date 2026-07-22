@@ -5,7 +5,7 @@ its progress above the first post.
 
 - [Administrator guide](docs/ADMIN_GUIDE.md) — the day-to-day workflow
 - [Privacy and data handling](docs/PRIVACY.md) — what is stored, and what publishing a donor name means
-- [Developer notes](docs/DEVELOPERS.md) — architecture, contracts, tests
+- [Developer notes](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md) — architecture, contracts, tests
 
 ---
 
@@ -64,7 +64,7 @@ not know which provider a URL belongs to, stores no merchant identifier, and
 performs no verification: whoever clicks the button leaves the board, and the
 administrator records the money by hand afterwards. That is the whole design,
 and it is intentional rather than unfinished — see
-[DEVELOPERS.md](docs/DEVELOPERS.md).
+[DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
 
 ## Requirements
 
@@ -218,7 +218,7 @@ deleting them happens on the topic.
 
 - No payment processing, and no provider-specific integration. Any provider
   can be linked to; none is integrated with. This is a design decision, not a
-  gap — see [DEVELOPERS.md](docs/DEVELOPERS.md).
+  gap — see [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
 - No public donation form; every entry is made from the topic by an
   administrator or an authorised forum moderator.
 - **Campaigns can only be managed from their topic.** A style that does not

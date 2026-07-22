@@ -36,7 +36,7 @@ topic-tools **Donation campaign** entry opens a management landing
 the create form when there is no campaign yet, otherwise a campaign summary plus
 only the actions the viewer is authorised for. The service layer and the
 `Repository → Service` core are unchanged; the ACP module's write paths were
-replaced by thin frontend controllers. See ADR-015 in `docs/DEVELOPERS.md`.
+replaced by thin frontend controllers. See ADR-015 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
 
 ### Three permissions
 
@@ -102,7 +102,7 @@ The extension ships **English and German** language packs (`language/en` and
 
 ## Major architectural decisions
 
-Recorded in full in `docs/DEVELOPERS.md`; summarized here.
+Recorded in full in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md); summarized here.
 
 | ADR | Decision |
 |---|---|
@@ -168,7 +168,7 @@ dead topic would be worse. The fix belongs at the level of distinguishing a
 topic being *destroyed* from a topic being *emptied into another*, and must be
 designed rather than patched. Documented for administrators in
 `docs/ADMIN_GUIDE.md` and for developers, with the verified call chain, in
-`docs/DEVELOPERS.md`.
+[DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
 
 ---
 
@@ -190,4 +190,4 @@ Existing campaigns and donations continue to work with no data step.
 The management architecture changed substantially since rc1 — a new frontend
 surface, new controllers, and a new permission model — so the release re-enters
 beta to gather real-world verification of that surface before a final 1.0. The
-reasoning is recorded in full as ADR-015 in `docs/DEVELOPERS.md`.
+reasoning is recorded in full as ADR-015 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
