@@ -906,8 +906,8 @@ class settings_template_test extends \phpbb_test_case
 		$lang = array();
 		include $this->package . '/language/en/info_acp_donationcampaigns.php';
 
-		$this->assertStringContainsString('been received', $lang['DONATIONCAMPAIGNS_DONATIONS_EXPLAIN']);
-		$this->assertStringContainsString('public total', $lang['DONATIONCAMPAIGNS_DONATIONS_EXPLAIN']);
+		$this->assertStringContainsString('public total', $lang['DONATIONCAMPAIGNS_DONATIONS_OVERSIGHT_EXPLAIN']);
+		$this->assertStringContainsString('been received', $lang['DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN']);
 		$this->assertStringContainsString('does not process payments', $lang['DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN']);
 		$this->assertStringContainsString('Anonymous', $lang['DONATIONCAMPAIGNS_PUBLIC_EXPLAIN']);
 		$this->assertStringContainsString('consent', $lang['DONATIONCAMPAIGNS_PUBLIC_EXPLAIN']);

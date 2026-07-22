@@ -93,7 +93,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED'			=> 'The campaign has been saved.',
 
 	// Donations. Every row is a CONFIRMED receipt: money already received.
-	'DONATIONCAMPAIGNS_DONATIONS_EXPLAIN'		=> 'Confirmed donations for this campaign. Record a donation only after the money has actually been received — the public total is calculated from these entries alone. Nobody but an administrator can create or confirm a donation here.',
 	// The donations mode is a read-only oversight view: recording, editing and
 	// deleting a donation happen on the topic, behind the forum-scoped donations
 	// permission, so these strings link there rather than offering a form here.

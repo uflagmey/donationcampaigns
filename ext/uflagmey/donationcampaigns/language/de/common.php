@@ -64,11 +64,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ERROR_URL_TOO_LONG'			=> 'Der Spendenlink darf höchstens 255 Zeichen lang sein.',
 	'DONATIONCAMPAIGNS_ERROR_LINK_TEXT_REQUIRED'	=> 'Gib den Text für die Schaltfläche an, wenn ein Spendenlink gesetzt ist.',
 	'DONATIONCAMPAIGNS_ERROR_LINK_TEXT_TOO_LONG'	=> 'Der Text der Schaltfläche darf höchstens 100 Zeichen lang sein.',
-	// Das Kampagnenformular hat keinen kontextfreien Modus: Eine Kampagne
-	// gehört zu dem Thema, aus dem sie geöffnet wurde, und es gibt kein Feld,
-	// in das man ein Thema eintragen könnte.
-	'DONATIONCAMPAIGNS_ERROR_NO_TOPIC_CONTEXT'		=> 'Dieses Formular muss aus dem Thema geöffnet werden, zu dem die Kampagne gehört.',
-
 	// Zwei verschiedene Fehler. Die Spendenverwaltung ohne Kampagne in der
 	// Adresse zu öffnen ist ein fehlender ZUSAMMENHANG, keine gelöschte
 	// Kampagne; die zweite Meldung sagte Administratoren, ihre Daten seien weg.
@@ -109,7 +104,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ENABLE'						=> 'Aktivieren',
 	'DONATIONCAMPAIGNS_DISABLE'						=> 'Deaktivieren',
 	'DONATIONCAMPAIGNS_DELETE'						=> 'Löschen',
-	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Spenden verwalten',
 	'DONATIONCAMPAIGNS_NO_DONATIONS_YET'			=> 'Es wurden noch keine bestätigten Spenden erfasst.',
 
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Soll diese Kampagne wirklich deaktiviert werden? Sie wird im Thema ausgeblendet; alle Spenden bleiben erhalten.',

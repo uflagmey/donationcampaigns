@@ -94,7 +94,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED'			=> 'Die Kampagne wurde gespeichert.',
 
 	// Spenden. Jede Zeile ist ein BESTÄTIGTER Eingang: bereits erhaltenes Geld.
-	'DONATIONCAMPAIGNS_DONATIONS_EXPLAIN'		=> 'Bestätigte Spenden für diese Kampagne. Erfasse eine Spende erst, wenn das Geld tatsächlich eingegangen ist — die öffentliche Summe wird ausschließlich aus diesen Einträgen berechnet. Nur Administratoren können hier eine Spende anlegen oder bestätigen.',
 	// Der Spendenmodus ist eine schreibgeschützte Übersicht: Erfassen, Bearbeiten
 	// und Löschen einer Spende geschehen im Thema, abgesichert durch die
 	// forenbezogene Spendenberechtigung.

@@ -64,10 +64,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ERROR_URL_TOO_LONG'			=> 'The donation link may be at most 255 characters long.',
 	'DONATIONCAMPAIGNS_ERROR_LINK_TEXT_REQUIRED'	=> 'Enter the text for the button when a donation link is set.',
 	'DONATIONCAMPAIGNS_ERROR_LINK_TEXT_TOO_LONG'	=> 'The button text may be at most 100 characters long.',
-	// The campaign form has no context-free mode: a campaign belongs to the
-	// topic it was opened from, and there is no field in which to name one.
-	'DONATIONCAMPAIGNS_ERROR_NO_TOPIC_CONTEXT'		=> 'This form must be opened from the topic the campaign belongs to.',
-
 	// Two different failures. Reaching donation management without a
 	// campaign in the URL is missing CONTEXT, not a deleted campaign;
 	// reporting the latter told administrators their records were gone.
@@ -108,7 +104,6 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_ENABLE'						=> 'Enable',
 	'DONATIONCAMPAIGNS_DISABLE'						=> 'Disable',
 	'DONATIONCAMPAIGNS_DELETE'						=> 'Delete',
-	'DONATIONCAMPAIGNS_MANAGE_DONATIONS'			=> 'Manage donations',
 	'DONATIONCAMPAIGNS_NO_DONATIONS_YET'			=> 'No confirmed donations have been recorded yet.',
 
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Are you sure you want to disable this campaign? It will be hidden from the topic; all donation records are kept.',
