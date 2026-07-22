@@ -2,11 +2,11 @@
 
 ## 1.0.0-beta1
 
-**Status:** Beta. The management architecture changed substantially since rc1 —
-campaign and donation management moved out of the ACP and onto the topic, under
-forum-scoped moderator permissions — so this release re-enters beta rather than
-continuing the RC line. See *Known limitations* and the release-blocking item
-below before deploying to a production board.
+**Status:** First public beta of the new, frontend-based management
+architecture — campaign and donation management happen on the topic, under
+forum-scoped moderator permissions, rather than in the ACP. See *Known
+limitations* and the release-blocking item below before deploying to a
+production board.
 
 Requires phpBB **3.3.16 or later** (below 4.0). prosilver only. PHP 7.2–8.x.
 
@@ -187,7 +187,7 @@ Existing campaigns and donations continue to work with no data step.
 
 ## Why beta
 
-The management architecture changed substantially since rc1 — a new frontend
-surface, new controllers, and a new permission model — so the release re-enters
-beta to gather real-world verification of that surface before a final 1.0. The
-reasoning is recorded in full as ADR-015 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
+The management architecture is new — a frontend surface, new controllers, and a
+new permission model — so this release is a beta, to gather real-world
+verification of that surface before a final 1.0. The reasoning is recorded in
+full as ADR-015 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
