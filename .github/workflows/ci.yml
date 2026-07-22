@@ -19,7 +19,12 @@ jobs:
         # EPV checks packaging and coding mechanics. It is NOT proof of
         # compliance with the phpBB Extension Validation Policy, which has
         # not been verified. See docs/superpowers/specs section 14.
-        run: ./vendor/bin/EPV.php run --dir=ext/uflagmey/donationcampaigns
+        #
+        # --dir must point at the directory that CONTAINS vendor/extension
+        # (ext/), not at the extension itself: pointed at the extension, EPV's
+        # packaging-structure check reports a false "Validation: FAILED" while
+        # still exiting 0, so the job passed on the exit code but the log lied.
+        run: ./vendor/bin/EPV.php run --dir=ext
 
   unit:
     name: Unit tests (PHP ${{ matrix.php }})
