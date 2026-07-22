@@ -71,7 +71,7 @@ and it is intentional rather than unfinished — see
 | | |
 |---|---|
 | phpBB | **3.3.16 or later**, below 4.0. Enforced by `ext.php`; installing on an older 3.3.x fails cleanly |
-| PHP | 7.2 – 8.x |
+| PHP | **8.2 or newer** |
 | Database | See below |
 | Style | prosilver |
 | Language | English and German |
@@ -83,7 +83,7 @@ Stating this precisely matters more than making the table look full.
 | | Actually executed | Designed for, not executed |
 |---|---|---|
 | **phpBB** | 3.3.17 | 3.3.16 (the supported floor, but never run) |
-| **PHP** | 8.1 (board), 7.4/8.0/8.1 (tests) | 7.2, 7.3 — syntax-checked only; PHPUnit 9 needs ≥ 7.3 |
+| **PHP** | 8.2 (board), 8.2/8.3 (tests) | 8.4 — permitted by `>=8.2`, not run |
 | **Database** | SQLite 3, MariaDB 10.11 | MySQL, PostgreSQL, MS SQL Server, Oracle |
 
 The extension uses phpBB's DBAL throughout and writes no database-specific SQL,

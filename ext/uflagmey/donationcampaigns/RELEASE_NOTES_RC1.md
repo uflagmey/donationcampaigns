@@ -6,7 +6,7 @@
 release — see *Known limitations* and the release-blocking item below before
 deploying to a production board.
 
-Requires phpBB **3.3.16 or later** (below 4.0). prosilver only. PHP 7.2–8.x.
+Requires phpBB **3.3.16 or later** (below 4.0). prosilver only. PHP **8.2 or newer**.
 
 ---
 

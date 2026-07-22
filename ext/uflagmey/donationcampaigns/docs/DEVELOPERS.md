@@ -477,7 +477,7 @@ but that core reaches it.
 
 ## Local integration environment
 
-A disposable Docker board (phpBB 3.3.17, PHP 8.1, MariaDB 10.11) is used to
+A disposable Docker board (phpBB 3.3.17, PHP 8.2, MariaDB 10.11) is used to
 verify UI work against a real installation, since automated tests cannot see a
 template that fails to compile or a page that renders wrongly.
 
