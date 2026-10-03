@@ -11,7 +11,7 @@ namespace uflagmey\donationcampaigns\tests\controller;
 /**
  * The frontend donation controller: add and edit confirmed donations.
  *
- * Managing donations requires m_donationcampaigns_donations (or the admin
+ * Managing donations requires f_donationcampaigns_donations (or the admin
  * override) in the campaign's current forum — deliberately NOT the shell-manage
  * permission, because donations expose donor names and private donor identities.
  * These tests assert that separation across the whole actor x forum matrix, that
@@ -33,17 +33,17 @@ class donation_controller_test extends controller_test_case
 
 	protected function as_manage_a()
 	{
-		$this->as_actor(array('m_donationcampaigns_manage' => array(self::FORUM_A)));
+		$this->as_actor(array('f_donationcampaigns_manage' => array(self::FORUM_A)));
 	}
 
 	protected function as_donations_a()
 	{
-		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_A)));
+		$this->as_actor(array('f_donationcampaigns_donations' => array(self::FORUM_A)));
 	}
 
 	protected function as_donations_b()
 	{
-		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_B)));
+		$this->as_actor(array('f_donationcampaigns_donations' => array(self::FORUM_B)));
 	}
 
 	protected function as_nobody()
@@ -187,7 +187,7 @@ class donation_controller_test extends controller_test_case
 
 	public function test_add_fixes_the_campaign_from_the_url_ignoring_a_posted_campaign_id()
 	{
-		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_A, self::FORUM_B)));
+		$this->as_actor(array('f_donationcampaigns_donations' => array(self::FORUM_A, self::FORUM_B)));
 
 		// A crafted campaign_id in the body must not redirect the donation to
 		// another campaign; the URL's campaign 1 is the only anchor.

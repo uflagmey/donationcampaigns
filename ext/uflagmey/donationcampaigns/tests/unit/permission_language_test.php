@@ -21,8 +21,8 @@ class permission_language_test extends \phpbb_test_case
 	const REQUIRED = array(
 		'ACL_CAT_DONATIONCAMPAIGNS',
 		'ACL_A_DONATIONCAMPAIGNS',
-		'ACL_M_DONATIONCAMPAIGNS_MANAGE',
-		'ACL_M_DONATIONCAMPAIGNS_DONATIONS',
+		'ACL_F_DONATIONCAMPAIGNS_MANAGE',
+		'ACL_F_DONATIONCAMPAIGNS_DONATIONS',
 	);
 
 	/**
@@ -84,7 +84,7 @@ class permission_language_test extends \phpbb_test_case
 
 		foreach ($terms as $iso => $required)
 		{
-			$description = strtolower($this->lang($iso)['ACL_M_DONATIONCAMPAIGNS_DONATIONS']);
+			$description = strtolower($this->lang($iso)['ACL_F_DONATIONCAMPAIGNS_DONATIONS']);
 
 			foreach ($required as $term)
 			{

@@ -1230,7 +1230,9 @@ class viewtopic_listener_test extends \phpbb_test_case
 			$this->config,
 			$this->template,
 			$language,
-			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth($grants)),
+			// Read access is a precondition of management (ADR-016); granted
+			// unless a test overrides it.
+			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth($grants + array('f_read' => true))),
 			$user,
 			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
 		);
@@ -1239,7 +1241,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 	/** A shell manager of forum 2 (the forum view() puts topics in). */
 	protected function as_manager()
 	{
-		$this->authorise(array('m_donationcampaigns_manage' => array(2)));
+		$this->authorise(array('f_donationcampaigns_manage' => array(2)));
 	}
 
 	/**
@@ -1284,7 +1286,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 	 */
 	public function test_the_link_is_offered_to_a_donations_only_holder()
 	{
-		$this->authorise(array('m_donationcampaigns_donations' => array(2)));
+		$this->authorise(array('f_donationcampaigns_donations' => array(2)));
 		$this->view(10);
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_TOPIC_LINK']);
@@ -1334,7 +1336,23 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 	public function test_a_guest_sees_no_link()
 	{
-		$this->authorise(array('m_donationcampaigns_manage' => array(2)), false);
+		$this->authorise(array('f_donationcampaigns_manage' => array(2)), false);
+		$this->view(30);
+
+		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
+	}
+
+	/**
+	 * Without read access to the forum there is no management link, even for a
+	 * holder of both forum permissions (ADR-016).
+	 */
+	public function test_a_manager_without_read_access_sees_no_link()
+	{
+		$this->authorise(array(
+			'f_donationcampaigns_manage'	=> array(2),
+			'f_donationcampaigns_donations'	=> array(2),
+			'f_read'						=> array(3),
+		));
 		$this->view(30);
 
 		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);
@@ -1347,7 +1365,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 	 */
 	public function test_a_manager_of_another_forum_sees_no_link_here()
 	{
-		$this->authorise(array('m_donationcampaigns_manage' => array(3)));
+		$this->authorise(array('f_donationcampaigns_manage' => array(3)));
 
 		$this->view(30, 2);
 		$this->assertArrayNotHasKey('S_DONATIONCAMPAIGNS_TOPIC_LINK', $this->template->vars);

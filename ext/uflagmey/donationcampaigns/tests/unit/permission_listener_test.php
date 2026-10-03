@@ -25,8 +25,8 @@ class permission_listener_test extends \phpbb_test_case
 {
 	const EXPECTED = array(
 		'a_donationcampaigns',
-		'm_donationcampaigns_manage',
-		'm_donationcampaigns_donations',
+		'f_donationcampaigns_manage',
+		'f_donationcampaigns_donations',
 	);
 
 	public function test_it_subscribes_to_core_permissions()
@@ -77,8 +77,8 @@ class permission_listener_test extends \phpbb_test_case
 	{
 		$permissions = $this->dispatch()['permissions'];
 
-		$this->assertArrayHasKey('m_donationcampaigns_manage', $permissions);
-		$this->assertArrayHasKey('m_donationcampaigns_donations', $permissions);
+		$this->assertArrayHasKey('f_donationcampaigns_manage', $permissions);
+		$this->assertArrayHasKey('f_donationcampaigns_donations', $permissions);
 	}
 
 	/**
@@ -89,8 +89,8 @@ class permission_listener_test extends \phpbb_test_case
 		$permissions = $this->dispatch()['permissions'];
 
 		$this->assertSame('ACL_A_DONATIONCAMPAIGNS', $permissions['a_donationcampaigns']['lang']);
-		$this->assertSame('ACL_M_DONATIONCAMPAIGNS_MANAGE', $permissions['m_donationcampaigns_manage']['lang']);
-		$this->assertSame('ACL_M_DONATIONCAMPAIGNS_DONATIONS', $permissions['m_donationcampaigns_donations']['lang']);
+		$this->assertSame('ACL_F_DONATIONCAMPAIGNS_MANAGE', $permissions['f_donationcampaigns_manage']['lang']);
+		$this->assertSame('ACL_F_DONATIONCAMPAIGNS_DONATIONS', $permissions['f_donationcampaigns_donations']['lang']);
 	}
 
 	// -------------------------------------------------------------- category

@@ -19,12 +19,13 @@ use uflagmey\donationcampaigns\service\access;
  * no request handling and no UI logic; every controller and the topic-tools
  * link consult it rather than calling acl_get directly.
  *
- * The rule (frozen):
+ * The rule (ADR-016):
  *   is_administrator()          = a_donationcampaigns (global)
- *   can_manage(f)               = admin OR m_donationcampaigns_manage on f
- *   can_manage_donations(f)     = admin OR m_donationcampaigns_donations on f
+ *   can_manage(f)               = f_read on f AND (admin OR f_donationcampaigns_manage on f)
+ *   can_manage_donations(f)     = f_read on f AND (admin OR f_donationcampaigns_donations on f)
  *
- * Forum A is 2, forum B is 5 throughout.
+ * Forum A is 2, forum B is 5 throughout. Unless a test says otherwise the actor
+ * may READ both of them and nothing else, as on a real board.
  */
 class access_test extends \phpbb_test_case
 {
@@ -37,7 +38,7 @@ class access_test extends \phpbb_test_case
 	 */
 	protected function access_for(array $grants)
 	{
-		return new access(new forum_scoped_auth($grants));
+		return new access(new forum_scoped_auth($grants + array('f_read' => array(self::FORUM_A, self::FORUM_B))));
 	}
 
 	// ------------------------------------------------------------ administrator
@@ -50,28 +51,81 @@ class access_test extends \phpbb_test_case
 	public function test_without_the_admin_permission_is_administrator_is_false()
 	{
 		$this->assertFalse($this->access_for(array())->is_administrator());
-		$this->assertFalse($this->access_for(array('m_donationcampaigns_manage' => array(self::FORUM_A)))->is_administrator());
+		$this->assertFalse($this->access_for(array('f_donationcampaigns_manage' => array(self::FORUM_A)))->is_administrator());
 	}
 
 	/**
-	 * The global override reaches every forum, including an invalid or zero one.
+	 * The global override reaches every forum the administrator can read,
+	 * without any forum-scoped grant.
 	 */
-	public function test_the_admin_override_grants_both_capabilities_in_any_forum()
+	public function test_the_admin_override_grants_both_capabilities_in_any_readable_forum()
 	{
 		$access = $this->access_for(array('a_donationcampaigns' => true));
 
-		foreach (array(self::FORUM_A, self::FORUM_B, 0, -1, 99999) as $forum)
+		foreach (array(self::FORUM_A, self::FORUM_B) as $forum)
 		{
 			$this->assertTrue($access->can_manage($forum), "admin can_manage($forum)");
 			$this->assertTrue($access->can_manage_donations($forum), "admin can_manage_donations($forum)");
 		}
 	}
 
+	// ------------------------------------------------------------ read access
+
+	/**
+	 * Nobody manages from the frontend a forum they cannot read — not a holder
+	 * of both forum permissions, and not the administrator override either.
+	 */
+	public function test_without_read_access_nobody_may_manage()
+	{
+		$grants = array(
+			'a_donationcampaigns'			=> true,
+			'f_donationcampaigns_manage'	=> array(self::FORUM_A),
+			'f_donationcampaigns_donations'	=> array(self::FORUM_A),
+			'f_read'						=> array(self::FORUM_B),
+		);
+		$access = new access(new forum_scoped_auth($grants));
+
+		$this->assertFalse($access->can_manage(self::FORUM_A));
+		$this->assertFalse($access->can_manage_donations(self::FORUM_A));
+
+		unset($grants['a_donationcampaigns']);
+		$access = new access(new forum_scoped_auth($grants));
+
+		$this->assertFalse($access->can_manage(self::FORUM_A));
+		$this->assertFalse($access->can_manage_donations(self::FORUM_A));
+	}
+
+	/**
+	 * Read access alone grants nothing: it is a precondition, not a permission.
+	 */
+	public function test_read_access_alone_grants_nothing()
+	{
+		$access = $this->access_for(array());
+
+		$this->assertFalse($access->can_manage(self::FORUM_A));
+		$this->assertFalse($access->can_manage_donations(self::FORUM_A));
+	}
+
+	/**
+	 * The moderator permissions this extension shipped in beta1 are gone: a
+	 * leftover m_ grant must not authorise anything.
+	 */
+	public function test_the_retired_moderator_permissions_grant_nothing()
+	{
+		$access = $this->access_for(array(
+			'm_donationcampaigns_manage'	=> array(self::FORUM_A),
+			'm_donationcampaigns_donations'	=> array(self::FORUM_A),
+		));
+
+		$this->assertFalse($access->can_manage(self::FORUM_A));
+		$this->assertFalse($access->can_manage_donations(self::FORUM_A));
+	}
+
 	// ------------------------------------------------------------------ manager
 
 	public function test_a_manager_may_manage_only_their_own_forum()
 	{
-		$access = $this->access_for(array('m_donationcampaigns_manage' => array(self::FORUM_A)));
+		$access = $this->access_for(array('f_donationcampaigns_manage' => array(self::FORUM_A)));
 
 		$this->assertTrue($access->can_manage(self::FORUM_A));
 		$this->assertFalse($access->can_manage(self::FORUM_B), 'a manager reached into another forum');
@@ -83,7 +137,7 @@ class access_test extends \phpbb_test_case
 	 */
 	public function test_the_manage_permission_does_not_grant_donation_access()
 	{
-		$access = $this->access_for(array('m_donationcampaigns_manage' => array(self::FORUM_A)));
+		$access = $this->access_for(array('f_donationcampaigns_manage' => array(self::FORUM_A)));
 
 		$this->assertFalse($access->can_manage_donations(self::FORUM_A));
 	}
@@ -92,7 +146,7 @@ class access_test extends \phpbb_test_case
 
 	public function test_a_donation_manager_may_manage_donations_only_in_their_forum()
 	{
-		$access = $this->access_for(array('m_donationcampaigns_donations' => array(self::FORUM_A)));
+		$access = $this->access_for(array('f_donationcampaigns_donations' => array(self::FORUM_A)));
 
 		$this->assertTrue($access->can_manage_donations(self::FORUM_A));
 		$this->assertFalse($access->can_manage_donations(self::FORUM_B));
@@ -104,7 +158,7 @@ class access_test extends \phpbb_test_case
 	 */
 	public function test_the_donation_permission_does_not_grant_shell_management()
 	{
-		$access = $this->access_for(array('m_donationcampaigns_donations' => array(self::FORUM_A)));
+		$access = $this->access_for(array('f_donationcampaigns_donations' => array(self::FORUM_A)));
 
 		$this->assertFalse($access->can_manage(self::FORUM_A));
 	}
@@ -123,13 +177,13 @@ class access_test extends \phpbb_test_case
 	// --------------------------------------------------- invalid / zero forum id
 
 	/**
-	 * A forum-scoped grant never applies to forum 0 (or a negative id). Only the
-	 * global admin override reaches such a value, so a malformed forum cannot
-	 * accidentally widen a moderator's reach.
+	 * A forum-scoped grant never applies to forum 0 (or a negative id), and
+	 * since nobody can read such a forum, not even the admin override reaches
+	 * it: a malformed forum id can never widen anyone's reach.
 	 */
 	public function test_a_zero_or_invalid_forum_id_is_not_a_broad_grant()
 	{
-		$manager = $this->access_for(array('m_donationcampaigns_manage' => array(self::FORUM_A)));
+		$manager = $this->access_for(array('f_donationcampaigns_manage' => array(self::FORUM_A)));
 
 		foreach (array(0, -1) as $forum)
 		{
@@ -137,8 +191,12 @@ class access_test extends \phpbb_test_case
 			$this->assertFalse($manager->can_manage_donations($forum));
 		}
 
-		// The admin override, by contrast, still applies.
-		$this->assertTrue($this->access_for(array('a_donationcampaigns' => true))->can_manage(0));
+		$admin = $this->access_for(array('a_donationcampaigns' => true));
+		foreach (array(0, -1, 99999) as $forum)
+		{
+			$this->assertFalse($admin->can_manage($forum), "admin can_manage($forum) without read access");
+			$this->assertFalse($admin->can_manage_donations($forum));
+		}
 	}
 
 	// ---------------------------------------- no accidental broad moderator power
@@ -151,8 +209,8 @@ class access_test extends \phpbb_test_case
 	public function test_permissions_are_independent_and_forum_scoped()
 	{
 		$access = $this->access_for(array(
-			'm_donationcampaigns_manage'	=> array(self::FORUM_A),
-			'm_donationcampaigns_donations'	=> array(self::FORUM_A),
+			'f_donationcampaigns_manage'	=> array(self::FORUM_A),
+			'f_donationcampaigns_donations'	=> array(self::FORUM_A),
 		));
 
 		$this->assertTrue($access->can_manage(self::FORUM_A));
@@ -168,14 +226,16 @@ class access_test extends \phpbb_test_case
 	 */
 	public function test_it_consults_the_expected_forum_scoped_options()
 	{
-		$auth = new forum_scoped_auth(array());
+		$auth = new forum_scoped_auth(array('f_read' => true));
 		$access = new access($auth);
 
 		$access->can_manage(self::FORUM_A);
 		$access->can_manage_donations(self::FORUM_B);
 
+		$this->assertContains(array('f_read', self::FORUM_A), $auth->checked);
+		$this->assertContains(array('f_read', self::FORUM_B), $auth->checked);
 		$this->assertContains(array('a_donationcampaigns', 0), $auth->checked);
-		$this->assertContains(array('m_donationcampaigns_manage', self::FORUM_A), $auth->checked);
-		$this->assertContains(array('m_donationcampaigns_donations', self::FORUM_B), $auth->checked);
+		$this->assertContains(array('f_donationcampaigns_manage', self::FORUM_A), $auth->checked);
+		$this->assertContains(array('f_donationcampaigns_donations', self::FORUM_B), $auth->checked);
 	}
 }

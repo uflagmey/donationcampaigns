@@ -11,23 +11,34 @@ namespace uflagmey\donationcampaigns\service;
 /**
  * The single source of truth for who may manage campaigns and donations.
  *
- * Campaign management moved out of the ACP: it is now reached from the topic,
- * so authorization is forum-scoped rather than a global ACP gate. This service
- * encodes that rule once, and every controller and the topic-tools link consult
- * it. Nothing here handles a request, renders a template or reads input — it
- * answers three yes/no questions about the current user and a forum.
+ * Campaign management is reached from the topic, so authorization is
+ * forum-scoped rather than a global ACP gate. This service encodes that rule
+ * once, and every controller and the topic-tools link consult it. Nothing here
+ * handles a request, renders a template or reads input — it answers yes/no
+ * questions about the current user and a forum.
  *
- * The rule:
+ * The rule (ADR-016):
  *   - is_administrator()        a_donationcampaigns, the global override and the
  *                               ACP gate.
- *   - can_manage($forum_id)     administrator, OR m_donationcampaigns_manage in
- *                               that forum. Governs the campaign shell.
- *   - can_manage_donations()    administrator, OR m_donationcampaigns_donations
- *                               in that forum. Governs the money ledger, and is
- *                               deliberately independent of can_manage().
+ *   - can_manage($forum_id)     f_read in that forum, AND administrator OR
+ *                               f_donationcampaigns_manage in that forum.
+ *                               Governs the campaign shell.
+ *   - can_manage_donations()    f_read in that forum, AND administrator OR
+ *                               f_donationcampaigns_donations in that forum.
+ *                               Governs the money ledger, and is deliberately
+ *                               independent of can_manage().
+ *
+ * FORUM permissions, not moderator permissions. An f_* grant has no side effect
+ * beyond itself, so a board can hand campaign management to any group without
+ * making it a moderator group (no MCP access, no "Moderator" listing).
+ *
+ * READ ACCESS IS REQUIRED, for everyone including the administrator override:
+ * nobody manages from the frontend a topic they could not open. phpBB's forum
+ * roles make a "manage but not read" combination easy to create by accident;
+ * this closes it in one place.
  *
  * The forum id is cast to int at this boundary. The caller derives it from the
- * server-loaded topic and never from the request, so a moderator's reach cannot
+ * server-loaded topic and never from the request, so a manager's reach cannot
  * be widened by a forged forum id; the cast is the last line of that defence.
  */
 class access
@@ -61,8 +72,9 @@ class access
 	 */
 	public function can_manage($forum_id)
 	{
-		return $this->is_administrator()
-			|| (bool) $this->auth->acl_get('m_donationcampaigns_manage', (int) $forum_id);
+		return $this->can_read($forum_id)
+			&& ($this->is_administrator()
+				|| (bool) $this->auth->acl_get('f_donationcampaigns_manage', (int) $forum_id));
 	}
 
 	/**
@@ -76,7 +88,20 @@ class access
 	 */
 	public function can_manage_donations($forum_id)
 	{
-		return $this->is_administrator()
-			|| (bool) $this->auth->acl_get('m_donationcampaigns_donations', (int) $forum_id);
+		return $this->can_read($forum_id)
+			&& ($this->is_administrator()
+				|| (bool) $this->auth->acl_get('f_donationcampaigns_donations', (int) $forum_id));
+	}
+
+	/**
+	 * phpBB's own read permission for the forum: the precondition for every
+	 * frontend management action.
+	 *
+	 * @param int $forum_id
+	 * @return bool
+	 */
+	protected function can_read($forum_id)
+	{
+		return (bool) $this->auth->acl_get('f_read', (int) $forum_id);
 	}
 }

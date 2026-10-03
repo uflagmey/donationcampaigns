@@ -30,22 +30,22 @@ class campaign_controller_test extends controller_test_case
 
 	protected function as_manager_a()
 	{
-		$this->as_actor(array('m_donationcampaigns_manage' => array(self::FORUM_A)));
+		$this->as_actor(array('f_donationcampaigns_manage' => array(self::FORUM_A)));
 	}
 
 	protected function as_manager_b()
 	{
-		$this->as_actor(array('m_donationcampaigns_manage' => array(self::FORUM_B)));
+		$this->as_actor(array('f_donationcampaigns_manage' => array(self::FORUM_B)));
 	}
 
 	protected function as_donations_a()
 	{
-		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_A)));
+		$this->as_actor(array('f_donationcampaigns_donations' => array(self::FORUM_A)));
 	}
 
 	protected function as_donations_b()
 	{
-		$this->as_actor(array('m_donationcampaigns_donations' => array(self::FORUM_B)));
+		$this->as_actor(array('f_donationcampaigns_donations' => array(self::FORUM_B)));
 	}
 
 	protected function as_nobody()
@@ -111,6 +111,33 @@ class campaign_controller_test extends controller_test_case
 		$this->as_manager_b();
 		$this->assert_denied(function () {
 			$this->controller->manage(10);
+		});
+	}
+
+	/**
+	 * Read access is a precondition (ADR-016): a manager of forum A who cannot
+	 * read forum A is refused there, with the same uniform denial, and so is the
+	 * administrator override.
+	 */
+	public function test_a_manager_without_read_access_is_denied_the_landing()
+	{
+		$this->as_actor(array(
+			'f_donationcampaigns_manage'	=> array(self::FORUM_A),
+			'f_read'						=> array(self::FORUM_B),
+		));
+		$this->assert_denied(function () {
+			$this->controller->manage(10);
+		});
+	}
+
+	public function test_an_admin_without_read_access_is_denied_the_edit_form()
+	{
+		$this->as_actor(array(
+			'a_donationcampaigns'	=> true,
+			'f_read'				=> array(self::FORUM_B),
+		));
+		$this->assert_denied(function () {
+			$this->controller->edit(1);
 		});
 	}
 

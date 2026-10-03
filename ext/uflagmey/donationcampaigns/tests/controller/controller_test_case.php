@@ -161,6 +161,10 @@ abstract class controller_test_case extends \phpbb_test_case
 	{
 		global $auth;
 
+		// Read access is a precondition of every frontend action (ADR-016).
+		// Actors read every forum unless a test says otherwise.
+		$grants += array('f_read' => true);
+
 		$this->grants = $grants;
 		$auth = new forum_scoped_auth($grants);
 		$this->rebuild();

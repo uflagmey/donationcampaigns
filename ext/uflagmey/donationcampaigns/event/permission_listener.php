@@ -18,10 +18,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * exist in the database and resolve correctly, but never appear in the
  * permissions UI, so an administrator cannot grant them through the interface.
  *
- * RC2 declares three permissions — the global admin one and the two
- * forum-scoped moderator ones — under a dedicated "Donation Campaigns" category
- * it also registers, so they appear together rather than buried under Misc. The
- * `categories` array is provided by the same `core.permissions` event.
+ * It declares three permissions — the global admin one and the two
+ * forum-scoped FORUM permissions (f_*, ADR-016) — under a dedicated "Donation
+ * Campaigns" category it also registers, so they appear together rather than
+ * buried under Misc: on the Administrative tab and on the Forum permissions tab
+ * respectively. The `categories` array is provided by the same
+ * `core.permissions` event.
  *
  * This class coordinates only: it holds no persistence logic and touches no
  * database.
@@ -56,12 +58,12 @@ class permission_listener implements EventSubscriberInterface
 			'lang'	=> 'ACL_A_DONATIONCAMPAIGNS',
 			'cat'	=> 'donationcampaigns',
 		);
-		$permissions['m_donationcampaigns_manage'] = array(
-			'lang'	=> 'ACL_M_DONATIONCAMPAIGNS_MANAGE',
+		$permissions['f_donationcampaigns_manage'] = array(
+			'lang'	=> 'ACL_F_DONATIONCAMPAIGNS_MANAGE',
 			'cat'	=> 'donationcampaigns',
 		);
-		$permissions['m_donationcampaigns_donations'] = array(
-			'lang'	=> 'ACL_M_DONATIONCAMPAIGNS_DONATIONS',
+		$permissions['f_donationcampaigns_donations'] = array(
+			'lang'	=> 'ACL_F_DONATIONCAMPAIGNS_DONATIONS',
 			'cat'	=> 'donationcampaigns',
 		);
 

@@ -13,7 +13,7 @@ namespace uflagmey\donationcampaigns\tests\acp;
  *
  * A donation row is a CONFIRMED receipt. Recording, editing and deleting a
  * receipt now happen on the topic, behind the forum-scoped
- * m_donationcampaigns_donations permission (see the frontend
+ * f_donationcampaigns_donations permission (see the frontend
  * donation_controller and its tests). This mode only shows the current stored
  * state and links to the topic, so an administrator who is not a moderator of
  * the forum does not silently gain the donation-management power here.
