@@ -30,7 +30,7 @@ sources=(
 	"$ext/README.md"
 	"$ext/docs/ADMIN_GUIDE.md"
 	"$ext/docs/PRIVACY.md"
-	"$ext/RELEASE_NOTES_BETA1.md"
+	"$ext/RELEASE_NOTES_BETA2.md"
 	"$ext/docs/DEVELOPERS.md"
 )
 

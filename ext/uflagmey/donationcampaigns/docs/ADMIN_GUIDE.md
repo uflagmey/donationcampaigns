@@ -91,6 +91,12 @@ moderator of the forum.
 
 - **Currency code** — three letters, e.g. `EUR`
 - **Currency symbol** — shown next to every amount, e.g. `€`
+- **Symbol before the amount** — *No* (default) gives `10,00 €`, *Yes* gives
+  `€ 10,00`. It applies everywhere an amount appears: the topic box, the
+  management pages, the ACP lists, confirmation dialogs and log entries.
+- **Space between symbol and amount** — *Yes* (default) keeps them apart;
+  *No* gives `$10.00`. The space is non-breaking, so an amount never wraps
+  between number and symbol.
 - **Decimal places** — `2` for most currencies, `0` for yen, `3` for dinar
 - **Donors listed** — how many names the public box shows before summarising
 
@@ -161,6 +167,7 @@ is invisible to everyone else, including guests.
 | Enabled | Untick to hide the box while keeping the data |
 | Show donor names | See [PRIVACY.md](PRIVACY.md) first |
 | Show donation count | Shows how many donations, without naming anyone |
+| Show donation date | Lists the day each donation arrived next to name and amount. Only with *Show donor names*. Ticked for new campaigns; campaigns that existed before 1.0.0-beta2 keep it off until you tick it |
 
 Save, and the page offers **Back to topic**, where the box now appears.
 
@@ -230,6 +237,11 @@ Three settings interact:
 
 A donation with the public flag off still counts towards the total and the
 donation count. Only the name is withheld.
+
+**Dates and anonymity.** With *Show donation date* ticked, an anonymous
+donation is listed as "Anonymous — 50,00 € (3 Oct 2026)". In a small
+community, amount and day together can be enough to guess who it was. If that
+matters for a campaign, leave the date off.
 
 **Ask the donor before publishing their name.** The extension cannot know
 whether you did. See [PRIVACY.md](PRIVACY.md).

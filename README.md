@@ -6,10 +6,11 @@ post. Donations are **confirmed receipts recorded from the topic by an
 administrator or any user or group authorised for that forum**; the extension processes no
 payments and stores no payment data.
 
-> **Status:** `1.0.0-beta1` released — management moved from the ACP to the
-> topic. In development for `1.0.0-beta2`: the forum-scoped moderator
-> permissions are replaced by ordinary forum permissions that can be granted to
-> any group. Not yet submitted to the phpBB Extension Database.
+> **Status:** `1.0.0-beta2` prepared, not yet released. It implements the
+> review feedback on beta1: forum permissions that can be granted to any group,
+> a manage button in the campaign box, donation dates, and the currency symbol
+> before or after the amount. Not yet submitted to the phpBB Extension
+> Database.
 
 ## The extension lives here
 

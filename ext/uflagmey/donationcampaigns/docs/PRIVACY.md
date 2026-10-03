@@ -29,6 +29,7 @@ Two tables, and nothing else.
 | `campaign_enabled` | Whether the public box is shown |
 | `show_donor_names` | Whether donor names may be listed |
 | `show_donation_count` | Whether the number of donations is shown |
+| `show_donation_date` | Whether the donor list shows the day each donation arrived |
 | `external_url` | Optional donation link |
 | `campaign_created`, `campaign_updated` | Timestamps |
 
@@ -103,6 +104,12 @@ caches and archives that already hold it.
    donation count.
 3. **Untick "Show donor names"** on the campaign. No names are listed for that
    campaign, whatever the individual donations say.
+
+A fourth setting affects how identifiable an *anonymous* donation is:
+**"Show donation date"** on the campaign. With it ticked, the list shows the
+day next to every amount, including anonymous ones. Amount plus day can point
+to a person in a small community; leave it unticked where that is a concern.
+It is off for every campaign created before 1.0.0-beta2.
 
 A private donation is not hidden from the *figures* — its amount is included in
 the total and in the count. Only the name is withheld. If a donor must not be

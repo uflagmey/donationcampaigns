@@ -485,6 +485,42 @@ own revert still finds them.
 is filed against forum and topic and is readable in the ACP moderator log and in
 the MCP by the forum's moderators.
 
+### ADR-017 — One place for money display, dates as calendar days
+
+**Decision (1.0.0-beta2).** `currency_formatter::format_money()` is the only
+function that attaches the currency symbol to a number. Every displayed amount —
+topic box, donor list, management landing and ledger, ACP lists, confirmation
+dialogs, log entries — calls it. `format()` (number only) remains for parse
+round-trips; `format_for_input()` for form fields, whose symbol label sits on
+the configured side of the input. Two board settings control the output:
+`donationcampaigns_currency_symbol_before` and
+`donationcampaigns_currency_symbol_space`; the separator is U+00A0, so an
+amount never wraps between number and symbol.
+
+**Why.** Review feedback asked for the symbol before or after the amount. The
+analysis showed the symbol was appended in one place only (the topic box), so
+every other page showed bare numbers — seen live on the management landing.
+A position setting bolted onto that one place would have widened the
+inconsistency. An architecture test now fails on any `formatter->format(` in
+production code.
+
+**Donation dates.** `donation_time` is a calendar day stored as midnight UTC.
+`date_formatter` renders it in UTC through `phpbb\datetime` (translated month
+names) with a translator-owned format, `DONATIONCAMPAIGNS_DATE_FORMAT`. The
+previous ACP rendering through `user::format_date()` used the viewer's time
+zone and a time of day, so a viewer west of UTC saw the previous day; that is
+fixed with the same service.
+
+**Public dates are opt-in per campaign** (`show_donation_date`, m9). Existing
+campaigns keep the column default 0, so an update changes no public page; the
+create form proposes it ticked for new campaigns. A date is only meaningful in
+the donor list, so it shows only where names are shown. The listener does not
+assign the key at all when the campaign has not opted in.
+
+**Manage button.** The box header carries a "Manage" button bound to the same
+flag and URL as the topic-tools entry (`S_DONATIONCAMPAIGNS_TOPIC_LINK`), so
+its visibility is exactly the access rule and no second rule exists.
+
 ## Styles
 
 prosilver only, for version 1.0 (ADR-013). Templates under

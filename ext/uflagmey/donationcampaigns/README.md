@@ -163,6 +163,8 @@ Neither is granted on installation.
 |---|---|---|
 | Currency code | `EUR` | Three letters, e.g. `EUR`, `USD`, `GBP` |
 | Currency symbol | `€` | Up to 10 characters |
+| Symbol before the amount | No | Yes: `€ 10,00`. No: `10,00 €`. Applies to every amount shown |
+| Space between symbol and amount | Yes | No gives `$10.00`. The space never wraps |
 | Decimal places | `2` | 0–4. `0` for yen, `3` for dinar |
 | Donors listed | `25` | 1–500, before the box summarises the rest |
 
@@ -184,7 +186,8 @@ Campaigns are managed **from the topic**, not the ACP.
    you get its summary plus only the actions you are authorised for.
 4. On the create/edit form, enter a title, an optional BBCode description, and
    the target; optionally add a donation link (`http://` or `https://` only);
-   and choose whether to show donor names and the donation count.
+   and choose whether to show donor names, the donation count and the date of
+   each donation (the date is listed only when names are shown).
 5. Save, then **Back to topic** — the box is there.
 
 Campaign actions (create, edit, enable/disable, delete an empty campaign)
