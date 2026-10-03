@@ -106,6 +106,9 @@ $lang = array_merge($lang, array(
 
 	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
 	'DONATIONCAMPAIGNS_EDIT'						=> 'Kampagne bearbeiten',
+	// The per-row edit link in the frontend donation list. phpBB's own EDIT
+	// key lives in the ACP language file only, so the frontend cannot use it.
+	'DONATIONCAMPAIGNS_EDIT_ENTRY'					=> 'Bearbeiten',
 	'DONATIONCAMPAIGNS_ENABLE'						=> 'Aktivieren',
 	'DONATIONCAMPAIGNS_DISABLE'						=> 'Deaktivieren',
 	'DONATIONCAMPAIGNS_DELETE'						=> 'Löschen',

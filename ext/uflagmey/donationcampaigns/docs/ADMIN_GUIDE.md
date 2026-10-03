@@ -32,6 +32,20 @@ Enabling creates the tables, the settings, the three permissions and their
 permission category, and the ACP menu. Disabling later hides everything but
 keeps your data.
 
+**Updating to a newer version:**
+
+1. **Disable** the extension. Do *not* click "Delete data" — that removes every
+   campaign and donation.
+2. Upload the new files **over** the existing ones. Overwriting is safe; there
+   is no need to delete the old folder first, and not deleting it means an
+   interrupted upload leaves a working version behind.
+3. **Check the upload is complete.** The extension folder must contain twelve
+   folders: `acp`, `adm`, `config`, `controller`, `docs`, `event`, `exception`,
+   `language`, `migrations`, `repository`, `service`, `styles`. FTP clients can
+   skip folders without an obvious error.
+4. **Enable** the extension — this runs any new database migrations — and
+   purge the cache.
+
 ## 2. Grant the permissions
 
 The extension ships three permissions, grouped under a dedicated **Donation
@@ -334,9 +348,11 @@ Purging the extension destroys everything it stores, in every campaign.
 
 ## Troubleshooting
 
-**The box does not appear on the topic.** Check the campaign is Enabled, that
-the campaign is enabled, and purge the cache. The box renders on `viewtopic`; if
-the topic itself is unreachable, so is the box.
+**The box does not appear on the topic.** Check the campaign is enabled and
+purge the cache. The box renders on `viewtopic`; if the topic itself is
+unreachable, so is the box. If the box, the *Manage* button **and** the
+topic-tools entry are all missing while the ACP pages work, the `styles` folder
+did not reach the server — see *Updating to a newer version* in step 1.
 
 **The total looks wrong.** Use **Recalculate total**. If it changes, something
 wrote to the database outside the extension.

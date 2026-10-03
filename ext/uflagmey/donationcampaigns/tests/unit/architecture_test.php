@@ -195,6 +195,40 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * A frontend template may only use language keys that exist on the
+	 * frontend: the extension's own files, or phpBB's frontend common.php.
+	 * phpBB's EDIT lives in acp/common.php, so {L_EDIT} rendered the raw key
+	 * "EDIT" in the donation list on a German board — found live in beta2.
+	 */
+	public function test_frontend_templates_use_only_frontend_language_keys()
+	{
+		global $phpbb_root_path;
+
+		$lang = array();
+		include $phpbb_root_path . 'language/en/common.php';
+		include $this->package . '/language/en/common.php';
+		include $this->package . '/language/en/info_acp_donationcampaigns.php';
+
+		$files = glob($this->package . '/styles/prosilver/template/*.html');
+		$files = array_merge($files, glob($this->package . '/styles/prosilver/template/event/*.html'));
+		$this->assertNotEmpty($files);
+
+		foreach ($files as $file)
+		{
+			preg_match_all('/\{L_([A-Z0-9_]+)\}/', file_get_contents($file), $matches);
+
+			foreach (array_unique($matches[1]) as $key)
+			{
+				$this->assertArrayHasKey(
+					$key,
+					$lang,
+					basename($file) . " uses L_{$key}, which is not defined for the frontend"
+				);
+			}
+		}
+	}
+
+	/**
 	 * Every DISPLAYED amount goes through format_money(), which owns the
 	 * symbol, its side and its separator (ADR-017). A bare format() call on a
 	 * display path is how the management pages ended up without a symbol.

@@ -51,6 +51,12 @@ Administrator roles, ACP access plus an override for every frontend action.
 
 ## Fixed
 
+- The edit link in the frontend donation list read "EDIT" in English on
+  non-English boards: phpBB's `EDIT` key exists only in the ACP language file.
+  The extension now uses its own key. The same defect titled the error box of
+  the campaign and donation forms "WARNING"; it now uses phpBB's frontend
+  "Error" heading. A test now rejects any frontend template key that is not
+  defined for the frontend.
 - The currency symbol was shown only in the topic box. The management page,
   the donation list, the ACP lists, confirmation dialogs and log entries now
   show it too, in the configured position.
@@ -63,7 +69,9 @@ Administrator roles, ACP access plus an override for every frontend action.
 
 ## Upgrade from 1.0.0-beta1
 
-1. Replace the extension files and run the update (disable/enable, or the
+1. Disable the extension (not "Delete data"), upload the new files over the
+   old ones and check that all twelve folders arrived — see *Updating to a
+   newer version* in the administrator guide. Then enable it (or run the
    migration runner as usual).
 2. The migration `m9_display_options` adds the two currency settings (beta1
    layout) and the per-campaign date option (off). The migration
@@ -100,5 +108,6 @@ New keys:
 |---|---|
 | `common.php` | `DONATIONCAMPAIGNS_DATE_FORMAT` — a PHP `date()` format for donation dates, date only (de `d.m.Y`, en `j M Y`) |
 | `common.php` | `DONATIONCAMPAIGNS_MANAGE_BUTTON` |
+| `common.php` | `DONATIONCAMPAIGNS_EDIT_ENTRY` — the edit link in the donation list ("Bearbeiten") |
 | `info_acp_donationcampaigns.php` | `DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE`, `…_SYMBOL_BEFORE_EXPLAIN`, `DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE`, `…_SYMBOL_SPACE_EXPLAIN` |
 | `info_acp_donationcampaigns.php` | `DONATIONCAMPAIGNS_FORM_SHOW_DATE`, `DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN` |

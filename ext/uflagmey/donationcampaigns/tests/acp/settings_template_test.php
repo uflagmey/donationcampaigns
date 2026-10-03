@@ -728,7 +728,9 @@ class settings_template_test extends \phpbb_test_case
 		include $this->package . '/language/en/common.php';
 		include $this->package . '/language/en/info_acp_donationcampaigns.php';
 
-		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'EDIT', 'DELETE', 'BACK', 'ACP_NO_ITEMS');
+		// Frontend template: only keys phpBB defines for the FRONTEND (see
+		// architecture_test::test_frontend_templates_use_only_frontend_language_keys).
+		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'ERROR', 'DELETE', 'BACK');
 
 		foreach (array_unique($matches[1]) as $key)
 		{
@@ -808,7 +810,9 @@ class settings_template_test extends \phpbb_test_case
 		include $this->package . '/language/en/common.php';
 		include $this->package . '/language/en/info_acp_donationcampaigns.php';
 
-		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'EDIT', 'DELETE', 'BACK', 'ACP_NO_ITEMS');
+		// Covers an ACP and a frontend template; frontend availability is checked
+		// separately by the architecture test.
+		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'ERROR', 'EDIT', 'DELETE', 'BACK', 'ACP_NO_ITEMS');
 
 		foreach (array_unique($matches[1]) as $key)
 		{
