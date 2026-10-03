@@ -38,7 +38,7 @@ uflagmey_donationcampaigns_campaign_delete:
     requirements:
         campaign_id: \d+
 
-# --- donation ledger (m_donationcampaigns_donations) ---
+# --- donation ledger (f_donationcampaigns_donations) ---
 
 # The campaign is the anchor: its stored topic decides the forum authorised
 # against. GET renders the add form; only the POST writes.

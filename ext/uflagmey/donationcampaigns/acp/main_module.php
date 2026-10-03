@@ -513,10 +513,12 @@ class main_module
 		$base = $this->u_action . '&amp;campaign_id=' . $campaign_id;
 
 		// Read-only oversight (decision 1). Recording, editing and deleting a
-		// confirmed donation now live on the topic, behind the forum-scoped
-		// m_donationcampaigns_donations permission, so an administrator who is
-		// not a moderator of the forum does not silently gain that power here.
-		// This mode shows the current stored state and links to the topic.
+		// confirmed donation live on the topic, behind the forum-scoped
+		// f_donationcampaigns_donations permission or the administrator
+		// override (ADR-015, ADR-016). Keeping the ACP read-only means there is
+		// one write path per donation and every change lands in the moderator
+		// log against its forum and topic ("audit by surface"). This mode shows
+		// the current stored state and links to the topic.
 		$this->assign_donation_list($donations, $formatter, $campaign, $campaign_id, $base);
 	}
 

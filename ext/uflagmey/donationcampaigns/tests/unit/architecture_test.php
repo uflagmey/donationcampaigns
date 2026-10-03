@@ -195,6 +195,31 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * The beta1 moderator permissions were replaced by forum permissions
+	 * (ADR-016). Only the two migrations that create and retire them may still
+	 * name them; anywhere else a leftover name would be a check that can never
+	 * pass, or documentation that sends an administrator to the wrong tab.
+	 *
+	 * @dataProvider production_files
+	 */
+	public function test_the_retired_moderator_permissions_are_named_only_by_their_migrations($path)
+	{
+		$relative = str_replace($this->package . '/', '', $path);
+
+		if (in_array($relative, array('migrations/v10x/m7_manage_permissions.php', 'migrations/v10x/m8_forum_permissions.php'), true))
+		{
+			$this->addToAssertionCount(1);
+			return;
+		}
+
+		$this->assertStringNotContainsString(
+			'm_donationcampaigns',
+			file_get_contents($path),
+			"{$relative} still names a retired m_donationcampaigns_* permission"
+		);
+	}
+
+	/**
 	 * Every administrator-controlled scalar in an ACP template carries |e.
 	 */
 	public function test_every_acp_template_escapes_its_administrator_controlled_values()

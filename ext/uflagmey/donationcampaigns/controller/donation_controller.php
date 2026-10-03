@@ -28,8 +28,8 @@ use uflagmey\donationcampaigns\exception\donationcampaigns_exception;
  *   5. authorise donations against that forum (can_manage_donations);
  *   6. only then render or mutate.
  *
- * SEPARATE PERMISSION. Managing donations requires m_donationcampaigns_donations
- * (or the admin override), NOT m_donationcampaigns_manage. A shell manager who
+ * SEPARATE PERMISSION. Managing donations requires f_donationcampaigns_donations
+ * (or the admin override), NOT f_donationcampaigns_manage. A shell manager who
  * lacks the donations permission is refused here, and vice versa — the two
  * capabilities are deliberately independent, because donations expose donor
  * names and private donor identities that campaign management does not.

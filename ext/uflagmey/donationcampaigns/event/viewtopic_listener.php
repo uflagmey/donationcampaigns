@@ -192,21 +192,23 @@ class viewtopic_listener implements EventSubscriberInterface
 	}
 
 	/**
-	 * The administrator's entry point into campaign management for this topic.
+	 * The entry point into campaign management for this topic.
 	 *
 	 * NEUTRAL BY DESIGN. The link reads the same whether the topic already has
 	 * a campaign or not, and carries no action verb. That is not a cosmetic
 	 * choice: this page is rendered once and may be clicked much later, by
 	 * which time a campaign can have been created, deleted or disabled. Any
-	 * verb decided here would be a guess about the future. The ACP resolves
-	 * the real state when the request arrives (ADR-014).
+	 * verb decided here would be a guess about the future. The management
+	 * landing resolves the real state when the request arrives (ADR-014,
+	 * ADR-015).
 	 *
 	 * The consequence is that this method issues NO query of its own: the forum
 	 * is handed in from the event's already-loaded topic. It runs on every topic
 	 * view on the board, and the neutral label is what keeps it free.
 	 *
 	 * VISIBILITY, forum-scoped. The link is shown to anyone who may manage the
-	 * campaign shell OR the donations in THIS topic's forum — the same rule the
+	 * campaign shell OR the donations in THIS topic's forum (forum permissions,
+	 * read access required — ADR-016) — the same rule the
 	 * controller enforces on arrival through the access service. Showing it is
 	 * not granting it: every controller action re-checks server-side.
 	 *
