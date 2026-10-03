@@ -495,4 +495,46 @@ class settings_service_test extends donation_test_case
 			'donationcampaigns_currency_exponent' => 4,
 		))));
 	}
+
+	// ------------------------------------------------- symbol position (beta2)
+
+	public function test_the_symbol_layout_defaults_to_beta1_before_the_migration()
+	{
+		// setUp's config has neither key, exactly like a board before m9.
+		$current = $this->settings->current();
+
+		$this->assertSame(0, $current['donationcampaigns_currency_symbol_before']);
+		$this->assertSame(1, $current['donationcampaigns_currency_symbol_space']);
+	}
+
+	public function test_the_symbol_layout_is_saved()
+	{
+		$this->settings->save($this->input(array(
+			'donationcampaigns_currency_symbol_before'	=> '1',
+			'donationcampaigns_currency_symbol_space'	=> '0',
+		)));
+
+		$this->assertSame(1, (int) $this->config['donationcampaigns_currency_symbol_before']);
+		$this->assertSame(0, (int) $this->config['donationcampaigns_currency_symbol_space']);
+	}
+
+	/**
+	 * A tampered form can store nothing but 0 or 1.
+	 */
+	public function tampered_flag_data()
+	{
+		return array(
+			array('2'), array('yes'), array('-1'), array(array('1')), array(''), array(null),
+		);
+	}
+
+	/**
+	 * @dataProvider tampered_flag_data
+	 */
+	public function test_anything_but_an_explicit_one_is_stored_as_no($value)
+	{
+		$this->settings->save($this->input(array('donationcampaigns_currency_symbol_before' => $value)));
+
+		$this->assertSame(0, (int) $this->config['donationcampaigns_currency_symbol_before']);
+	}
 }

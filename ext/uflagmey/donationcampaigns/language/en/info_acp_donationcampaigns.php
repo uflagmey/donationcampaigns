@@ -29,6 +29,10 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_SETTINGS_CODE_EXPLAIN'		=> 'The three-letter ISO code for the currency, for example EUR, USD or GBP.',
 	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL'				=> 'Currency symbol',
 	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_EXPLAIN'		=> 'Shown next to every amount, for example € or $. At most 10 characters.',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE'			=> 'Symbol before the amount',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE_EXPLAIN'	=> 'Yes: “€ 10.00”. No: “10.00 €”. Applies to every amount shown.',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE'			=> 'Space between symbol and amount',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE_EXPLAIN'	=> 'No gives, for example, “$10.00”. The space never wraps, so amount and symbol stay together.',
 	'DONATIONCAMPAIGNS_SETTINGS_EXPONENT'			=> 'Decimal places',
 	'DONATIONCAMPAIGNS_SETTINGS_EXPONENT_EXPLAIN'	=> 'How many digits follow the decimal separator: 2 for most currencies, 0 for yen, 3 for dinar.',
 
@@ -89,6 +93,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING'	=> 'Donor names on a publicly readable topic are visible to guests and to search engines. You are responsible for having each donor’s consent before publishing their name. Individual donations can be marked private, and a donation with an empty name is shown as “Anonymous”.',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT'			=> 'Show donation count',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN'	=> 'Shows how many donations have been recorded, without naming anyone.',
+	'DONATIONCAMPAIGNS_FORM_SHOW_DATE'			=> 'Show donation date',
+	'DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN'	=> 'Shows the date of each donation next to name and amount in the donor list. Only has an effect when donor names are shown. Date and amount together can make even an anonymous donation easier to trace back to a person.',
 
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED'			=> 'The campaign has been saved.',
 

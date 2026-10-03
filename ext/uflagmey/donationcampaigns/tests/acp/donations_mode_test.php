@@ -133,7 +133,7 @@ class donations_mode_test extends campaign_acp_test_case
 	{
 		$this->open();
 
-		$this->assertSame('25.00', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED_AMOUNT']);
+		$this->assertSame("25.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_COLLECTED_AMOUNT']);
 	}
 
 	public function test_the_list_offers_a_way_back_to_the_campaigns()
@@ -162,8 +162,9 @@ class donations_mode_test extends campaign_acp_test_case
 
 		foreach ($this->listed() as $row)
 		{
-			$this->assertMatchesRegularExpression('/^\d+\.\d{2}$/', $row['AMOUNT']);
-			$this->assertNotEmpty($row['DONATED_AT']);
+			$this->assertMatchesRegularExpression('/^\d+\.\d{2}\x{00A0}€$/u', $row['AMOUNT']);
+			// A calendar day only: "14 Nov 2023", never a time of day.
+			$this->assertMatchesRegularExpression('/^\d{1,2} [A-Z][a-z]{2} \d{4}$/', $row['DONATED_AT']);
 		}
 	}
 

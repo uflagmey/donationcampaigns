@@ -127,6 +127,16 @@ class campaign_service_test extends \phpbb_test_case
 			'phpbb_'
 		);
 		$this->tools->perform_schema_changes($link_text->update_schema());
+		// The per-campaign donation-date flag arrived in m9.
+		$display_options = new \uflagmey\donationcampaigns\migrations\v10x\m9_display_options(
+			new \phpbb\config\config(array()),
+			$this->db,
+			$this->tools,
+			'',
+			'php',
+			'phpbb_'
+		);
+		$this->tools->perform_schema_changes($display_options->update_schema());
 
 		$reflection = new \ReflectionClass('\phpbb\db\migration\data\v30x\release_3_0_0');
 		$baseline = $reflection->newInstanceWithoutConstructor();

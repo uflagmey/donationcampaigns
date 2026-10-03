@@ -269,6 +269,9 @@ class campaign_repository
 			'campaign_enabled'		=> (bool) $row['campaign_enabled'],
 			'show_donor_names'		=> (bool) $row['show_donor_names'],
 			'show_donation_count'	=> (bool) $row['show_donation_count'],
+			// Added by m9. Read defensively: during an update the code can be
+			// live for a moment before the migration has added the column.
+			'show_donation_date'	=> isset($row['show_donation_date']) ? (bool) $row['show_donation_date'] : false,
 			'external_url'			=> (string) $row['external_url'],
 			// The label on the button pointing at external_url. Plain text:
 			// no markup pipeline, no provider semantics.

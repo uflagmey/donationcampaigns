@@ -25,7 +25,7 @@
 			     carries only the number the parser will read. Same pattern as the
 			     campaign target field. type="text", not number, so a comma decimal
 			     is not silently dropped. -->
-			<dd><input id="donation_amount" type="text" name="donation_amount" size="15" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}" /> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong></dd>
+			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="donation_amount" type="text" name="donation_amount" size="15" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}" /><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
 		</dl>
 
 		<dl>

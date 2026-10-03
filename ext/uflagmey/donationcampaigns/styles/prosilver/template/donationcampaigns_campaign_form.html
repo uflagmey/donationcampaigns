@@ -39,7 +39,7 @@
 			<dt><label for="target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span></dt>
 			<!-- The currency is shown beside the field, not inside it. type="text",
 			     not number: a numeric input silently drops a comma decimal. -->
-			<dd><input id="target_amount" type="text" name="target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}" /> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong></dd>
+			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="target_amount" type="text" name="target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}" /><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
 		</dl>
 
 		<dl>
@@ -60,6 +60,11 @@
 		<dl>
 			<dt><label for="show_donation_count">{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN}</span></dt>
 			<dd><input type="checkbox" id="show_donation_count" class="radio" name="show_donation_count" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT --> checked="checked"<!-- ENDIF --> /></dd>
+		</dl>
+
+		<dl>
+			<dt><label for="show_donation_date">{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN}</span></dt>
+			<dd><input type="checkbox" id="show_donation_date" class="radio" name="show_donation_date" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DATE --> checked="checked"<!-- ENDIF --> /></dd>
 		</dl>
 	</fieldset>
 

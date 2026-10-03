@@ -196,7 +196,7 @@ class donation_controller
 		// message as raw HTML, so a donor name carrying markup would execute in
 		// the dialog. The dialog names the exact receipt: "are you sure" answers
 		// nothing.
-		$amount = $this->escape_for_message($this->formatter->format($donation['donation_amount'], $exponent));
+		$amount = $this->escape_for_message($this->formatter->format_money($donation['donation_amount'], $exponent));
 		$label = $this->escape_for_message($this->donor_label($donation['donor_name']));
 
 		confirm_box(false, $this->language->lang('DONATIONCAMPAIGNS_CONFIRM_DELETE_DONATION', $amount, $label), '', 'confirm_body.html', $this->helper->route(
@@ -362,6 +362,7 @@ class donation_controller
 			// setting — the same currency the campaign form shows. The stored value
 			// stays integer minor units and the parser never sees this.
 			'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'	=> (string) $this->config['donationcampaigns_currency_symbol'],
+			'S_DONATIONCAMPAIGNS_SYMBOL_BEFORE'	=> !empty($this->config['donationcampaigns_currency_symbol_before']),
 			'DONATIONCAMPAIGNS_DONOR_NAME'		=> $values['donor_name'],
 			'DONATIONCAMPAIGNS_DONATION_TIME'	=> $values['donation_time'],
 		));
@@ -486,7 +487,7 @@ class donation_controller
 			array(
 				'forum_id'	=> (int) $forum_id,
 				'topic_id'	=> (int) $topic_id,
-				$this->escape_for_message($this->formatter->format($amount_minor_units, $exponent)),
+				$this->escape_for_message($this->formatter->format_money($amount_minor_units, $exponent)),
 				$this->escape_for_message($this->donor_label($donor_name)),
 			)
 		);

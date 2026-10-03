@@ -196,7 +196,8 @@ abstract class controller_test_case extends \phpbb_test_case
 			$this->campaigns,
 			$this->donations,
 			new topic_repository($this->db, 'phpbb_topics'),
-			new currency_formatter($language)
+			new currency_formatter($language, $this->config),
+			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language)
 		);
 
 		$this->donation_controller = new donation_controller(
@@ -213,7 +214,7 @@ abstract class controller_test_case extends \phpbb_test_case
 			$this->donations,
 			$this->campaign_service,
 			new topic_repository($this->db, 'phpbb_topics'),
-			new currency_formatter($language)
+			new currency_formatter($language, $this->config)
 		);
 	}
 
@@ -231,7 +232,7 @@ abstract class controller_test_case extends \phpbb_test_case
 		}
 		$this->tools->perform_schema_changes(array('add_tables' => $tables));
 
-		foreach (array(m1_initial_schema::class, \uflagmey\donationcampaigns\migrations\v10x\m6_campaign_link_text::class) as $migration_class)
+		foreach (array(m1_initial_schema::class, \uflagmey\donationcampaigns\migrations\v10x\m6_campaign_link_text::class, \uflagmey\donationcampaigns\migrations\v10x\m9_display_options::class) as $migration_class)
 		{
 			$migration = new $migration_class(new \phpbb\config\config(array()), $this->db, $this->tools, '', 'php', 'phpbb_');
 			$this->tools->perform_schema_changes($migration->update_schema());

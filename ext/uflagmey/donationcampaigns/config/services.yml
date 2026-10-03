@@ -34,6 +34,13 @@ services:
         class: uflagmey\donationcampaigns\service\currency_formatter
         arguments:
             - '@language'
+            - '@config'
+
+    uflagmey.donationcampaigns.date_formatter:
+        class: uflagmey\donationcampaigns\service\date_formatter
+        arguments:
+            - '@language'
+            - '@user'
 
     uflagmey.donationcampaigns.listener.viewtopic:
         class: uflagmey\donationcampaigns\event\viewtopic_listener
@@ -48,6 +55,7 @@ services:
             - '@uflagmey.donationcampaigns.access'
             - '@user'
             - '@controller.helper'
+            - '@uflagmey.donationcampaigns.date_formatter'
         tags:
             - { name: event.listener }
 
@@ -105,6 +113,7 @@ services:
             - '@uflagmey.donationcampaigns.donation_repository'
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
+            - '@uflagmey.donationcampaigns.date_formatter'
 
     uflagmey.donationcampaigns.controller.donation:
         class: uflagmey\donationcampaigns\controller\donation_controller

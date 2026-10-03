@@ -49,16 +49,28 @@ class amount_currency_parity_test extends \phpbb_test_case
 	}
 
 	/**
+	 * The label sits on the side the board puts the symbol of every displayed
+	 * amount (ADR-017): after the field by default, before it when "symbol
+	 * before the amount" is set. Both branches must exist, keyed on the same
+	 * flag, around the same input.
+	 *
 	 * @dataProvider amount_inputs
 	 */
-	public function test_the_amount_input_is_followed_by_the_currency_label($file, $input_name)
+	public function test_the_currency_label_sits_on_the_configured_side_of_the_input($file, $input_name)
 	{
 		$markup = $this->template($file);
+		$input = '<input id="' . preg_quote($input_name, '#') . '"[^>]*name="' . preg_quote($input_name, '#') . '"[^>]*/>';
+		$label = preg_quote(self::CURRENCY_LABEL, '#');
 
 		$this->assertMatchesRegularExpression(
-			'#name="' . preg_quote($input_name, '#') . '"[^>]*/>\s*' . preg_quote(self::CURRENCY_LABEL, '#') . '#',
+			'#<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE -->' . $label . '\s*<!-- ENDIF -->' . $input . '#',
 			$markup,
-			"{$input_name} in {$file} is not followed by the shared currency label"
+			"{$input_name} in {$file} has no currency label before it for the symbol-before layout"
+		);
+		$this->assertMatchesRegularExpression(
+			'#' . $input . '<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE -->\s*' . $label . '<!-- ENDIF -->#',
+			$markup,
+			"{$input_name} in {$file} has no currency label after it for the default layout"
 		);
 	}
 

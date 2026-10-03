@@ -102,6 +102,16 @@ class settings_mode_test extends \phpbb_test_case
 			'phpbb_'
 		);
 		$this->tools->perform_schema_changes($link_text->update_schema());
+		// The per-campaign donation-date flag arrived in m9.
+		$display_options = new \uflagmey\donationcampaigns\migrations\v10x\m9_display_options(
+			new \phpbb\config\config(array()),
+			$this->db,
+			$this->tools,
+			'',
+			'php',
+			'phpbb_'
+		);
+		$this->tools->perform_schema_changes($display_options->update_schema());
 
 		$this->campaigns = new campaign_repository($this->db, 'phpbb_ufdc_campaigns');
 		$this->donations = new donation_repository($this->db, 'phpbb_ufdc_donations');

@@ -166,6 +166,16 @@ abstract class campaign_acp_test_case extends \phpbb_test_case
 			'phpbb_'
 		);
 		$this->tools->perform_schema_changes($link_text->update_schema());
+		// The per-campaign donation-date flag arrived in m9.
+		$display_options = new \uflagmey\donationcampaigns\migrations\v10x\m9_display_options(
+			new \phpbb\config\config(array()),
+			$this->db,
+			$this->tools,
+			'',
+			'php',
+			'phpbb_'
+		);
+		$this->tools->perform_schema_changes($display_options->update_schema());
 	}
 
 	/**
@@ -264,7 +274,8 @@ abstract class campaign_acp_test_case extends \phpbb_test_case
 		$phpbb_container = new \phpbb_mock_container_builder();
 		$phpbb_container->set('uflagmey.donationcampaigns.campaign_service', $this->campaign_service);
 		$phpbb_container->set('uflagmey.donationcampaigns.donation_service', $this->donation_service);
-		$phpbb_container->set('uflagmey.donationcampaigns.currency_formatter', new currency_formatter($language));
+		$phpbb_container->set('uflagmey.donationcampaigns.currency_formatter', new currency_formatter($language, $this->config));
+		$phpbb_container->set('uflagmey.donationcampaigns.date_formatter', \uflagmey\donationcampaigns\tests\utc_date_formatter::create($language));
 		$phpbb_container->set('uflagmey.donationcampaigns.donation_repository', $this->donations);
 		$phpbb_container->set('uflagmey.donationcampaigns.campaign_repository', $this->campaigns);
 		$phpbb_container->set('uflagmey.donationcampaigns.topic_repository', new topic_repository($this->db, 'phpbb_topics'));

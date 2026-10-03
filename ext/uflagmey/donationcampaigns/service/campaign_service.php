@@ -59,6 +59,7 @@ class campaign_service
 		'campaign_enabled',
 		'show_donor_names',
 		'show_donation_count',
+		'show_donation_date',
 		'external_url',
 		'external_link_text',
 	);

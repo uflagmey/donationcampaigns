@@ -84,6 +84,9 @@ class campaign_controller
 	/** @var \uflagmey\donationcampaigns\service\currency_formatter */
 	protected $formatter;
 
+	/** @var \uflagmey\donationcampaigns\service\date_formatter */
+	protected $dates;
+
 	public function __construct(
 		\phpbb\controller\helper $helper,
 		\phpbb\path_helper $path_helper,
@@ -98,7 +101,8 @@ class campaign_controller
 		\uflagmey\donationcampaigns\repository\campaign_repository $campaigns,
 		\uflagmey\donationcampaigns\repository\donation_repository $donations,
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
-		\uflagmey\donationcampaigns\service\currency_formatter $formatter
+		\uflagmey\donationcampaigns\service\currency_formatter $formatter,
+		\uflagmey\donationcampaigns\service\date_formatter $dates
 	)
 	{
 		$this->helper = $helper;
@@ -115,6 +119,7 @@ class campaign_controller
 		$this->donations = $donations;
 		$this->topics = $topics;
 		$this->formatter = $formatter;
+		$this->dates = $dates;
 	}
 
 	/**
@@ -388,6 +393,9 @@ class campaign_controller
 				'external_link_text'	=> $this->language->lang('DONATIONCAMPAIGNS_LINK_TEXT_DEFAULT'),
 				'show_donor_names'		=> true,
 				'show_donation_count'	=> true,
+				// Proposed for NEW campaigns only; existing campaigns keep the
+				// schema default (off) until someone ticks it (ADR-017).
+				'show_donation_date'	=> true,
 			);
 		}
 		else
@@ -403,6 +411,7 @@ class campaign_controller
 				'external_link_text'	=> $campaign['external_link_text'],
 				'show_donor_names'		=> $campaign['show_donor_names'],
 				'show_donation_count'	=> $campaign['show_donation_count'],
+				'show_donation_date'	=> $campaign['show_donation_date'],
 			);
 		}
 
@@ -499,6 +508,7 @@ class campaign_controller
 			'S_DONATIONCAMPAIGNS_ERROR'			=> !empty($errors),
 			'S_DONATIONCAMPAIGNS_SHOW_DONORS'	=> (bool) $values['show_donor_names'],
 			'S_DONATIONCAMPAIGNS_SHOW_COUNT'	=> (bool) $values['show_donation_count'],
+			'S_DONATIONCAMPAIGNS_SHOW_DATE'		=> (bool) $values['show_donation_date'],
 
 			'U_ACTION'	=> $is_new
 				? $this->helper->route('uflagmey_donationcampaigns_campaign_create', array('topic_id' => $topic['topic_id']))
@@ -515,6 +525,9 @@ class campaign_controller
 			'DONATIONCAMPAIGNS_DESC'			=> $values['campaign_desc'],
 			'DONATIONCAMPAIGNS_TARGET_AMOUNT'	=> $values['target_amount'],
 			'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'	=> (string) $this->config['donationcampaigns_currency_symbol'],
+			// The label sits on the same side of the field as the symbol sits
+			// of every displayed amount (ADR-017).
+			'S_DONATIONCAMPAIGNS_SYMBOL_BEFORE'	=> !empty($this->config['donationcampaigns_currency_symbol_before']),
 			'DONATIONCAMPAIGNS_EXTERNAL_URL'	=> $values['external_url'],
 			'DONATIONCAMPAIGNS_LINK_TEXT'		=> $values['external_link_text'],
 		));
@@ -544,6 +557,7 @@ class campaign_controller
 			'external_link_text'	=> $this->raw_text('external_link_text'),
 			'show_donor_names'		=> (bool) $this->request->variable('show_donor_names', 0),
 			'show_donation_count'	=> (bool) $this->request->variable('show_donation_count', 0),
+			'show_donation_date'	=> (bool) $this->request->variable('show_donation_date', 0),
 		);
 	}
 
@@ -577,8 +591,8 @@ class campaign_controller
 
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> $campaign['campaign_title'],
 			'DONATIONCAMPAIGNS_TOPIC_TITLE'		=> $topic['topic_title'],
-			'DONATIONCAMPAIGNS_TARGET'			=> $this->formatter->format($campaign['target_amount'], $exponent),
-			'DONATIONCAMPAIGNS_COLLECTED'		=> $this->formatter->format($campaign['collected_amount'], $exponent),
+			'DONATIONCAMPAIGNS_TARGET'			=> $this->formatter->format_money($campaign['target_amount'], $exponent),
+			'DONATIONCAMPAIGNS_COLLECTED'		=> $this->formatter->format_money($campaign['collected_amount'], $exponent),
 			'DONATIONCAMPAIGNS_COUNT'			=> $this->campaign_service->count_donations($campaign['campaign_id']),
 
 			// The topic-title link is a plain <a>. The Back button is a GET form
@@ -623,7 +637,8 @@ class campaign_controller
 			$donation_id = $donation['donation_id'];
 
 			$this->template->assign_block_vars('donationcampaigns_donation', array(
-				'AMOUNT'		=> $this->formatter->format($donation['donation_amount'], $exponent),
+				'AMOUNT'		=> $this->formatter->format_money($donation['donation_amount'], $exponent),
+				'RECEIVED_ON'	=> $this->dates->format_date($donation['donation_time']),
 				'DONOR_NAME'	=> $this->donor_label($donation['donor_name']),
 				'S_PUBLIC'		=> (bool) $donation['donation_public'],
 

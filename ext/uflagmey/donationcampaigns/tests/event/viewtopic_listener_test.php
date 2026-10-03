@@ -95,6 +95,16 @@ class viewtopic_listener_test extends \phpbb_test_case
 			'phpbb_'
 		);
 		$this->tools->perform_schema_changes($link_text->update_schema());
+		// The per-campaign donation-date flag arrived in m9.
+		$display_options = new \uflagmey\donationcampaigns\migrations\v10x\m9_display_options(
+			new \phpbb\config\config(array()),
+			$this->db,
+			$this->tools,
+			'',
+			'php',
+			'phpbb_'
+		);
+		$this->tools->perform_schema_changes($display_options->update_schema());
 
 		$this->seed();
 
@@ -126,13 +136,14 @@ class viewtopic_listener_test extends \phpbb_test_case
 		// authorise() rebuilds the listener when a test needs one.
 		$this->listener = new viewtopic_listener(
 			$service,
-			new currency_formatter($language),
+			new currency_formatter($language, $this->config),
 			$this->config,
 			$this->template,
 			$language,
 			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth(array())),
 			$user,
-			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper(),
+			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language)
 		);
 	}
 
@@ -317,8 +328,8 @@ class viewtopic_listener_test extends \phpbb_test_case
 	{
 		$this->view(10);
 
-		$this->assertSame('25.00 €', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
-		$this->assertSame('100.00 €', $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
+		$this->assertSame("25.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
+		$this->assertSame("100.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
 	}
 
 	public function test_the_currency_settings_are_honoured()
@@ -330,7 +341,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		// Exponent 0 keeps the amount whole, and public output is grouped:
 		// the box is display, not an editable field.
-		$this->assertSame('2,500 JPY', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
+		$this->assertSame("2,500\u{00A0}JPY", $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
 	}
 
 	/**
@@ -460,7 +471,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 		$this->view(10);
 
 		$this->assertContains(
-			array('NAME' => 'Anna M.', 'AMOUNT' => '10.00 €'),
+			array('NAME' => 'Anna M.', 'AMOUNT' => "10.00\u{00A0}€"),
 			$this->template->block('donationcampaigns_donor')
 		);
 	}
@@ -475,7 +486,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$rows = $this->template->block('donationcampaigns_donor');
 
-		$this->assertContains(array('NAME' => 'Anonymous', 'AMOUNT' => '12.00 €'), $rows);
+		$this->assertContains(array('NAME' => 'Anonymous', 'AMOUNT' => "12.00\u{00A0}€"), $rows);
 		$this->assertNotContains('Bernd K.', array_column($rows, 'NAME'), 'A private donor was named');
 	}
 
@@ -487,7 +498,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 		$this->view(10);
 
 		$this->assertContains(
-			array('NAME' => 'Anonymous', 'AMOUNT' => '3.00 €'),
+			array('NAME' => 'Anonymous', 'AMOUNT' => "3.00\u{00A0}€"),
 			$this->template->block('donationcampaigns_donor')
 		);
 	}
@@ -501,8 +512,8 @@ class viewtopic_listener_test extends \phpbb_test_case
 	{
 		$this->view(10);
 
-		$this->assertSame('25.00 €', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
-		$this->assertSame('100.00 €', $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
+		$this->assertSame("25.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
+		$this->assertSame("100.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
 		$this->assertStringContainsString('3', $this->template->vars['DONATIONCAMPAIGNS_COUNT']);
 	}
 
@@ -518,9 +529,9 @@ class viewtopic_listener_test extends \phpbb_test_case
 		// Nothing was truncated at the default limit.
 		$this->assertArrayNotHasKey('DONATIONCAMPAIGNS_AND_OTHERS', $this->template->vars);
 
-		$formatter = new currency_formatter($this->language());
+		$formatter = new currency_formatter($this->language(), $this->config);
 		$to_minor = static function ($displayed) use ($formatter) {
-			return $formatter->parse(str_replace(' €', '', $displayed), 2);
+			return $formatter->parse(str_replace("\u{00A0}€", '', $displayed), 2);
 		};
 
 		$sum = 0;
@@ -572,9 +583,9 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$amounts = array_column($this->template->block('donationcampaigns_donor'), 'AMOUNT');
 
-		$this->assertContains('10.00 €', $amounts);
-		$this->assertContains('12.00 €', $amounts);
-		$this->assertContains('3.00 €', $amounts);
+		$this->assertContains("10.00\u{00A0}€", $amounts);
+		$this->assertContains("12.00\u{00A0}€", $amounts);
+		$this->assertContains("3.00\u{00A0}€", $amounts);
 	}
 
 	/**
@@ -590,13 +601,14 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$german_listener = new viewtopic_listener(
 			$this->service,
-			new currency_formatter($language),
+			new currency_formatter($language, $this->config),
 			$this->config,
 			$this->template,
 			$language,
 			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth(array())),
 			$user,
-			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper(),
+			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language)
 		);
 
 		$german_listener->assign_campaign_vars(
@@ -609,8 +621,8 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$this->assertContains('Anonym', $names, 'The Anonymous label was not translated');
 		$this->assertContains('Anna M.', $names);
-		$this->assertContains('12,00 €', $amounts, 'A German amount must use the comma decimal separator');
-		$this->assertContains('10,00 €', $amounts);
+		$this->assertContains("12,00\u{00A0}€", $amounts, 'A German amount must use the comma decimal separator');
+		$this->assertContains("10,00\u{00A0}€", $amounts);
 		$this->assertNotContains('Bernd K.', $names, 'A private donor was exposed');
 	}
 
@@ -1226,7 +1238,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$this->listener = new viewtopic_listener(
 			$this->service,
-			new currency_formatter($language),
+			new currency_formatter($language, $this->config),
 			$this->config,
 			$this->template,
 			$language,
@@ -1234,7 +1246,8 @@ class viewtopic_listener_test extends \phpbb_test_case
 			// unless a test overrides it.
 			new \uflagmey\donationcampaigns\service\access(new \uflagmey\donationcampaigns\tests\unit\forum_scoped_auth($grants + array('f_read' => true))),
 			$user,
-			new \uflagmey\donationcampaigns\tests\controller\recording_helper()
+			new \uflagmey\donationcampaigns\tests\controller\recording_helper(),
+			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language)
 		);
 	}
 
@@ -1421,5 +1434,49 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		// One lookup for the public box, and nothing more for the link.
 		$this->assertLessThanOrEqual(1, $after - $before);
+	}
+
+	// ------------------------------------------------ donation dates (beta2)
+
+	/**
+	 * Off by default: an existing campaign must not start publishing dates
+	 * because the board was updated. The key is not even assigned.
+	 */
+	public function test_donation_dates_stay_hidden_unless_the_campaign_opts_in()
+	{
+		$this->view(10);
+
+		foreach ($this->template->block('donationcampaigns_donor') as $row)
+		{
+			$this->assertArrayNotHasKey('DATE', $row);
+		}
+	}
+
+	public function test_an_opted_in_campaign_lists_every_donation_with_its_day()
+	{
+		$this->db->sql_query('UPDATE phpbb_ufdc_campaigns SET show_donation_date = 1 WHERE campaign_id = 1');
+
+		$this->view(10);
+
+		$rows = $this->template->block('donationcampaigns_donor');
+		$this->assertCount(3, $rows);
+
+		foreach ($rows as $row)
+		{
+			$this->assertSame('14 Nov 2023', $row['DATE']);
+		}
+	}
+
+	/**
+	 * The symbol side is a board setting and reaches the public box.
+	 */
+	public function test_the_symbol_can_be_placed_before_the_amount()
+	{
+		$this->config->set('donationcampaigns_currency_symbol_before', 1);
+		$this->config->set('donationcampaigns_currency_symbol_space', 0);
+
+		$this->view(10);
+
+		$this->assertSame('€25.00', $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
 	}
 }

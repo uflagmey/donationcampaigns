@@ -742,4 +742,69 @@ class campaign_controller_test extends controller_test_case
 		$this->assertStringContainsString('t=10', $target);
 		$this->assertSame('Server fund', $this->campaigns->find_by_id(1)['campaign_title'], 'Cancel must not save');
 	}
+
+	// ------------------------------------------- display options (beta2)
+
+	public function test_the_create_form_proposes_showing_donation_dates()
+	{
+		$this->as_manager_a();
+		$this->request();
+		$this->controller->create(11);
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_SHOW_DATE'], 'A new campaign should propose the date');
+	}
+
+	public function test_the_donation_date_flag_is_stored_when_ticked()
+	{
+		$this->as_manager_a();
+		$this->post($this->form(array('show_donation_date' => 1)));
+		$this->controller->create(11);
+
+		$this->assertTrue($this->campaigns->find_by_topic_id(11)['show_donation_date']);
+	}
+
+	public function test_the_donation_date_flag_is_off_when_not_ticked()
+	{
+		$this->as_manager_a();
+		$this->post($this->form());
+		$this->controller->create(11);
+
+		$this->assertFalse($this->campaigns->find_by_topic_id(11)['show_donation_date']);
+	}
+
+	/**
+	 * The live finding that started ADR-017: the landing showed bare numbers
+	 * while the topic box showed the symbol.
+	 */
+	public function test_the_landing_shows_amounts_with_the_currency_symbol()
+	{
+		$this->as_admin();
+		$this->request();
+		$this->controller->manage(10);
+
+		$this->assertSame("10.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_COLLECTED']);
+		$this->assertSame("100.00\u{00A0}€", $this->template->vars['DONATIONCAMPAIGNS_TARGET']);
+	}
+
+	public function test_the_ledger_shows_each_amount_with_its_symbol_and_the_day_received()
+	{
+		$this->as_admin();
+		$this->request();
+		$this->controller->manage(10);
+
+		$row = $this->template->block('donationcampaigns_donation')[0];
+
+		$this->assertSame("10.00\u{00A0}€", $row['AMOUNT']);
+		$this->assertSame('14 Nov 2023', $row['RECEIVED_ON']);
+	}
+
+	public function test_the_amount_label_follows_the_symbol_side()
+	{
+		$this->config->set('donationcampaigns_currency_symbol_before', 1);
+		$this->as_manager_a();
+		$this->request();
+		$this->controller->create(11);
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_SYMBOL_BEFORE']);
+	}
 }

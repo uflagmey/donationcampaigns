@@ -29,6 +29,10 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_SETTINGS_CODE_EXPLAIN'		=> 'Der dreibuchstabige ISO-Code der Währung, zum Beispiel EUR, USD oder GBP.',
 	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL'				=> 'Währungssymbol',
 	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_EXPLAIN'		=> 'Wird neben jedem Betrag angezeigt, zum Beispiel € oder $. Höchstens 10 Zeichen.',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE'			=> 'Symbol vor dem Betrag',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE_EXPLAIN'	=> 'Ja: „€ 10,00“. Nein: „10,00 €“. Gilt für jeden angezeigten Betrag.',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE'			=> 'Leerzeichen zwischen Symbol und Betrag',
+	'DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE_EXPLAIN'	=> 'Nein ergibt zum Beispiel „$10.00“. Das Leerzeichen bricht nie um, Betrag und Symbol bleiben zusammen.',
 	'DONATIONCAMPAIGNS_SETTINGS_EXPONENT'			=> 'Dezimalstellen',
 	'DONATIONCAMPAIGNS_SETTINGS_EXPONENT_EXPLAIN'	=> 'Wie viele Stellen hinter dem Dezimaltrennzeichen stehen: 2 für die meisten Währungen, 0 für Yen, 3 für Dinar.',
 
@@ -90,6 +94,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING'	=> 'Spendernamen in einem öffentlich lesbaren Thema sind für Gäste und für Suchmaschinen sichtbar. Du bist dafür verantwortlich, dass jeder Spender der Veröffentlichung seines Namens zugestimmt hat. Einzelne Spenden lassen sich als nicht öffentlich kennzeichnen, und eine Spende ohne Namen wird als &bdquo;Anonym&ldquo; angezeigt.',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT'			=> 'Anzahl der Spenden anzeigen',
 	'DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN'	=> 'Zeigt, wie viele Spenden erfasst wurden, ohne jemanden namentlich zu nennen.',
+	'DONATIONCAMPAIGNS_FORM_SHOW_DATE'			=> 'Spendendatum anzeigen',
+	'DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN'	=> 'Zeigt in der Spenderliste neben Name und Betrag das Datum der Spende. Wirkt nur, wenn Spendernamen angezeigt werden. Datum und Betrag zusammen können auch eine anonyme Spende leichter zuordenbar machen.',
 
 	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED'			=> 'Die Kampagne wurde gespeichert.',
 

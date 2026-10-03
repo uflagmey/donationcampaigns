@@ -41,7 +41,7 @@ class currency_formatter_test extends \phpbb_test_case
 	 * @param string $iso
 	 * @return currency_formatter
 	 */
-	protected function formatter_for($iso)
+	protected function formatter_for($iso, array $config = array())
 	{
 		global $phpbb_root_path, $phpEx;
 
@@ -68,7 +68,11 @@ class currency_formatter_test extends \phpbb_test_case
 			return $key;
 		});
 
-		return new currency_formatter($language);
+		return new currency_formatter($language, new \phpbb\config\config($config + array(
+			'donationcampaigns_currency_symbol'			=> '€',
+			'donationcampaigns_currency_symbol_before'	=> 0,
+			'donationcampaigns_currency_symbol_space'	=> 1,
+		)));
 	}
 
 	public function parse_valid_data()
@@ -392,5 +396,83 @@ class currency_formatter_test extends \phpbb_test_case
 		{
 			$this->assertStringNotContainsString($banned, $source, "currency_formatter uses {$banned}");
 		}
+	}
+
+	// -------------------------------------------------------- format_money
+
+	/**
+	 * The symbol, its side and the separator are board settings; every
+	 * displayed amount goes through format_money(), so they cannot diverge
+	 * between the topic box, the management pages and the ACP.
+	 */
+	public function format_money_data()
+	{
+		$nbsp = "\u{00A0}";
+
+		return array(
+			// iso, config, minor, exponent, expected
+			'after with space (default)'	=> array('de', array(), 1000, 2, '10,00' . $nbsp . '€'),
+			'before with space'				=> array('de', array('donationcampaigns_currency_symbol_before' => 1), 1000, 2, '€' . $nbsp . '10,00'),
+			'before without space'			=> array('en', array('donationcampaigns_currency_symbol' => '$', 'donationcampaigns_currency_symbol_before' => 1, 'donationcampaigns_currency_symbol_space' => 0), 123456, 2, '$1,234.56'),
+			'after without space'			=> array('en', array('donationcampaigns_currency_symbol_space' => 0), 500, 2, '5.00€'),
+			'multi-character symbol'		=> array('en', array('donationcampaigns_currency_symbol' => 'CHF', 'donationcampaigns_currency_symbol_before' => 1), 1000, 2, 'CHF' . $nbsp . '10.00'),
+			'zero exponent'					=> array('en', array(), 1500, 0, '1,500' . $nbsp . '€'),
+			'zero amount'					=> array('de', array(), 0, 2, '0,00' . $nbsp . '€'),
+		);
+	}
+
+	/**
+	 * @dataProvider format_money_data
+	 */
+	public function test_format_money($iso, array $config, $minor, $exponent, $expected)
+	{
+		$this->assertSame($expected, $this->formatter_for($iso, $config)->format_money($minor, $exponent));
+	}
+
+	/**
+	 * The separator is a NON-BREAKING space: a narrow column must never wrap
+	 * between the number and its symbol.
+	 */
+	public function test_the_separator_never_breaks()
+	{
+		$money = $this->formatter_for('de')->format_money(1000, 2);
+
+		$this->assertStringNotContainsString(' ', $money, 'A plain space lets the symbol wrap onto its own line');
+		$this->assertStringContainsString("\u{00A0}", $money);
+	}
+
+	/**
+	 * A sign stays attached to the number, never to the symbol side.
+	 */
+	public function test_a_negative_value_keeps_its_sign_next_to_the_number()
+	{
+		$formatter = $this->formatter_for('en', array('donationcampaigns_currency_symbol_before' => 1));
+
+		$this->assertSame("€\u{00A0}-5.00", $formatter->format_money(-500, 2));
+	}
+
+	/**
+	 * Before the update migration has run, the two new settings do not exist
+	 * yet. The formatter must then behave exactly as beta1 did: symbol after,
+	 * separated by a space.
+	 */
+	public function test_missing_position_settings_fall_back_to_the_beta1_layout()
+	{
+		$language = $this->getMockBuilder('\\phpbb\\language\\language')->disableOriginalConstructor()->getMock();
+		$language->method('lang')->willReturnCallback(function ($key) {
+			return ($key === 'DONATIONCAMPAIGNS_DECIMAL_SEPARATOR') ? '.' : ',';
+		});
+		$formatter = new currency_formatter($language, new \phpbb\config\config(array('donationcampaigns_currency_symbol' => '€')));
+
+		$this->assertSame("10.00\u{00A0}€", $formatter->format_money(1000, 2));
+	}
+
+	/**
+	 * format() stays symbol-free: it is the number alone, for places that
+	 * place the symbol themselves (input fields) and for parse round-trips.
+	 */
+	public function test_format_itself_carries_no_symbol()
+	{
+		$this->assertSame('10.00', $this->formatter_for('en')->format(1000, 2));
 	}
 }

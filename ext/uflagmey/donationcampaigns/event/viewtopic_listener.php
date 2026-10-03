@@ -11,6 +11,7 @@ namespace uflagmey\donationcampaigns\event;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use uflagmey\donationcampaigns\service\campaign_service;
 use uflagmey\donationcampaigns\service\currency_formatter;
+use uflagmey\donationcampaigns\service\date_formatter;
 use uflagmey\donationcampaigns\service\access;
 
 /**
@@ -79,6 +80,9 @@ class viewtopic_listener implements EventSubscriberInterface
 	/** @var \phpbb\controller\helper */
 	protected $helper;
 
+	/** @var date_formatter */
+	protected $dates;
+
 	public function __construct(
 		campaign_service $campaign_service,
 		currency_formatter $formatter,
@@ -87,7 +91,8 @@ class viewtopic_listener implements EventSubscriberInterface
 		\phpbb\language\language $language,
 		access $access,
 		$user,
-		\phpbb\controller\helper $helper
+		\phpbb\controller\helper $helper,
+		date_formatter $dates
 	)
 	{
 		$this->campaign_service = $campaign_service;
@@ -98,6 +103,7 @@ class viewtopic_listener implements EventSubscriberInterface
 		$this->access = $access;
 		$this->user = $user;
 		$this->helper = $helper;
+		$this->dates = $dates;
 	}
 
 	/**
@@ -137,7 +143,6 @@ class viewtopic_listener implements EventSubscriberInterface
 		$this->language->add_lang('common', 'uflagmey/donationcampaigns');
 
 		$exponent = (int) $this->config['donationcampaigns_currency_exponent'];
-		$symbol = (string) $this->config['donationcampaigns_currency_symbol'];
 
 		$target = $campaign['target_amount'];
 		$collected = $campaign['collected_amount'];
@@ -153,8 +158,8 @@ class viewtopic_listener implements EventSubscriberInterface
 			'DONATIONCAMPAIGNS_DESC'			=> $this->render_description($campaign),
 
 			// Display strings. The stored values stay integer minor units.
-			'DONATIONCAMPAIGNS_TARGET'			=> $this->money($target, $exponent, $symbol),
-			'DONATIONCAMPAIGNS_COLLECTED'		=> $this->money($collected, $exponent, $symbol),
+			'DONATIONCAMPAIGNS_TARGET'			=> $this->money($target, $exponent),
+			'DONATIONCAMPAIGNS_COLLECTED'		=> $this->money($collected, $exponent),
 
 			// The real figure, which may exceed 100. It is what the page shows
 			// and what aria-valuetext announces, so sighted and screen-reader
@@ -187,7 +192,7 @@ class viewtopic_listener implements EventSubscriberInterface
 
 		if ($campaign['show_donor_names'])
 		{
-			$this->assign_donor_list($campaign['campaign_id'], $exponent, $symbol);
+			$this->assign_donor_list($campaign['campaign_id'], $exponent, !empty($campaign['show_donation_date']));
 		}
 	}
 
@@ -258,10 +263,10 @@ class viewtopic_listener implements EventSubscriberInterface
 	 *
 	 * @param int $campaign_id
 	 * @param int $exponent
-	 * @param string $symbol
+	 * @param bool $show_dates the campaign's "show donation date" flag
 	 * @return void
 	 */
-	protected function assign_donor_list($campaign_id, $exponent, $symbol)
+	protected function assign_donor_list($campaign_id, $exponent, $show_dates)
 	{
 		$limit = (int) $this->config['donationcampaigns_donor_list_limit'];
 
@@ -278,12 +283,23 @@ class viewtopic_listener implements EventSubscriberInterface
 				? $donation['donor_name']
 				: $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
 
-			$amount = $this->money($donation['donation_amount'], $exponent, $symbol);
+			$amount = $this->money($donation['donation_amount'], $exponent);
 
-			$this->template->assign_block_vars('donationcampaigns_donor', array(
+			$row = array(
 				'NAME'		=> $name,
 				'AMOUNT'	=> $amount,
-			));
+			);
+
+			// Only when the campaign opted in (ADR-017): for a private
+			// donation, date and amount together are easier to trace back to a
+			// person than the amount alone. When it did not, the date is not
+			// assigned at all, so it cannot reach the public template.
+			if ($show_dates)
+			{
+				$row['DATE'] = $this->dates->format_date($donation['donation_time']);
+			}
+
+			$this->template->assign_block_vars('donationcampaigns_donor', $row);
 		}
 
 		$remaining = $this->campaign_service->count_donations($campaign_id) - count($donations);
@@ -337,14 +353,16 @@ class viewtopic_listener implements EventSubscriberInterface
 	}
 
 	/**
+	 * The symbol, its side and its separator are the formatter's business
+	 * (ADR-017), so the box can never disagree with any other page.
+	 *
 	 * @param int $minor_units
 	 * @param int $exponent
-	 * @param string $symbol
 	 * @return string
 	 */
-	protected function money($minor_units, $exponent, $symbol)
+	protected function money($minor_units, $exponent)
 	{
-		return $this->formatter->format($minor_units, $exponent) . ' ' . $symbol;
+		return $this->formatter->format_money($minor_units, $exponent);
 	}
 
 	/**

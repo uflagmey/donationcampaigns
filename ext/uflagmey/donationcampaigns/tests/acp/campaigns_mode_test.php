@@ -144,8 +144,10 @@ class campaigns_mode_test extends campaign_acp_test_case
 
 		$row = $this->row_for('Server fund');
 
-		$this->assertSame('100.00', $row['TARGET']);
-		$this->assertSame('25.00', $row['COLLECTED']);
+		// The symbol is attached here too (ADR-017): the ACP list must read
+		// like every other page, not as a bare number.
+		$this->assertSame("100.00\u{00A0}€", $row['TARGET']);
+		$this->assertSame("25.00\u{00A0}€", $row['COLLECTED']);
 	}
 
 	public function test_the_percentage_is_shown()

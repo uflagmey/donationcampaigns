@@ -130,7 +130,7 @@ class settings_template_test extends \phpbb_test_case
 		include $this->package . '/language/en/info_acp_donationcampaigns.php';
 
 		// Supplied by phpBB itself.
-		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'BACK', 'ACP_NO_ITEMS');
+		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'BACK', 'ACP_NO_ITEMS', 'YES', 'NO');
 
 		foreach (array_unique($matches[1]) as $key)
 		{

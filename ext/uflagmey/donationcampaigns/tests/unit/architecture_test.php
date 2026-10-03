@@ -195,6 +195,25 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * Every DISPLAYED amount goes through format_money(), which owns the
+	 * symbol, its side and its separator (ADR-017). A bare format() call on a
+	 * display path is how the management pages ended up without a symbol.
+	 * format_for_input() and parse() remain for form fields.
+	 *
+	 * @dataProvider production_files
+	 */
+	public function test_displayed_amounts_always_carry_the_symbol($path)
+	{
+		$relative = str_replace($this->package . '/', '', $path);
+
+		$this->assertDoesNotMatchRegularExpression(
+			'/formatter->format\(/',
+			file_get_contents($path),
+			"{$relative} formats an amount for display without its currency symbol; use format_money()"
+		);
+	}
+
+	/**
 	 * The beta1 moderator permissions were replaced by forum permissions
 	 * (ADR-016). Only the two migrations that create and retire them may still
 	 * name them; anywhere else a leftover name would be a check that can never
@@ -403,7 +422,8 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
-	 * A donor row carries a computed display name and amount, and nothing else.
+	 * A donor row carries a computed display name and amount — plus, when the
+	 * campaign opted in, a formatted date — and nothing else.
 	 * The name and amount are worked out ABOVE the assignment, so no raw storage
 	 * column reaches the template: a private donor's stored name cannot leak,
 	 * and no identifier or bbcode metadata rides along. The listener is the only
@@ -413,9 +433,10 @@ class architecture_test extends \phpbb_test_case
 	{
 		$code = $this->code_of($this->package . '/event/viewtopic_listener.php');
 
-		// The donor block is built here; its keys are NAME and AMOUNT, assigned
+		// The donor row is built here, from the array literal to the block
+		// assignment; its keys are NAME, AMOUNT and the optional DATE, assigned
 		// from values computed above, never from a raw row field.
-		preg_match('/assign_block_vars\(\s*\'donationcampaigns_donor\'.*?\)\);/s', $code, $match);
+		preg_match('/\$row = array\(.*?assign_block_vars\(\s*\'donationcampaigns_donor\',\s*\$row\);/s', $code, $match);
 
 		$this->assertNotEmpty($match, 'The donor block assignment could not be found');
 

@@ -181,7 +181,11 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	public function test_the_box_needs_no_javascript_to_be_usable()
 	{
-		$this->assertStringNotContainsString('hidden', $this->template());
+		// aria-hidden on a decorative icon hides it from screen readers only;
+		// it is not an element awaiting a script.
+		$template = str_replace('aria-hidden="true"', '', $this->template());
+
+		$this->assertStringNotContainsString('hidden', $template);
 		$this->assertDoesNotMatchRegularExpression('/display\s*:\s*none/i', $this->template());
 	}
 
@@ -190,7 +194,9 @@ class prosilver_assets_test extends \phpbb_test_case
 		preg_match_all('/class="([^"]+)"/', $this->template(), $matches);
 
 		// Classes phpBB itself defines, reused for meaning rather than looks.
-		$phpbb_classes = array('panel', 'inner', 'button');
+		// The manage button reuses prosilver's secondary button and its
+		// Font Awesome icon, exactly like core's own topic buttons.
+		$phpbb_classes = array('panel', 'inner', 'button', 'button-secondary', 'icon', 'fa-fw', 'fa-pencil');
 
 		foreach ($matches[1] as $attribute)
 		{
@@ -465,5 +471,27 @@ class prosilver_assets_test extends \phpbb_test_case
 			$this->assertStringNotContainsString('|raw', $contents, basename($file) . ' marks a value safe');
 			$this->assertStringNotContainsString('autoescape', $contents);
 		}
+	}
+
+	// -------------------------------------------------- manage button (beta2)
+
+	/**
+	 * The box header offers the management landing to exactly the people the
+	 * topic-tools entry is offered to: same flag, same URL.
+	 */
+	public function test_the_manage_button_reuses_the_topic_tools_rule()
+	{
+		$this->assertMatchesRegularExpression(
+			'#<!-- IF S_DONATIONCAMPAIGNS_TOPIC_LINK -->\s*(<!--.*?-->\s*)?<a href="\{U_DONATIONCAMPAIGNS_TOPIC_LINK\}"[^>]*donationcampaigns-manage#s',
+			$this->template()
+		);
+	}
+
+	public function test_a_donation_date_is_shown_only_when_assigned()
+	{
+		$this->assertStringContainsString(
+			'<!-- IF donationcampaigns_donor.DATE --> ({donationcampaigns_donor.DATE|e})<!-- ENDIF -->',
+			$this->template()
+		);
 	}
 }

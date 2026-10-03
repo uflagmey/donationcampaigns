@@ -169,6 +169,8 @@ class main_module
 			// Escaped here: see the class docblock.
 			'DONATIONCAMPAIGNS_CURRENCY_CODE'		=> $values['donationcampaigns_currency_code'],
 			'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'		=> $values['donationcampaigns_currency_symbol'],
+			'S_DONATIONCAMPAIGNS_SYMBOL_BEFORE'		=> ((string) $values['donationcampaigns_currency_symbol_before'] === '1'),
+			'S_DONATIONCAMPAIGNS_SYMBOL_SPACE'		=> ((string) $values['donationcampaigns_currency_symbol_space'] === '1'),
 			'DONATIONCAMPAIGNS_CURRENCY_EXPONENT'	=> $exponent,
 			'DONATIONCAMPAIGNS_DONOR_LIST_LIMIT'	=> (int) $values['donationcampaigns_donor_list_limit'],
 		));
@@ -329,8 +331,8 @@ class main_module
 
 		trigger_error($language->lang(
 			'DONATIONCAMPAIGNS_RECALCULATED',
-			$formatter->format($before, $exponent),
-			$formatter->format($after, $exponent)
+			$formatter->format_money($before, $exponent),
+			$formatter->format_money($after, $exponent)
 		) . adm_back_link($this->u_action));
 	}
 
@@ -360,8 +362,8 @@ class main_module
 				'TITLE'			=> $campaign['campaign_title'],
 				'TOPIC_TITLE'	=> $campaign['topic_title'],
 				'TOPIC_ID'		=> $campaign['topic_id'],
-				'TARGET'		=> $formatter->format($target, $exponent),
-				'COLLECTED'		=> $formatter->format($collected, $exponent),
+				'TARGET'		=> $formatter->format_money($target, $exponent),
+				'COLLECTED'		=> $formatter->format_money($collected, $exponent),
 				'PERCENT'		=> ($target > 0) ? intdiv($collected * 100, $target) : 0,
 				'COUNT'			=> $campaign_service->count_donations($campaign_id),
 				'S_ENABLED'		=> $campaign['campaign_enabled'],
@@ -535,6 +537,7 @@ class main_module
 		global $request, $template, $config, $user, $phpbb_container;
 
 		$helper = $phpbb_container->get('controller.helper');
+		$dates = $phpbb_container->get('uflagmey.donationcampaigns.date_formatter');
 		$exponent = (int) $config['donationcampaigns_currency_exponent'];
 		$start = max(0, (int) $request->variable('start', 0));
 		$total = $donations->count_by_campaign($campaign_id);
@@ -545,9 +548,11 @@ class main_module
 
 			$template->assign_block_vars('donationcampaigns_donation', array(
 				'DONATION_ID'	=> $donation_id,
-				'AMOUNT'		=> $formatter->format($donation['donation_amount'], $exponent),
+				'AMOUNT'		=> $formatter->format_money($donation['donation_amount'], $exponent),
 				'DONOR_NAME'	=> $this->donor_label($donation['donor_name']),
-				'DONATED_AT'	=> $user->format_date($donation['donation_time']),
+				// A calendar day, not a moment: rendered in UTC so no viewer sees
+				// the previous day (date_formatter, ADR-017).
+				'DONATED_AT'	=> $dates->format_date($donation['donation_time']),
 				'RECORDED_AT'	=> $user->format_date($donation['donation_created']),
 				'S_PUBLIC'		=> $donation['donation_public'],
 
@@ -575,7 +580,7 @@ class main_module
 
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'		=> $campaign['campaign_title'],
 			// Derived from the receipts below. Displayed, never editable.
-			'DONATIONCAMPAIGNS_COLLECTED_AMOUNT'	=> $formatter->format($campaign['collected_amount'], $exponent),
+			'DONATIONCAMPAIGNS_COLLECTED_AMOUNT'	=> $formatter->format_money($campaign['collected_amount'], $exponent),
 		));
 	}
 
@@ -620,6 +625,13 @@ class main_module
 		}
 
 		foreach (array('donationcampaigns_currency_exponent', 'donationcampaigns_donor_list_limit') as $key)
+		{
+			$value = $request->raw_variable($key, '');
+
+			$submitted[$key] = is_scalar($value) ? (string) $value : '';
+		}
+
+		foreach (array('donationcampaigns_currency_symbol_before', 'donationcampaigns_currency_symbol_space') as $key)
 		{
 			$value = $request->raw_variable($key, '');
 

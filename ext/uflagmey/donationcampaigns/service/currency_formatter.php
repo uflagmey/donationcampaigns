@@ -34,8 +34,17 @@ class currency_formatter
 	 */
 	const GROUP_SIZE = 3;
 
+	/**
+	 * Between number and symbol: a NO-BREAK SPACE, so a narrow column never
+	 * wraps the symbol onto a line of its own.
+	 */
+	const SYMBOL_SEPARATOR = "\u{00A0}";
+
 	/** @var \phpbb\language\language */
 	protected $language;
+
+	/** @var \phpbb\config\config */
+	protected $config;
 
 	/**
 	 * Separators are LANGUAGE keys, not currency properties.
@@ -45,11 +54,17 @@ class currency_formatter
 	 * code would get that backwards, and deriving them from PHP's locale or
 	 * intl would add a dependency this extension deliberately does not carry.
 	 *
+	 * The currency SYMBOL, its side and its separator, by contrast, are board
+	 * settings: they describe the currency as the board presents it, the same
+	 * for every reader.
+	 *
 	 * @param \phpbb\language\language $language
+	 * @param \phpbb\config\config     $config
 	 */
-	public function __construct(\phpbb\language\language $language)
+	public function __construct(\phpbb\language\language $language, \phpbb\config\config $config)
 	{
 		$this->language = $language;
+		$this->config = $config;
 	}
 
 	/**
@@ -126,6 +141,40 @@ class currency_formatter
 			$this->separator('DONATIONCAMPAIGNS_DECIMAL_SEPARATOR'),
 			$this->separator('DONATIONCAMPAIGNS_THOUSANDS_SEPARATOR')
 		);
+	}
+
+	/**
+	 * Format minor units as a displayed amount WITH the currency symbol.
+	 *
+	 * The one place a symbol is attached to a number. Every page that shows an
+	 * amount — the topic box, the management landing and ledger, the ACP
+	 * lists, confirmation dialogs and log entries — calls this, so the symbol's
+	 * side and separator can never differ between them (ADR-017).
+	 *
+	 * Missing settings fall back to the beta1 layout (symbol after, separated):
+	 * the code may briefly run before the migration that adds them.
+	 *
+	 * @param int $minor_units
+	 * @param int $exponent
+	 * @return string e.g. "1.234,56 €", "€ 1.234,56", "$1,234.56"
+	 */
+	public function format_money($minor_units, $exponent)
+	{
+		$number = $this->format($minor_units, $exponent);
+		$symbol = (string) $this->config['donationcampaigns_currency_symbol'];
+
+		if ($symbol === '')
+		{
+			return $number;
+		}
+
+		$separator = (isset($this->config['donationcampaigns_currency_symbol_space']) && !$this->config['donationcampaigns_currency_symbol_space'])
+			? ''
+			: self::SYMBOL_SEPARATOR;
+
+		return !empty($this->config['donationcampaigns_currency_symbol_before'])
+			? $symbol . $separator . $number
+			: $number . $separator . $symbol;
 	}
 
 	/**

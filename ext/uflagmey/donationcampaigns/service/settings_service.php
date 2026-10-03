@@ -80,6 +80,9 @@ class settings_service
 		return array(
 			'donationcampaigns_currency_code'		=> (string) $this->config['donationcampaigns_currency_code'],
 			'donationcampaigns_currency_symbol'		=> (string) $this->config['donationcampaigns_currency_symbol'],
+			// Defaults reproduce the beta1 layout until m9 has added the keys.
+			'donationcampaigns_currency_symbol_before'	=> isset($this->config['donationcampaigns_currency_symbol_before']) ? (int) $this->config['donationcampaigns_currency_symbol_before'] : 0,
+			'donationcampaigns_currency_symbol_space'	=> isset($this->config['donationcampaigns_currency_symbol_space']) ? (int) $this->config['donationcampaigns_currency_symbol_space'] : 1,
 			'donationcampaigns_currency_exponent'	=> (int) $this->config['donationcampaigns_currency_exponent'],
 			'donationcampaigns_donor_list_limit'	=> (int) $this->config['donationcampaigns_donor_list_limit'],
 		);
@@ -142,7 +145,7 @@ class settings_service
 	/**
 	 * Validate and store.
 	 *
-	 * All four values are validated BEFORE any is written, so an invalid form
+	 * All values are validated BEFORE any is written, so an invalid form
 	 * leaves the board exactly as it was. A partial write would pair a new
 	 * currency code with the old exponent, which is a wrong amount on every
 	 * page rather than an obvious error.
@@ -170,7 +173,7 @@ class settings_service
 	}
 
 	/**
-	 * Reduce a submitted array to the four stored values, normalised.
+	 * Reduce a submitted array to the stored values, normalised.
 	 *
 	 * @param array $input
 	 * @return array
@@ -181,6 +184,8 @@ class settings_service
 			// Uppercased so 'eur' and 'EUR' are one setting, not two.
 			'donationcampaigns_currency_code'		=> utf8_strtoupper($this->text($input, 'donationcampaigns_currency_code')),
 			'donationcampaigns_currency_symbol'		=> $this->text($input, 'donationcampaigns_currency_symbol'),
+			'donationcampaigns_currency_symbol_before'	=> $this->flag($input, 'donationcampaigns_currency_symbol_before'),
+			'donationcampaigns_currency_symbol_space'	=> $this->flag($input, 'donationcampaigns_currency_symbol_space'),
 			'donationcampaigns_currency_exponent'	=> $this->number($input, 'donationcampaigns_currency_exponent'),
 			'donationcampaigns_donor_list_limit'	=> $this->number($input, 'donationcampaigns_donor_list_limit'),
 		);
@@ -230,6 +235,20 @@ class settings_service
 		}
 
 		return trim((string) $input[$key]);
+	}
+
+	/**
+	 * A yes/no setting from the input. Only an explicit "1" is yes; anything
+	 * else — missing, "0", an array, garbage — is no, so a tampered form can
+	 * never store a value other than 0 or 1.
+	 *
+	 * @param array $input
+	 * @param string $key
+	 * @return int 0 or 1
+	 */
+	protected function flag(array $input, $key)
+	{
+		return (isset($input[$key]) && is_scalar($input[$key]) && (string) $input[$key] === '1') ? 1 : 0;
 	}
 
 	/**

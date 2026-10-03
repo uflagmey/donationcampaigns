@@ -21,6 +21,10 @@ $lang = array_merge($lang, array(
 	// currency: a German board showing dollars still writes 1.234,56.
 	'DONATIONCAMPAIGNS_DECIMAL_SEPARATOR'	=> ',',
 	'DONATIONCAMPAIGNS_THOUSANDS_SEPARATOR'	=> '.',
+
+	// Datumsformat für Spendendaten (PHP date()-Syntax). Nur das Datum, keine Uhrzeit.
+	'DONATIONCAMPAIGNS_DATE_FORMAT'		=> 'd.m.Y',
+
 	// Wird im ACP angezeigt, wenn die Version des Boards zu alt oder zu neu ist.
 	'DONATIONCAMPAIGNS_UNSUPPORTED_PHPBB'	=> 'Spendenkampagnen benötigt phpBB %1$s oder neuer. Dieses Board läuft mit %2$s.',
 	'DONATIONCAMPAIGNS_TARGET'			=> 'Spendenziel',
@@ -47,6 +51,7 @@ $lang = array_merge($lang, array(
 	// veralten, sobald zwischen Aufbau der Seite und Klick eine Kampagne
 	// angelegt, gelöscht oder deaktiviert wird. Siehe ADR-014.
 	'DONATIONCAMPAIGNS_TOPIC_TOOLS_LINK'	=> 'Spendenkampagne',
+	'DONATIONCAMPAIGNS_MANAGE_BUTTON'	=> 'Verwalten',
 
 	// Validierungsfehler. Die Services werfen Sprachschlüssel statt fertiger
 	// Texte, damit der Aufrufer sie in der Sprache des Benutzers ausgibt.

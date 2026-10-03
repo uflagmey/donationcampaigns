@@ -12,6 +12,14 @@
 	margin-bottom: 10px;
 }
 
+/* The "Manage" button in the box header, for authorised users only. Floated
+   so the title keeps its full line on narrow screens instead of wrapping
+   under a button. */
+.donationcampaigns-manage {
+	float: right;
+	margin-left: 10px;
+}
+
 /* The donation ledger on the management landing. prosilver centres table
    headers by default, which reads as misaligned above the left-aligned cells
    below them; the headers are aligned with their column's data instead. */
