@@ -11,13 +11,13 @@ its progress above the first post.
 
 ## What it does
 
-An administrator — or an authorised forum moderator — creates a campaign,
+An administrator — or any user or group you authorise for that forum — creates a campaign,
 points it at an existing topic, and sets a target amount. The topic then shows
 a box above its first post with the target, the amount collected, a progress
 bar, and — optionally — the number of donations and the names of donors who
 agreed to be named.
 
-As money arrives, an administrator or an authorised forum moderator records
+As money arrives, an administrator or an authorised user records
 each payment from the topic. The public total is the sum of those records and
 nothing else.
 
@@ -34,7 +34,7 @@ extension is and what people often assume a "donation extension" is.
   not a transaction.
 - **No visitor or member can submit or confirm a donation.** There is no public
   form. Every entry is made from the topic by someone holding the appropriate
-  permission — an administrator, or a forum moderator granted the forum-scoped
+  permission — an administrator, or a user or group granted the forum-scoped
   donation permission for that forum.
 - **It does not verify anything.** It cannot check a bank statement or a
   provider's records. Whether the money truly arrived is the administrator's
@@ -128,26 +128,32 @@ the permissions UI:
   — every frontend campaign and donation action on every forum. Granted to
   `ROLE_ADMIN_FULL` and `ROLE_ADMIN_STANDARD` on installation, if those roles
   exist.
-- **`m_donationcampaigns_manage`** — moderator, **forum-scoped**. Lets the
-  holder manage the campaign *shell* on topics in that forum: create, edit,
+- **`f_donationcampaigns_manage`** — forum permission, **forum-scoped**. Lets
+  the holder manage the campaign *shell* on topics in that forum: create, edit,
   enable/disable, and delete an *empty* campaign. It does **not** grant donation
   management.
-- **`m_donationcampaigns_donations`** — moderator, **forum-scoped**. Lets the
-  holder manage the donation *ledger* on topics in that forum: add, edit and
+- **`f_donationcampaigns_donations`** — forum permission, **forum-scoped**. Lets
+  the holder manage the donation *ledger* on topics in that forum: add, edit and
   delete confirmed donations. ⚠️ This permission exposes donor names, private
   donor identities and confirmed amounts — grant it only to people you trust
   with that personal data.
 
-The two `m_` permissions are **independent**: holding one does not grant the
-other. `a_donationcampaigns` overrides both everywhere; it is not granted on
-install to non-admins.
+The two forum permissions are **independent**: holding one does not grant the
+other. `a_donationcampaigns` overrides both; it is not granted on install to
+non-admins. **Read access is required for everyone**, including the
+administrator override: nobody manages a campaign in a forum they cannot read.
 
-**Granting either `m_` permission makes the grantee a forum moderator.** phpBB
-defines a forum moderator as anyone holding an `m_` permission on that forum, so
-a user or group you grant a donation permission to appears in that forum's
-**Moderator** list on topic and forum views and gains moderator standing there.
-This is inherent to phpBB and is not a silent, invisible grant — treat it as
-promoting the grantee to a limited moderator of that forum.
+**Any group can be authorised — moderators or not.** The two permissions are
+ordinary *forum* permissions, assigned per forum on the **Forum permissions**
+tab (ACP → Permissions → Group's / User's forum permissions → Advanced
+permissions → Donation Campaigns), exactly like "Can post polls". Granting them
+gives the holder nothing else: no MCP access and no listing as a moderator.
+Neither is granted on installation.
+
+> Upgrading from 1.0.0-beta1: the beta1 moderator permissions
+> (`m_donationcampaigns_*`) are replaced and their grants are **not** carried
+> over. Re-assign the new forum permissions after updating. See
+> [RELEASE_NOTES_BETA2.md](RELEASE_NOTES_BETA2.md).
 
 ## Configuration
 
@@ -182,7 +188,7 @@ Campaigns are managed **from the topic**, not the ACP.
 5. Save, then **Back to topic** — the box is there.
 
 Campaign actions (create, edit, enable/disable, delete an empty campaign)
-require `a_donationcampaigns` or `m_donationcampaigns_manage` in that forum. The
+require `a_donationcampaigns` or `f_donationcampaigns_manage` in that forum. The
 ACP shows a read-only oversight list of campaigns and admin-only maintenance; it
 cannot create or edit one.
 
@@ -196,7 +202,7 @@ as non-existent, so a campaign there would be unreachable.
 2. On the topic, **Topic tools → Donation campaign** to open the management
    landing, then **Add confirmed donation**. The donation ledger — the button
    and the per-row Edit/Delete controls — is shown only to holders of
-   `a_donationcampaigns` or `m_donationcampaigns_donations` in that forum; a
+   `a_donationcampaigns` or `f_donationcampaigns_donations` in that forum; a
    manage-only holder does not see it.
 3. Enter the amount received, the date it arrived, and the donor's display name.
 4. Decide whether the donor may be named publicly — see
@@ -220,7 +226,7 @@ deleting them happens on the topic.
   can be linked to; none is integrated with. This is a design decision, not a
   gap — see [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/docs/DEVELOPERS.md).
 - No public donation form; every entry is made from the topic by an
-  administrator or an authorised forum moderator.
+  administrator or an authorised user.
 - **Campaigns can only be managed from their topic.** A style that does not
   provide the `viewtopic_topic_tools_after` template event therefore offers no
   way to create one — see the prosilver note above.

@@ -232,7 +232,7 @@ Verified against core source, not inferred from names.
 | `core.delete_forum_content_before_query` | `acp_forums.php:2011` | Before core's `DELETE ... WHERE forum_id` at 2013 |
 | `viewtopic_topic_tools_after` (template) | `viewtopic_topic_tools.html:46` | Last item in the wrench dropdown. That file is `INCLUDE`d **twice** (`viewtopic_body.html:44` and `:418`), so anything in it renders in both action bars — the entry therefore carries **no `id` attribute** |
 | `S_DISPLAY_TOPIC_TOOLS` | `viewtopic_topic_tools.html:1` | Referenced by the wrapper condition and assigned **nowhere in core PHP**. It exists so an extension can force the dropdown open when no core tool would have |
-| `core.permissions` | — | Declares the three permissions (`a_donationcampaigns` plus the two forum-scoped `m_donationcampaigns_*`) and their category to the ACP UI |
+| `core.permissions` | — | Declares the three permissions (`a_donationcampaigns` plus the two forum-scoped `f_donationcampaigns_*`, ADR-016) and their category to the ACP UI |
 | `overall_header_head_append` (template) | — | `INCLUDECSS` for the stylesheet |
 
 ## The escaping contract
@@ -360,6 +360,12 @@ raw topic-id workflow this decision exists to remove.
 
 ### ADR-015 — Frontend-primary management with forum-scoped moderator permissions
 
+> **Permission model superseded by ADR-016.** The frontend-primary decision,
+> the layering, the deletion policy, audit by surface and uniform denial below
+> all still stand. Only the *type* of the two forum-scoped permissions changed:
+> they are forum permissions (`f_`) since 1.0.0-beta2, not moderator
+> permissions (`m_`).
+
 Campaign **and** donation management moved out of the ACP into frontend
 controllers reached from the topic. The topic-tools **Donation campaign** entry
 now opens a management landing (`/app.php/donationcampaigns/topic/{topic_id}`)
@@ -422,12 +428,62 @@ admin-only maintenance (recalculate a total, hard-delete a non-empty campaign).
 Its former create/edit forms are gone; the list rows link out to the frontend
 routes on the topic.
 
-**Consequence, accepted deliberately.** phpBB treats any holder of an `m_`
-permission on a forum as a moderator of it, so granting either donation
-permission lists the grantee among that forum's moderators and gives them
-moderator standing there. This is inherent to phpBB's definition of a moderator
-and is documented for board owners as a real (if limited) promotion, not a
-hidden grant.
+**Consequence, accepted deliberately — and later revisited.** phpBB treats any
+holder of an `m_` permission on a forum as a moderator of it, so granting either
+donation permission lists the grantee among that forum's moderators and gives
+them moderator standing there. This is inherent to phpBB's definition of a
+moderator and was documented for board owners as a real (if limited)
+promotion, not a hidden grant. ADR-016 removes this consequence.
+
+### ADR-016 — Forum permissions (`f_`) instead of moderator permissions
+
+**Decision (1.0.0-beta2).** `m_donationcampaigns_manage` and
+`m_donationcampaigns_donations` are replaced by `f_donationcampaigns_manage`
+and `f_donationcampaigns_donations`: local, independent, granted to nothing on
+install, same meaning as before. `a_donationcampaigns` and its override are
+unchanged. Every frontend check additionally requires `f_read` on the forum.
+
+**Why.** Review feedback from the phpBB.com community: permissions should be
+assignable to any group, so a board can let moderators *or* non-moderators run
+campaigns. The `m_` options were technically assignable to any group, but in
+phpBB an `m_` grant is never only itself. Verified against 3.3.17:
+
+- `auth_admin::acl_set()` (`includes/acp/auth.php:843-858`) also sets the `m_`
+  any-flag;
+- that flag opens the MCP (`mcp.php:107`, `acl_getf_global('m_')`) and drives
+  the MCP link, topic logs and topic-type change on viewtopic
+  (`viewtopic.php:637, 668, 793`);
+- `phpbb_cache_moderators()` collects every `m_%` grant, so the holder is listed
+  as a moderator of the forum and in "The team".
+
+Forum permissions have none of these effects. They are the family phpBB uses
+for feature rights inside a forum — `f_poll` is the direct analogue — and they
+are assigned per group and per forum on the Forum permissions tab. They also
+fit the planned posting-form integration (creating a campaign while creating
+the topic), which `posting.php` gates on forum permissions.
+
+**Read access as a precondition.** With forum roles a board can easily end up
+with "may manage campaigns" but not "may read the forum". The access service
+closes that once, for everyone including the administrator override: nobody
+manages from the frontend a topic they could not open.
+
+**Upgrade: clean break, with the orphaned flag removed.** `m8_forum_permissions`
+does not carry beta1 grants over; the board owner re-assigns the new
+permissions (beta, small install base, owner decision). The migration must still
+undo the moderator standing the old grants created: `permission.remove` deletes
+only the rows of the option it removes, never the `m_` any-flag written
+alongside, so without help every former holder would keep MCP access and stay
+listed as a moderator. `clear_orphaned_flags()` deletes that YES flag for each
+group, user and role whose only YES moderator options were ours; it runs before
+the removal, while the grants still show who held them, which keeps every step
+stateless. The moderator cache is rebuilt last. `m7` is left untouched as a
+shipped migration; `m8`'s revert re-creates the `m_` options ungranted so m7's
+own revert still finds them.
+
+**Unchanged on purpose.** Frontend actions still log to the **moderator log**
+(audit by surface, ADR-015), also when the actor is not a moderator; the entry
+is filed against forum and topic and is readable in the ACP moderator log and in
+the MCP by the forum's moderators.
 
 ## Styles
 

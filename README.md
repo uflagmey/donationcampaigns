@@ -3,12 +3,13 @@
 A phpBB 3.3 extension that attaches a fundraising campaign to a topic and shows
 its progress — target, amount collected and a progress bar — above the first
 post. Donations are **confirmed receipts recorded from the topic by an
-administrator or an authorised forum moderator**; the extension processes no
+administrator or any user or group authorised for that forum**; the extension processes no
 payments and stores no payment data.
 
-> **Status:** `1.0.0-beta1` — management moved from the ACP to the topic, with
-> forum-scoped moderator permissions. Not yet submitted to the phpBB Extension
-> Database.
+> **Status:** `1.0.0-beta1` released — management moved from the ACP to the
+> topic. In development for `1.0.0-beta2`: the forum-scoped moderator
+> permissions are replaced by ordinary forum permissions that can be granted to
+> any group. Not yet submitted to the phpBB Extension Database.
 
 ## The extension lives here
 

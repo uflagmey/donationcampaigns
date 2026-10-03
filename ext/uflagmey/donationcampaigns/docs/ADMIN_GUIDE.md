@@ -41,32 +41,49 @@ Campaigns** category in the permissions UI.
 Administrator roles receive it automatically at installation. It governs the ACP
 (settings, the read-only oversight lists, and the admin-only maintenance:
 recalculate a total, hard-delete a non-empty campaign) and, as an override,
-every frontend campaign and donation action on every forum. An administrator can
-do everything from the topic as well as from the ACP.
+every frontend campaign and donation action on every forum the administrator
+can read. An administrator can do everything from the topic as well as from the
+ACP.
 
-The other two are **moderator, forum-scoped** — you grant them to a user or
-group on the specific forums whose campaigns they should manage:
+The other two are **forum permissions, forum-scoped** — you grant them to any
+user or group, moderators or not, on the specific forums whose campaigns they
+should manage. They sit on the **Forum permissions** tab, next to phpBB's own
+"Can post polls":
 
-- **`m_donationcampaigns_manage`** lets the holder manage the campaign *shell* on
+**ACP → Permissions → Group's forum permissions** (or User's forum
+permissions) → choose the group and the forum(s) → **Advanced permissions** →
+category **Donation Campaigns**.
+
+- **`f_donationcampaigns_manage`** lets the holder manage the campaign *shell* on
   topics in that forum: create, edit, enable/disable, and delete an *empty*
   campaign. It does **not** grant donation management.
-- **`m_donationcampaigns_donations`** lets the holder manage the donation
+- **`f_donationcampaigns_donations`** lets the holder manage the donation
   *ledger* on topics in that forum: add, edit and delete confirmed donations.
 
-The two moderator permissions are **independent**: holding one does not grant
-the other. `a_donationcampaigns` overrides both.
+The two forum permissions are **independent**: holding one does not grant the
+other. `a_donationcampaigns` overrides both. Neither is granted on installation,
+and neither is part of any default role: assign them explicitly, or add them to
+a forum role of your own.
 
-> ⚠️ **`m_donationcampaigns_donations` exposes personal data.** It reveals donor
+**Read access is required.** Whoever manages a campaign — including an
+administrator through the override — must be able to read the forum. Without
+*Can read forum* there, the management entry is not shown and every management
+page answers "not found".
+
+Granting these permissions gives the holder nothing else: no access to the
+Moderator Control Panel, no other moderator ability, and no listing as a
+moderator of the forum.
+
+> ⚠️ **`f_donationcampaigns_donations` exposes personal data.** It reveals donor
 > names, private donor identities and confirmed amounts. Grant it only to people
 > you trust with that information.
 
-> ⚠️ **Granting either moderator permission makes the grantee a forum
-> moderator.** phpBB treats anyone holding an `m_` permission on a forum as a
-> moderator of it: the user or group you grant a donation permission to will
-> appear in that forum's **Moderator** list on topic and forum views and gain
-> moderator standing there. This is how phpBB defines moderators — it is not a
-> silent, hidden grant. Treat granting these permissions as promoting the
-> grantee to a (limited) moderator of that forum.
+> **Upgrading from 1.0.0-beta1.** beta1 used two *moderator* permissions
+> (`m_donationcampaigns_manage`, `m_donationcampaigns_donations`). The update
+> removes them together with their grants and with the moderator standing they
+> gave, and adds the two forum permissions above, granted to nobody. Re-assign
+> them after updating. A custom permission role you built only for the old
+> permissions is left in place but empty; delete it if you no longer need it.
 
 ## 3. Configure the currency
 
@@ -129,9 +146,9 @@ date.
 
 The entry shows to anyone who can manage the campaign shell **or** the donations
 in that forum — administrators (via the `a_donationcampaigns` override) and
-forum moderators holding either `m_donationcampaigns_manage` or
-`m_donationcampaigns_donations` for that forum. It is invisible to everyone
-else, including guests.
+users or groups holding either `f_donationcampaigns_manage` or
+`f_donationcampaigns_donations` for that forum, provided they can read it. It
+is invisible to everyone else, including guests.
 
 | Field | Notes |
 |---|---|
@@ -191,8 +208,8 @@ Only after it has arrived and you have checked.
 Recording happens **from the topic**, not the ACP. Open the topic, then **Topic
 tools → Donation campaign** to reach the management landing, and click **Add
 confirmed donation**. The donation ledger is shown only to an administrator or a
-holder of `m_donationcampaigns_donations` for that forum; a manage-only
-moderator does not see it.
+holder of `f_donationcampaigns_donations` for that forum; a manage-only
+holder does not see it.
 
 | Field | Notes |
 |---|---|
@@ -220,7 +237,7 @@ whether you did. See [PRIVACY.md](PRIVACY.md).
 ## 7. Edit or delete a confirmed entry
 
 Donations are edited and deleted **from the topic**, from the same management
-landing, by an administrator or a holder of `m_donationcampaigns_donations` for
+landing, by an administrator or a holder of `f_donationcampaigns_donations` for
 that forum. Editing recalculates the total. So does deleting — the confirmation
 names the amount and donor so you can see what you are about to destroy.
 
@@ -230,7 +247,7 @@ moved to another campaign; delete it and record it under the right one.
 **Deleting a campaign — the policy differs by where you do it:**
 
 - **From the topic**, only an *empty* campaign (no confirmed donations) can be
-  deleted, by an administrator or a holder of `m_donationcampaigns_manage`. A
+  deleted, by an administrator or a holder of `f_donationcampaigns_manage`. A
   non-empty campaign is refused there — disable it instead, or ask an
   administrator to delete it.
 - **From the ACP**, an administrator (`a_donationcampaigns`) *may* hard-delete a
@@ -269,8 +286,10 @@ on the surface the action was performed on.
 
 - **Actions taken from the topic** — creating, editing, enabling/disabling or
   deleting a campaign, and adding, editing or deleting a donation — are recorded
-  in the **moderator log**, scoped to that forum and topic. Read it in the MCP
-  (**Moderator Control Panel → Forum logs**).
+  in the **moderator log**, scoped to that forum and topic — also when the
+  person acting is not a moderator. Read it in the ACP (**Maintenance →
+  Moderator log**) or, as a moderator of the forum, in the MCP (**Moderator
+  Control Panel → Forum logs**).
 - **Actions taken in the ACP** — hard-deleting a campaign, recalculating a
   total, and changing settings — are recorded in the **administrator log**
   (**ACP → Maintenance → Logs**).
