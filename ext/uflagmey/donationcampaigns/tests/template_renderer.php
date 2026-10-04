@@ -27,9 +27,11 @@ namespace uflagmey\donationcampaigns\tests;
  *     through phpBB's lexer, exactly as on the board, with autoescape off.
  *   - Block rows get phpBB's own row variables (S_ROW_COUNT, S_FIRST_ROW,
  *     S_LAST_ROW, S_NUM_ROWS) from phpbb\template\context.
- *   - lang() is phpBB's, over a language object with no language files
- *     loaded, so {L_KEY} and {{ lang('KEY') }} render as KEY. Whether a key
- *     has a translation is the language tests' business.
+ *   - lang() is phpBB's, over a language object to which the extension's
+ *     language files are never added, so the extension's {L_KEY} and
+ *     {{ lang('KEY') }} render as KEY. (phpbb\language\language loads core's
+ *     own common.php on first use, so core keys such as SUBMIT translate.)
+ *     Whether a key has a translation is the language tests' business.
  *   - Core's overall_header.html, overall_footer.html and pagination.html are
  *     stubs: the board's own markup is not under test here. The header and
  *     footer stubs carry only what core's carry for assets, {$STYLESHEETS}

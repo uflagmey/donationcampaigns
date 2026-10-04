@@ -57,7 +57,8 @@ class template_engine_test extends \phpbb_test_case
 	}
 
 	/**
-	 * No language file is loaded, so a language key renders as itself.
+	 * The extension's language files are not loaded, so a key that is not
+	 * core's renders as itself.
 	 */
 	public function test_a_language_key_renders_as_the_key()
 	{
