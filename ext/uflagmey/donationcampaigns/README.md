@@ -21,6 +21,10 @@ As money arrives, an administrator or an authorised user records
 each payment from the topic. The public total is the sum of those records and
 nothing else.
 
+Optionally, a board-wide page (`app.php/donationcampaigns`, linked from the
+quick links) lists every campaign a visitor may see, with its progress. It is
+off until an administrator switches it on, and it names no donors.
+
 ## What it does not do
 
 Read this part before installing. It is the difference between what this
@@ -109,7 +113,7 @@ php bin/phpbbcli.php cache:purge
 
 | Action | Effect |
 |---|---|
-| **Enable** | Creates two tables, four configuration settings, the three permissions and their permission category, and the ACP menu |
+| **Enable** | Creates two tables, seven configuration settings, the three permissions and their permission category, and the ACP menu |
 | **Disable** | Hides the campaign box and the ACP menu. **All data is kept**, and re-enabling restores everything |
 | **Purge** | **Destroys all campaigns and donations**, and removes the tables, settings and permissions. This cannot be undone |
 | **Upgrade** | Replace the files and run `php bin/phpbbcli.php db:migrate`. Migrations are idempotent and safe to re-run |
@@ -167,6 +171,7 @@ Neither is granted on installation.
 | Space between symbol and amount | Yes | No gives `$10.00`. The space never wraps |
 | Decimal places | `2` | 0–4. `0` for yen, `3` for dinar |
 | Donors listed | `25` | 1–500, before the box summarises the rest |
+| Show the campaign list page | No | Yes adds the board-wide list at `app.php/donationcampaigns` and a quick-links entry. It shows only campaigns the visitor could also see in their topic, and no donor names |
 
 ⚠️ **Changing "Decimal places" after donations exist changes how every stored
 amount is read, and converts nothing.** An amount stored as `1000` shows as
@@ -238,8 +243,8 @@ deleting them happens on the topic.
   is not applied to them.
 - prosilver only.
 - No bulk deletion of donations.
-- The ACP campaign list and donation list paginate at 25 rows; there is no
-  search.
+- The ACP campaign list, the donation list and the public campaign list
+  paginate at 25 rows; there is no search and no filter.
 - **Not yet reviewed in a browser across styles and screen sizes.**
 - Databases other than SQLite and MariaDB have not been executed.
 - The phpBB validation and development policies have not been reviewed, so no

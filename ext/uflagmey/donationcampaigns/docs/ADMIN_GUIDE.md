@@ -113,6 +113,7 @@ moderator of the forum.
   between number and symbol.
 - **Decimal places** — `2` for most currencies, `0` for yen, `3` for dinar
 - **Donors listed** — how many names the public box shows before summarising
+- **Show the campaign list page** — see step 9b
 
 ### ⚠️ Changing the decimal places later
 
@@ -305,6 +306,36 @@ lists it read-only.
 
 Use this when a campaign has finished but you want the records.
 
+## 9b. The board-wide campaign list
+
+**ACP → Extensions → Donation campaigns → Settings → Show the campaign list
+page.** Off by default; an update never switches it on.
+
+When it is on, the page `app.php/donationcampaigns` lists the campaigns, newest
+first, 25 per page, and the quick-links menu gains a **Donation campaigns**
+entry. Each row shows the campaign title (linked to its topic), the forum, the
+progress bar, collected / target / percent and — if the campaign shows it — the
+number of donations. **It never shows donor names**; those stay in the topic.
+
+A visitor sees exactly the campaigns whose box they could see in the topic:
+
+- the campaign is enabled;
+- the topic exists and has not been moved away (a moved shadow is skipped);
+- the visitor may read the forum;
+- the topic is approved and not soft-deleted — moderators who may approve in
+  that forum also see unapproved and soft-deleted topics, as in the forum;
+- the forum has no password, or the visitor has already entered it in this
+  session.
+
+So guests see the campaigns in forums guests may read, and a campaign in a
+staff-only forum stays invisible to everyone else. Campaigns that have reached
+their target are listed like the others, with a full bar.
+
+The quick-links entry is shown to everyone while the page is on, even to a
+visitor for whom the list is empty. prosilver hides the whole quick-links menu
+when quick links and search are both unavailable to a visitor; the page itself
+still works at its address.
+
 ## 9a. Where actions are logged
 
 "Who did what, and where" is read from the log the entry lands in, which depends
@@ -362,5 +393,13 @@ was changed after the data was recorded. See step 3.
 
 **A donor's name appears when it should not.** Check both switches: the
 campaign's *Show donor names* and that donation's *Show donor publicly*.
+
+**The campaign list says the page could not be found.** The list is switched off (the
+default) — see step 9b. After updating the files, purge the cache before
+testing.
+
+**A campaign is missing from the campaign list.** Check the five conditions in
+step 9b; the most common causes are a disabled campaign, a forum the visitor
+may not read, and a password-protected forum not yet entered.
 
 **Menu entries have vanished.** The extension is disabled. Data is intact.

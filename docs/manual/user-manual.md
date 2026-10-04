@@ -58,6 +58,7 @@ Go to **ACP** → **Extensions** → **Donation campaigns** → **Settings**.
 | **Space between symbol and amount** | *Yes* (default) keeps them apart, *No* gives e.g. "$10.00". The space never wraps, so amount and symbol stay together |
 | **Decimal places** | `2` for most currencies, `0` for yen, `3` for dinar |
 | **Donors listed** | How many donor names the public box shows before summarising the rest |
+| **Show the campaign list page** | *No* (default). *Yes* adds a page listing all campaigns and a **Donation campaigns** entry in the quick links (see §8) |
 
 > ⚠ **Set the decimal places before recording your first donation.** Amounts are stored as whole
 > numbers of the smallest unit (250.00 € is stored as `25000`). Changing this setting later
@@ -182,6 +183,19 @@ included with its amount; a private donation appears as *Anonymous* with its amo
 With the donation date switched on, a donor-list entry reads like this:
 "Laura Fischer — 20.00 € (3 Oct 2026)".
 
+### The campaign list
+
+If the administrator has switched on **Show the campaign list page** (§3), the quick-links menu
+offers **Donation campaigns**. The page lists the campaigns, newest first, 25 per page: the
+campaign title (a link to its topic), the forum, the progress bar, collected against target with
+the percentage and — if the campaign shows it — the number of donations. **It never shows donor
+names**; those stay in the topic.
+
+Each visitor sees only the campaigns whose box they could also see in the topic: enabled campaigns
+in forums they may read, on topics that are approved and not deleted, and not in a
+password-protected forum they have not entered yet. Guests therefore see the campaigns in forums
+guests may read. A campaign that has reached its target is listed like the others, with a full bar.
+
 ## 9. Administrator oversight
 
 The ACP (**ACP** → **Extensions** → **Donation campaigns**) is for **oversight and maintenance**, not
@@ -213,6 +227,8 @@ the ACP is recorded in the **administrator log** (**ACP** → **Maintenance** �
 | The **Donation campaign** menu entry or the **Manage** button is missing | The user has neither management permission on that forum, or cannot read the forum (see §4). After an update from beta1: re-assign the permissions (see §2) |
 | The **Add confirmed donation** button is missing | The *Manage confirmed donations* permission is missing — it is independent of *Manage donation campaigns* |
 | A test user sees everything without holding the permissions | Is the user an administrator or founder? Then administrator access applies (see §4) |
+| The campaign list says the page could not be found | **Show the campaign list page** is switched off (default, see §3). After an update: purge the cache |
+| A campaign is missing from the campaign list | Is it **enabled**? May the visitor read the forum? Is the forum password-protected and not yet entered? (see §8) |
 
 ---
 

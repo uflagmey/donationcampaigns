@@ -61,6 +61,7 @@ Gehe zu **Administrationsbereich** → **Erweiterungen** → **Spendenkampagnen*
 | **Leerzeichen zwischen Symbol und Betrag** | *Ja* (Standard) hält beide auseinander, *Nein* ergibt z. B. „$10.00“. Das Leerzeichen bricht nie um, Betrag und Symbol bleiben zusammen |
 | **Dezimalstellen** | `2` für die meisten Währungen, `0` für Yen, `3` für Dinar |
 | **Angezeigte Spender** | Wie viele Spendernamen die öffentliche Box nennt, bevor sie den Rest zusammenfasst |
+| **Seite mit der Kampagnenliste anzeigen** | *Nein* (Standard). *Ja* fügt eine Seite mit allen Kampagnen und in den Schnelllinks den Eintrag **Spendenkampagnen** hinzu (siehe §8) |
 
 > ⚠ **Stelle die Dezimalstellen ein, bevor du die erste Spende erfasst.** Beträge werden als ganze
 > Zahlen der kleinsten Einheit gespeichert (250,00 € werden als `25000` gespeichert). Eine spätere
@@ -194,6 +195,20 @@ wird also nie verborgen.
 Mit eingeschaltetem Spendendatum sieht ein Eintrag der Spenderliste so aus:
 „Forenkönig — 15,00 € (03.10.2026)“.
 
+### Die Kampagnenliste
+
+Hat der Administrator **Seite mit der Kampagnenliste anzeigen** eingeschaltet (§3), bieten die
+Schnelllinks den Eintrag **Spendenkampagnen**. Die Seite listet die Kampagnen, die neuesten zuerst,
+25 pro Seite: den Kampagnentitel (ein Link zum Thema), das Forum, den Fortschrittsbalken, den
+gesammelten Betrag gegenüber dem Spendenziel mit Prozentangabe und – wenn die Kampagne sie zeigt –
+die Anzahl der Spenden. **Spendernamen erscheinen dort nie**; sie bleiben im Thema.
+
+Jeder Besucher sieht nur die Kampagnen, deren Box er auch im Thema sehen könnte: aktivierte
+Kampagnen in Foren, die er lesen darf, in freigegebenen und nicht gelöschten Themen und nicht in
+einem passwortgeschützten Forum, dessen Passwort er noch nicht eingegeben hat. Gäste sehen also die
+Kampagnen in den Foren, die Gäste lesen dürfen. Eine Kampagne, die ihr Ziel erreicht hat, wird wie
+die anderen gelistet, mit vollem Balken.
+
 ## 9. Verwaltung und Aufsicht (ACP)
 
 Das ACP (**Administrationsbereich** → **Erweiterungen** → **Spendenkampagnen**) dient der **Aufsicht
@@ -227,6 +242,8 @@ ACP geschieht, wird im **Administrationsprotokoll** festgehalten (**Administrati
 | Der Menüpunkt **Spendenkampagne** oder die Schaltfläche **Verwalten** fehlt | Der Benutzer hat auf diesem Forum keine der Verwaltungs-Berechtigungen oder darf das Forum nicht lesen (siehe §4). Nach einem Update von beta1: Berechtigungen neu vergeben (siehe §2) |
 | Die Schaltfläche **Bestätigte Spende erfassen** fehlt | Die Berechtigung *Kann bestätigte Spenden verwalten* fehlt – sie ist unabhängig von *Kann Spendenkampagnen verwalten* |
 | Ein Testbenutzer sieht alles, obwohl er keine Berechtigungen hat | Ist er Administrator oder Gründer? Dann greift der Administrator-Zugriff (siehe §4) |
+| Die Kampagnenliste meldet, dass die Seite nicht gefunden wurde | **Seite mit der Kampagnenliste anzeigen** ist ausgeschaltet (Standard, siehe §3). Nach einem Update: Cache leeren |
+| Eine Kampagne fehlt in der Kampagnenliste | Ist sie **aktiviert**? Darf der Besucher das Forum lesen? Ist das Forum passwortgeschützt und das Passwort noch nicht eingegeben? (siehe §8) |
 
 ---
 
