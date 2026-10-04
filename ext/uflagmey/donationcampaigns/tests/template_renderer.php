@@ -31,7 +31,10 @@ namespace uflagmey\donationcampaigns\tests;
  *     loaded, so {L_KEY} and {{ lang('KEY') }} render as KEY. Whether a key
  *     has a translation is the language tests' business.
  *   - Core's overall_header.html, overall_footer.html and pagination.html are
- *     empty stubs: the board's own markup is not under test here.
+ *     stubs: the board's own markup is not under test here. The header and
+ *     footer stubs carry only what core's carry for assets, {$STYLESHEETS}
+ *     and {$SCRIPTS}, so INCLUDECSS and INCLUDEJS output lands in the page as
+ *     on the board.
  *   - The extension's @uflagmey_donationcampaigns namespace resolves to its
  *     prosilver template/ and theme/ directories, as phpbb\template\twig\twig
  *     registers it; INCLUDECSS and INCLUDEJS resolve real files.
@@ -170,9 +173,17 @@ class template_renderer
 				mkdir(self::$work_dir);
 			}
 
-			foreach (array('overall_header.html', 'overall_footer.html', 'pagination.html') as $stub)
+			// The asset placeholders sit where core's own header and footer put
+			// them (prosilver and adm overall_header.html / overall_footer.html).
+			$stubs = array(
+				'overall_header.html'	=> '{$STYLESHEETS}',
+				'overall_footer.html'	=> '{$SCRIPTS}',
+				'pagination.html'		=> '',
+			);
+
+			foreach ($stubs as $stub => $content)
 			{
-				file_put_contents(self::$work_dir . '/' . $stub, '');
+				file_put_contents(self::$work_dir . '/' . $stub, $content);
 			}
 
 			$work_dir = self::$work_dir;

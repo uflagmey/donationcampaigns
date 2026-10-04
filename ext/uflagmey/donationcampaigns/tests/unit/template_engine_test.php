@@ -76,6 +76,18 @@ class template_engine_test extends \phpbb_test_case
 	}
 
 	/**
+	 * A script included with INCLUDEJS reaches the page through the footer's
+	 * asset placeholder, as on the board, so a test can see whether it loads.
+	 */
+	public function test_an_included_script_reaches_the_footer()
+	{
+		$html = template_renderer::render('<!-- INCLUDEJS donationcampaigns_settings.js --><!-- INCLUDE overall_footer.html -->', array());
+
+		$this->assertMatchesRegularExpression('#<script src="[^"]*adm/style/donationcampaigns_settings\.js\?assets_version=1"></script>#', $html);
+		$this->assertSame('', trim(template_renderer::render('<!-- INCLUDE overall_footer.html -->', array())));
+	}
+
+	/**
 	 * The extension's namespace reaches its theme directory, as on the board:
 	 * INCLUDECSS of the shipped stylesheet resolves instead of failing.
 	 */
