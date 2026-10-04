@@ -90,12 +90,18 @@ class navbar_listener_test extends \phpbb_test_case
 		$file = $this->package . '/styles/prosilver/template/event/navbar_header_quick_links_after.html';
 		$this->assertFileExists($file);
 
-		$template = trim(file_get_contents($file));
+		$template = file_get_contents($file);
 
-		$this->assertStringStartsWith('<!-- IF S_DONATIONCAMPAIGNS_LIST_LINK -->', $template);
-		$this->assertStringEndsWith('<!-- ENDIF -->', $template);
-		$this->assertStringContainsString('href="{U_DONATIONCAMPAIGNS_LIST}" role="menuitem"', $template);
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE}', $template);
+		// Nothing without the switch, not even an empty list item.
+		$this->assertSame('', trim(\uflagmey\donationcampaigns\tests\template_renderer::render($template, array('U_DONATIONCAMPAIGNS_LIST' => 'LIST_URL'))));
+
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render($template, array(
+			'S_DONATIONCAMPAIGNS_LIST_LINK'	=> true,
+			'U_DONATIONCAMPAIGNS_LIST'		=> 'LIST_URL',
+		));
+		$this->assertMatchesRegularExpression('#^<li>\\s*<a href="LIST_URL" role="menuitem">#', trim($html));
+		$this->assertStringContainsString('<span>DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE</span>', $html);
+		$this->assertStringEndsWith('</li>', trim($html));
 	}
 
 	/**
