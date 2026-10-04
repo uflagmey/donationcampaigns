@@ -51,12 +51,6 @@ class architecture_test extends \phpbb_test_case
 		'styles/prosilver/template/donationcampaigns_donation_form.html',
 		'styles/prosilver/template/donationcampaigns_list.html',
 		'styles/prosilver/template/donationcampaigns_manage.html',
-		'styles/prosilver/template/event/navbar_header_quick_links_after.html',
-		'styles/prosilver/template/event/overall_header_head_append.html',
-		'styles/prosilver/template/event/posting_editor_add_panel_tab.html',
-		'styles/prosilver/template/event/posting_layout_include_panel_body.html',
-		'styles/prosilver/template/event/viewtopic_body_poll_before.html',
-		'styles/prosilver/template/event/viewtopic_topic_tools_after.html',
 	);
 
 	/**

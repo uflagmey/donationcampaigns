@@ -1,52 +1,52 @@
-<!-- IF S_DONATIONCAMPAIGNS_SHOW -->
+{% if S_DONATIONCAMPAIGNS_SHOW %}
 <div class="panel donationcampaigns-panel">
 	<div class="inner">
-		<!-- IF S_DONATIONCAMPAIGNS_TOPIC_LINK -->
+		{% if S_DONATIONCAMPAIGNS_TOPIC_LINK %}
 			{# The same management landing and the same visibility rule as the
 			   topic-tools entry: shown to whoever may manage the shell OR the
 			   donations in this forum. Showing it is not granting it; every
 			   action re-checks server-side. #}
-			<a href="{U_DONATIONCAMPAIGNS_TOPIC_LINK}" class="button button-secondary donationcampaigns-manage" title="{L_DONATIONCAMPAIGNS_MANAGE_BUTTON}"><i class="icon fa-pencil fa-fw" aria-hidden="true"></i><span>{L_DONATIONCAMPAIGNS_MANAGE_BUTTON}</span></a>
-		<!-- ENDIF -->
-		<h3 class="donationcampaigns-title">{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}</h3>
+			<a href="{{ U_DONATIONCAMPAIGNS_TOPIC_LINK }}" class="button button-secondary donationcampaigns-manage" title="{{ lang('DONATIONCAMPAIGNS_MANAGE_BUTTON') }}"><i class="icon fa-pencil fa-fw" aria-hidden="true"></i><span>{{ lang('DONATIONCAMPAIGNS_MANAGE_BUTTON') }}</span></a>
+		{% endif %}
+		<h3 class="donationcampaigns-title">{{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}</h3>
 
-		<!-- IF DONATIONCAMPAIGNS_DESC -->
-			<div class="donationcampaigns-desc">{DONATIONCAMPAIGNS_DESC}</div>
-		<!-- ENDIF -->
+		{% if DONATIONCAMPAIGNS_DESC %}
+			<div class="donationcampaigns-desc">{{ DONATIONCAMPAIGNS_DESC }}</div>
+		{% endif %}
 
 		{% include '@uflagmey_donationcampaigns/donationcampaigns_progress.html' with {'percent': DONATIONCAMPAIGNS_PERCENT, 'percent_raw': DONATIONCAMPAIGNS_PERCENT_RAW, 'step': DONATIONCAMPAIGNS_PERCENT_STEP} only %}
 
 		<p class="donationcampaigns-figures">
-			{L_DONATIONCAMPAIGNS_COLLECTED}{L_COLON} <strong>{DONATIONCAMPAIGNS_COLLECTED|e}</strong>
+			{{ lang('DONATIONCAMPAIGNS_COLLECTED') }}{{ lang('COLON') }} <strong>{{ DONATIONCAMPAIGNS_COLLECTED|e }}</strong>
 			&mdash;
-			{L_DONATIONCAMPAIGNS_TARGET}{L_COLON} <strong>{DONATIONCAMPAIGNS_TARGET|e}</strong>
+			{{ lang('DONATIONCAMPAIGNS_TARGET') }}{{ lang('COLON') }} <strong>{{ DONATIONCAMPAIGNS_TARGET|e }}</strong>
 			&mdash;
-			{DONATIONCAMPAIGNS_PERCENT_RAW}%
+			{{ DONATIONCAMPAIGNS_PERCENT_RAW }}%
 		</p>
 
-		<!-- IF S_DONATIONCAMPAIGNS_REACHED -->
-			<p class="donationcampaigns-reached">{L_DONATIONCAMPAIGNS_TARGET_REACHED}</p>
-		<!-- ENDIF -->
+		{% if S_DONATIONCAMPAIGNS_REACHED %}
+			<p class="donationcampaigns-reached">{{ lang('DONATIONCAMPAIGNS_TARGET_REACHED') }}</p>
+		{% endif %}
 
-		<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT and DONATIONCAMPAIGNS_COUNT -->
-			<p class="donationcampaigns-count">{DONATIONCAMPAIGNS_COUNT}</p>
-		<!-- ENDIF -->
+		{% if S_DONATIONCAMPAIGNS_SHOW_COUNT and DONATIONCAMPAIGNS_COUNT %}
+			<p class="donationcampaigns-count">{{ DONATIONCAMPAIGNS_COUNT }}</p>
+		{% endif %}
 
-		<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS and .donationcampaigns_donor -->
+		{% if S_DONATIONCAMPAIGNS_SHOW_DONORS and loops.donationcampaigns_donor|length %}
 			<p class="donationcampaigns-donors">
-				<strong>{L_DONATIONCAMPAIGNS_DONORS}{L_COLON}</strong><br>
+				<strong>{{ lang('DONATIONCAMPAIGNS_DONORS') }}{{ lang('COLON') }}</strong><br>
 				{# Each confirmed donation on its own line: the donor's name, or
 				   "Anonymous" for a private or nameless one, and the amount. #}
-				<!-- BEGIN donationcampaigns_donor -->{donationcampaigns_donor.NAME|e} &mdash; {donationcampaigns_donor.AMOUNT|e}<!-- IF donationcampaigns_donor.DATE --> ({donationcampaigns_donor.DATE|e})<!-- ENDIF --><!-- IF not donationcampaigns_donor.S_LAST_ROW --><br><!-- ENDIF --><!-- END donationcampaigns_donor -->
-				<!-- IF DONATIONCAMPAIGNS_AND_OTHERS --><br>{DONATIONCAMPAIGNS_AND_OTHERS}<!-- ENDIF -->
+				{% for donationcampaigns_donor in loops.donationcampaigns_donor %}{{ donationcampaigns_donor.NAME|e }} &mdash; {{ donationcampaigns_donor.AMOUNT|e }}{% if donationcampaigns_donor.DATE %} ({{ donationcampaigns_donor.DATE|e }}){% endif %}{% if not donationcampaigns_donor.S_LAST_ROW %}<br>{% endif %}{% endfor %}
+				{% if DONATIONCAMPAIGNS_AND_OTHERS %}<br>{{ DONATIONCAMPAIGNS_AND_OTHERS }}{% endif %}
 			</p>
-		<!-- ENDIF -->
+		{% endif %}
 
-		<!-- IF DONATIONCAMPAIGNS_URL -->
+		{% if DONATIONCAMPAIGNS_URL %}
 			<p class="donationcampaigns-link">
-				<a href="{DONATIONCAMPAIGNS_URL|e}" class="button donationcampaigns-donate" rel="noopener noreferrer nofollow">{DONATIONCAMPAIGNS_LINK_TEXT|e}</a>
+				<a href="{{ DONATIONCAMPAIGNS_URL|e }}" class="button donationcampaigns-donate" rel="noopener noreferrer nofollow">{{ DONATIONCAMPAIGNS_LINK_TEXT|e }}</a>
 			</p>
-		<!-- ENDIF -->
+		{% endif %}
 	</div>
 </div>
-<!-- ENDIF -->
+{% endif %}
