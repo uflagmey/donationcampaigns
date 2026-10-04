@@ -19,6 +19,20 @@ namespace uflagmey\donationcampaigns\tests\unit;
  */
 class architecture_test extends \phpbb_test_case
 {
+	/**
+	 * Template variables that carry a value phpBB core stored ALREADY escaped.
+	 *
+	 * Core reads a topic subject and a forum name through request->variable(),
+	 * which runs htmlspecialchars() on the way in, so topic_title and
+	 * forum_name sit in the database as "Kosten &amp; Miete". Core's own
+	 * templates print them without |e. Adding |e escapes them a second time
+	 * and the page shows "Kosten &amp; Miete" (found in beta3, F1).
+	 *
+	 * Everything the extension stores itself is stored raw and still needs |e.
+	 * Matched as a suffix, so block variables (row.TOPIC_TITLE) are covered.
+	 */
+	const CORE_ESCAPED_FIELDS = array('TOPIC_TITLE', 'FORUM_NAME');
+
 	/** @var string */
 	protected $package;
 
@@ -283,7 +297,9 @@ class architecture_test extends \phpbb_test_case
 			'DONATIONCAMPAIGNS_COLLECTED_AMOUNT', 'DONATIONCAMPAIGNS_EXTERNAL_URL',
 			'DONATIONCAMPAIGNS_DONATION_AMOUNT',
 			'DONATIONCAMPAIGNS_DONOR_NAME', 'DONATIONCAMPAIGNS_DONATION_TIME',
-			'donationcampaigns_row.TITLE', 'donationcampaigns_row.TOPIC_TITLE',
+			// donationcampaigns_row.TOPIC_TITLE is deliberately absent: it is a
+			// core-escaped field, see CORE_ESCAPED_FIELDS.
+			'donationcampaigns_row.TITLE',
 			'donationcampaigns_donation.DONOR_NAME', 'donationcampaigns_donation.AMOUNT',
 			'donationcampaigns_error.MESSAGE',
 		);
@@ -333,6 +349,37 @@ class architecture_test extends \phpbb_test_case
 		foreach (glob($this->package . '/adm/style/*.html') as $file)
 		{
 			$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC}', file_get_contents($file), basename($file));
+		}
+	}
+
+	/**
+	 * The other half of the escaping contract: a core-escaped field must NOT
+	 * carry |e, in any shipped template, frontend or ACP.
+	 */
+	public function test_core_escaped_fields_are_not_escaped_again()
+	{
+		$files = array_merge(
+			glob($this->package . '/adm/style/*.html'),
+			glob($this->package . '/styles/prosilver/template/*.html'),
+			glob($this->package . '/styles/prosilver/template/event/*.html')
+		);
+		$this->assertNotEmpty($files);
+
+		foreach ($files as $file)
+		{
+			preg_match_all('/\{([A-Za-z0-9_.]+)\|e\}/', file_get_contents($file), $matches);
+
+			foreach ($matches[1] as $var)
+			{
+				foreach (self::CORE_ESCAPED_FIELDS as $field)
+				{
+					$this->assertStringEndsNotWith(
+						$field,
+						$var,
+						basename($file) . " escapes {$var}, which core already stored escaped"
+					);
+				}
+			}
 		}
 	}
 

@@ -260,16 +260,26 @@ class campaigns_mode_test extends campaign_acp_test_case
 		$this->assertStringContainsString('&lt;script&gt;', $html);
 	}
 
-	public function test_a_malicious_topic_title_is_escaped_when_rendered()
+	/**
+	 * Regression (beta3, F1). Core stores topic_title already escaped (the
+	 * subject goes through request->variable()), and core's own templates
+	 * print it without |e. Escaping it again here showed "Kosten &amp; Miete".
+	 *
+	 * This replaces a beta1 test that stored raw markup in topic_title — a
+	 * row phpBB never writes — and therefore asserted the double escape.
+	 */
+	public function test_a_core_escaped_topic_title_is_not_escaped_twice()
 	{
-		$this->db->sql_query("UPDATE phpbb_topics SET topic_title = '<img src=x onerror=alert(1)>' WHERE topic_id = 10");
+		$stored = utf8_htmlspecialchars('Kosten & "Miete" <2026>');
+		$this->db->sql_query("UPDATE phpbb_topics SET topic_title = '" . $this->db->sql_escape($stored) . "' WHERE topic_id = 10");
 
 		$this->run_campaigns();
 
 		$html = $this->render('campaigns');
 
-		$this->assertStringNotContainsString('<img src=x', $html);
-		$this->assertStringContainsString('&lt;img', $html);
+		$this->assertStringContainsString('Kosten &amp; &quot;Miete&quot; &lt;2026&gt;', $html);
+		$this->assertStringNotContainsString('&amp;amp;', $html);
+		$this->assertStringNotContainsString('&amp;lt;', $html);
 	}
 
 	public function test_an_attribute_breakout_in_a_title_is_escaped_when_rendered()

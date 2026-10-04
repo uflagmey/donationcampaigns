@@ -322,6 +322,42 @@ abstract class controller_test_case extends \phpbb_test_case
 		$config = $this->config;
 	}
 
+	/**
+	 * Render a shipped frontend template with what the controller assigned.
+	 *
+	 * Escaping lives in the templates, so a claim about what reaches the page
+	 * has to look at rendered output rather than at assigned variables.
+	 *
+	 * @param string $file Template basename under styles/prosilver/template/
+	 * @return string
+	 */
+	protected function render_frontend($file)
+	{
+		return \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents(dirname(dirname(__DIR__)) . '/styles/prosilver/template/' . $file),
+			$this->template->vars,
+			$this->template->blocks
+		);
+	}
+
+	/**
+	 * Give a topic the title core would store for what a poster typed.
+	 *
+	 * phpBB reads the subject through request->variable(), which runs
+	 * htmlspecialchars(), so topic_title is stored ALREADY escaped. A fixture
+	 * holding raw markup describes a row core never writes.
+	 *
+	 * @param int $topic_id
+	 * @param string $typed What the poster typed
+	 * @return void
+	 */
+	protected function set_core_topic_title($topic_id, $typed)
+	{
+		$this->db->sql_query('UPDATE phpbb_topics
+			SET ' . $this->db->sql_build_array('UPDATE', array('topic_title' => utf8_htmlspecialchars($typed))) . '
+			WHERE topic_id = ' . (int) $topic_id);
+	}
+
 	// ------------------------------------------------------------- request helpers
 
 	/**

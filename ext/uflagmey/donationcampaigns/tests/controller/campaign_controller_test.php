@@ -807,4 +807,40 @@ class campaign_controller_test extends controller_test_case
 
 		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_SYMBOL_BEFORE']);
 	}
+
+	// ------------------------------------------------- core-escaped topic title
+
+	/**
+	 * Regression (beta3, F1): topic_title is stored escaped by core, so |e in
+	 * the template rendered "Kosten &amp; Miete" on the page.
+	 */
+	public function test_the_landing_does_not_escape_the_topic_title_twice()
+	{
+		$this->set_core_topic_title(10, 'Kosten & "Miete" <2026>');
+		$this->as_manager_a();
+		$this->request();
+		$this->controller->manage(10);
+
+		$html = $this->render_frontend('donationcampaigns_manage.html');
+
+		$this->assertStringContainsString('Kosten &amp; &quot;Miete&quot; &lt;2026&gt;', $html);
+		$this->assertStringNotContainsString('&amp;amp;', $html);
+		$this->assertStringNotContainsString('&amp;quot;', $html);
+		$this->assertStringNotContainsString('&amp;lt;', $html);
+	}
+
+	public function test_the_campaign_form_does_not_escape_the_topic_title_twice()
+	{
+		$this->set_core_topic_title(11, 'Kosten & "Miete" <2026>');
+		$this->as_manager_a();
+		$this->request();
+		$this->controller->create(11);
+
+		$html = $this->render_frontend('donationcampaigns_campaign_form.html');
+
+		$this->assertStringContainsString('Kosten &amp; &quot;Miete&quot; &lt;2026&gt;', $html);
+		$this->assertStringNotContainsString('&amp;amp;', $html);
+		$this->assertStringNotContainsString('&amp;quot;', $html);
+		$this->assertStringNotContainsString('&amp;lt;', $html);
+	}
 }

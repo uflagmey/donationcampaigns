@@ -524,7 +524,8 @@ class settings_template_test extends \phpbb_test_case
 		$template = $this->list_template();
 
 		$this->assertStringContainsString('{donationcampaigns_row.TITLE|e}', $template);
-		$this->assertStringContainsString('{donationcampaigns_row.TOPIC_TITLE|e}', $template);
+		// Without |e: core stores topic_title already escaped (F1).
+		$this->assertStringContainsString('{donationcampaigns_row.TOPIC_TITLE}', $template);
 		$this->assertStringNotContainsString('{donationcampaigns_row.CAMPAIGN_ID}', $template, 'A raw id is being shown as a label');
 	}
 
@@ -650,7 +651,8 @@ class settings_template_test extends \phpbb_test_case
 		// The topic is NOT among them. It is shown as a linked title and can
 		// never be retyped, so there is no input to find.
 		$this->assertStringNotContainsString('name="topic_id"', $t);
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_TOPIC_TITLE|e}', $t);
+		// Without |e: core stores topic_title already escaped (F1).
+		$this->assertStringContainsString('{DONATIONCAMPAIGNS_TOPIC_TITLE}', $t);
 	}
 
 	/**
