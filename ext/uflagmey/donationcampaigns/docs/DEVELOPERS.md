@@ -266,10 +266,9 @@ core's escaped subject into a raw campaign title with
 
 Escaping happens at output, in exactly two places:
 
-1. **Templates.** Every administrator-controlled scalar carries Twig's `|e`.
-   phpBB's lexer accepts a filter suffix on `{VAR}`, so `{VAR|e}` compiles to
-   `{{ VAR|e }}` — the idiom core uses in `prosilver/attachment.html`. No
-   `|raw`, ever, and global autoescape is never enabled.
+1. **Templates.** Every administrator-controlled scalar carries Twig's `|e`:
+   `{{ VAR|e }}`. Templates are native Twig (ADR-020). No `|raw`, ever, and
+   global autoescape is never enabled.
 2. **Sinks with no template.** `confirm_box()` renders `{MESSAGE_TEXT}` raw, and
    the ACP log viewer `sprintf`s log parameters into a language string and
    prints the result unescaped (`phpbb/log/log.php:665-710`, rendered by
@@ -282,7 +281,10 @@ Escaping happens at output, in exactly two places:
 
 A test forbids any direct `htmlspecialchars()` call in production code,
 requires `|e` on every administrator-controlled scalar in every template, and
-forbids it on the core-escaped fields.
+forbids it on the core-escaped fields. These rules read each template as
+phpBB's lexer hands it to Twig (`template_renderer::lexed()`), and each also
+asserts that it found something to check; the rendering tests show the
+escaped result on the page (see *Tests*).
 
 ## The BBCode description
 
@@ -597,7 +599,7 @@ them.
 `campaign_service::progress()` (moved out of `viewtopic_listener`; "reached" now
 needs a target above zero). The bar markup is one partial,
 `donationcampaigns_progress.html`, included by the box and the list with
-`{% include … with {…} only %}`; the test renderer understands exactly that form.
+`{% include … with {…} only %}`; the tests render it with phpBB's own engine.
 
 **Consequences.** Off by default, so an update publishes nothing. One more
 listener on every page (`core.page_header`), idle while the switch is off. The
@@ -668,11 +670,61 @@ intercepting it would mean bypassing the DBAL.
 error replaces TARGET_POSITIVE" merge, new-campaign defaults) moved unchanged out
 of `campaign_controller`; the controller tests are unchanged.
 
+### ADR-020 — Templates in native Twig only; template tests render with phpBB's engine
+
+**Decision (1.0.0-beta4).** Every template is written in native Twig. The
+spelling is exactly what phpBB's lexer produces from the legacy syntax —
+`{{ VAR|e }}`, `{{ lang('KEY') }}{{ lang('COLON') }}`, `{% if %}`,
+`{% for row in loops.row %}`, `loops.row|length` — with one deliberate
+exception: the core header, footer and pagination are included with Twig's
+lower-case `{% include '…' %}`, as core's Twig templates and the Skeleton
+Extension do. `{% INCLUDECSS %}` and `{% INCLUDEJS %}` stay upper case: they are
+phpBB's own tags and have no Twig counterpart. Developer notes are Twig
+comments `{# … #}`; nothing in a shipped template starts with `<!--`.
+
+**Why.** The phpBB Extension Check team pointed at the legacy syntax, phpBB's
+documentation ("Tutorial: Template syntax") says it will be deprecated and
+recommends Twig, and the official Skeleton Extension writes Twig only. prosilver
+is **not** the reference for template syntax: in 3.3 nearly all of its templates
+still use the legacy syntax. phpBB keeps accepting the legacy syntax by
+rewriting it in `phpbb/template/twig/lexer.php` on every compile — including
+inside HTML comments, which is how a comment that named core's `{MESSAGE}`
+printed the post text into the posting form's page source (F1, fixed in
+beta4). The lexer still runs over native Twig, so a `{WORD}` anywhere in a
+template, a comment included, is still rewritten; the guard forbids it.
+
+**How it was shown to change nothing.** Each conversion commit was checked by
+compiling old and new templates with phpBB's lexer and Twig 2.16.1 and comparing
+the PHP (`tools/beta4/compare-compiled.php`; identical except the generated
+class name and the inert namespace wrapper of `INCLUDE`), and by capturing 46
+page states on the Docker board before and after (`tools/beta4/render-snapshot.sh`,
+data from `tools/beta4/seed-board.sh`); every capture was byte-identical.
+
+**Tests.** Template tests render with phpBB's real engine
+(`tests/template_renderer.php`), built as phpBB builds it for its own template
+tests (`tests/template/template_test_case.php`): environment, twig, extension,
+lexer and context from the read-only phpBB test tree, on that tree's Twig. No
+copy of phpBB code, no Twig in require-dev; `tests/bootstrap.php` stops the suite
+on any phpBB other than 3.3.17 or Twig other than 2.16.1, it never skips.
+Consequences: conditions are evaluated, block rows carry phpBB's row variables,
+the extension's language keys render as keys (core's own `common.php` is
+loaded by phpBB on first use, so tests assert only the extension's keys or
+structure, never core texts), and the core header/footer are stubs carrying
+only `{$STYLESHEETS}`/`{$SCRIPTS}`, so INCLUDECSS/INCLUDEJS output is visible.
+Rules about the source read the template as the lexer hands it to Twig
+(`template_renderer::lexed()`), so they hold for either spelling.
+
+**Guards.** `architecture_test::test_templates_use_native_twig_only` rejects
+every legacy construct the lexer would rewrite, comments included;
+`test_templates_carry_no_html_comments` rejects any `<!--`; the HTML5 rule
+rejects a space before the end of a tag.
+
 ## Styles
 
 prosilver only, for version 1.0 (ADR-013). Templates under
-`styles/prosilver/template/`, stylesheet under `styles/prosilver/theme/`,
-included with `INCLUDECSS` from a header template event.
+`styles/prosilver/template/`, in native Twig (ADR-020); stylesheet under
+`styles/prosilver/theme/`, included with `{% INCLUDECSS %}` from a header
+template event.
 
 No inline CSS, no inline JavaScript, and **nothing requires JavaScript** —
 the progress bar's width is a CSS class per five-percent step rather than an
@@ -699,6 +751,12 @@ therefore build their schema from phpBB's own baseline migration
 (`\phpbb\db\migration\data\v30x\release_3_0_0`) and drive phpBB's real tools.
 The 3.0.0 baseline predates the 3.1 visibility columns, so fixtures that drive
 core's deletion paths add them explicitly.
+
+**Template tests render with phpBB's real engine** (`tests/template_renderer.php`,
+ADR-020): `render()` for what a page shows, `lexed()` for rules about the
+source, `inline_partials()` where a test reads a form's source with its shared
+fields. The phpBB test tree must be 3.3.17 with its `vendor/` installed (CI:
+`composer install --no-dev` there); the bootstrap stops otherwise.
 
 Integration tests call **core's own functions** — `delete_topics()`,
 `delete_posts()`, `prune()`, `auto_prune()`, `acp_forums::delete_forum()` —
