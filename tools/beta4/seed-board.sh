@@ -54,9 +54,11 @@ usage()
 }
 
 # Run PHP inside the board with phpBB booted (common.php), script on stdin.
+# As www-data, like phpBB's CLI per the board's README: booting phpBB as root
+# can leave cache files owned by root, and the board then cannot write them.
 board_php()
 {
-	docker compose -f "$COMPOSE_FILE" exec -T "$@" web sh -c 'cd /var/www/html/phpBB && php'
+	docker compose -f "$COMPOSE_FILE" exec -T -u www-data "$@" web sh -c 'cd /var/www/html/phpBB && php'
 }
 
 # One value from the board, by a fixed lookup name.
