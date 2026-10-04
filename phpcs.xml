@@ -36,8 +36,10 @@
 		comes from the including scope: phpbb\language\language_file_loader::
 		load_file($path, $component, $locale, &$lang) includes the file inside
 		that method, so $lang is its by-reference parameter. The sniff cannot
-		see that and reports $lang as undefined. The EC will still list these eight
-		lines; the justification for it is recorded in the EC plan.
+		see that and reports $lang as undefined in our local run. The phpBB
+		Extension Check does not report these lines (EC v1.11.5, VariableAnalysis
+		on 1.0.0-beta3-rc2: no issues), so this exception only concerns our own
+		check.
 	-->
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
 		<exclude-pattern>*/language/*</exclude-pattern>
