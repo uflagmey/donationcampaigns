@@ -8,11 +8,16 @@
 
 namespace uflagmey\donationcampaigns\tests\acp;
 
+use uflagmey\donationcampaigns\tests\template_renderer;
+
 /**
- * The ACP settings template, checked as a file.
+ * The ACP settings template, checked as a file and as rendered.
  *
  * A missing form token, an unlabelled field or a language key with no string
- * all fail silently at runtime, so they are asserted here.
+ * all fail silently at runtime, so they are asserted here. Where a rule is
+ * about what a page shows -- a token inside the form, a banner only in one
+ * state -- it is asserted on the page phpBB's engine renders, so it holds
+ * whichever template syntax produced it.
  */
 class settings_template_test extends \phpbb_test_case
 {
@@ -38,6 +43,109 @@ class settings_template_test extends \phpbb_test_case
 		return file_get_contents($this->file);
 	}
 
+	/**
+	 * A shipped template rendered with phpBB's engine.
+	 *
+	 * @param string $path Relative to the package root
+	 * @param array $vars
+	 * @param array $blocks
+	 * @return string
+	 */
+	protected function render($path, array $vars = array(), array $blocks = array())
+	{
+		return template_renderer::render(file_get_contents($this->package . '/' . $path), $vars, $blocks);
+	}
+
+	/**
+	 * @param array $vars
+	 * @return string
+	 */
+	protected function render_settings(array $vars = array())
+	{
+		return $this->render('adm/style/acp_donationcampaigns_settings.html', $vars);
+	}
+
+	/**
+	 * A form token as phpBB renders S_FORM_TOKEN, recognisable in the output.
+	 *
+	 * @return array
+	 */
+	protected function form_token()
+	{
+		return array('S_FORM_TOKEN' => '<input type="hidden" name="form_token" value="TOKEN_MARKER">');
+	}
+
+	/**
+	 * The one form of a rendered page.
+	 *
+	 * @param string $html
+	 * @return string
+	 */
+	protected function form_of($html)
+	{
+		$this->assertSame(1, preg_match_all('#<form\b.*?</form>#s', $html, $forms), 'Not exactly one form rendered');
+
+		return $forms[0][0];
+	}
+
+	/**
+	 * The <dl> row of a rendered form that contains $needle.
+	 *
+	 * @param string $html
+	 * @param string $needle
+	 * @return string
+	 */
+	protected function row_with($html, $needle)
+	{
+		preg_match_all('#<dl>.*?</dl>#s', $html, $rows);
+
+		foreach ($rows[0] as $row)
+		{
+			if (strpos($row, $needle) !== false)
+			{
+				return $row;
+			}
+		}
+
+		$this->fail("No form row contains {$needle}");
+	}
+
+	/**
+	 * The language keys a template uses, in either syntax: {L_KEY} or
+	 * lang('KEY').
+	 *
+	 * @param string $template
+	 * @return array
+	 */
+	protected function language_keys($template)
+	{
+		preg_match_all("/\\{L_([A-Z0-9_]+)\\}|lang\\('([A-Z0-9_]+)'\\)/", $template, $matches);
+
+		return array_values(array_unique(array_filter(array_merge($matches[1], $matches[2]))));
+	}
+
+	/**
+	 * Every opened block is closed, in either syntax, and phpBB's engine
+	 * compiles the template.
+	 *
+	 * @param string $template
+	 * @return void
+	 */
+	protected function assert_balanced($template)
+	{
+		$this->assertSame(
+			substr_count($template, '<!-- IF ') + substr_count($template, '{% if '),
+			substr_count($template, '<!-- ENDIF -->') + substr_count($template, '{% endif %}'),
+			'Unbalanced IF/ENDIF'
+		);
+		$this->assertSame(
+			substr_count($template, '<!-- BEGIN ') + substr_count($template, '{% for '),
+			substr_count($template, '<!-- END ') + substr_count($template, '{% endfor %}'),
+			'Unbalanced BEGIN/END'
+		);
+		$this->assertIsString(template_renderer::render($template, array()));
+	}
+
 	public function test_the_template_exists_where_phpbb_looks_for_it()
 	{
 		$this->assertFileExists($this->file);
@@ -59,15 +167,15 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_form_carries_a_csrf_token()
 	{
-		$this->assertStringContainsString('{S_FORM_TOKEN}', $this->template());
+		$this->assertStringContainsString('value="TOKEN_MARKER"', $this->form_of($this->render_settings($this->form_token())));
 	}
 
 	public function test_the_form_posts_to_the_module_action()
 	{
-		$template = $this->template();
+		$form = $this->form_of($this->render_settings(array('U_ACTION' => 'ACTION_URL')));
 
-		$this->assertStringContainsString('method="post"', $template);
-		$this->assertStringContainsString('action="{U_ACTION}"', $template);
+		$this->assertStringContainsString('method="post"', $form);
+		$this->assertStringContainsString('action="ACTION_URL"', $form);
 	}
 
 	public function test_there_is_no_inline_css()
@@ -121,9 +229,9 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_every_language_key_used_has_an_english_string()
 	{
-		preg_match_all('/\{L_([A-Z0-9_]+)\}/', $this->template(), $matches);
+		$keys = $this->language_keys($this->template());
 
-		$this->assertNotEmpty($matches[1]);
+		$this->assertNotEmpty($keys);
 
 		$lang = array();
 		include $this->package . '/language/en/common.php';
@@ -132,7 +240,7 @@ class settings_template_test extends \phpbb_test_case
 		// Supplied by phpBB itself.
 		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'BACK', 'ACP_NO_ITEMS', 'YES', 'NO');
 
-		foreach (array_unique($matches[1]) as $key)
+		foreach ($keys as $key)
 		{
 			if (in_array($key, $core_keys, true))
 			{
@@ -187,23 +295,16 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_confirmation_control_is_offered_only_when_needed()
 	{
-		$this->assertStringContainsString('<!-- IF S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->', $this->template());
+		$this->assertStringNotContainsString('id="donationcampaigns_confirm_exponent"', $this->render_settings());
+		$this->assertStringContainsString(
+			'id="donationcampaigns_confirm_exponent"',
+			$this->render_settings(array('S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT' => true))
+		);
 	}
 
 	public function test_the_template_is_balanced()
 	{
-		$template = $this->template();
-
-		$this->assertSame(
-			substr_count($template, '<!-- IF '),
-			substr_count($template, '<!-- ENDIF -->'),
-			'Unbalanced IF/ENDIF'
-		);
-		$this->assertSame(
-			substr_count($template, '<!-- BEGIN '),
-			substr_count($template, '<!-- END '),
-			'Unbalanced BEGIN/END'
-		);
+		$this->assert_balanced($this->template());
 	}
 
 	// ------------------------------------------------- the campaign list
@@ -224,6 +325,8 @@ class settings_template_test extends \phpbb_test_case
 	 *
 	 *     <a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">
 	 *
+	 * (or, in native Twig, style="float: {{ S_CONTENT_FLOW_END }};").
+	 *
 	 * S_CONTENT_FLOW_END is what makes it right-to-left aware, so the rule
 	 * cannot be met by hard-coding "right" either. Matching core exactly is
 	 * the point of using the pattern at all, so this one idiom is permitted
@@ -234,8 +337,8 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	protected function assert_no_inline_css_or_javascript($template)
 	{
-		$without_core_back_link = str_replace(
-			'style="float: {S_CONTENT_FLOW_END};"',
+		$without_core_back_link = preg_replace(
+			'/style="float: (\\{S_CONTENT_FLOW_END\\}|\\{\\{ S_CONTENT_FLOW_END \\}\\});"/',
 			'',
 			$template
 		);
@@ -253,14 +356,14 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_visibility_column_shows_a_state_not_an_instruction()
 	{
-		$list = $this->donation_template('donations');
-		$form = $this->donation_template('donation_form');
+		$list = $this->language_keys($this->donation_template('donations'));
+		$form = $this->language_keys($this->donation_template('donation_form'));
 
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}', $list);
-		$this->assertStringNotContainsString('{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}', $list);
+		$this->assertContains('DONATIONCAMPAIGNS_VISIBILITY_PUBLIC', $list);
+		$this->assertNotContains('DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY', $list);
 
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}', $form);
-		$this->assertStringNotContainsString('{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}', $form);
+		$this->assertContains('DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY', $form);
+		$this->assertNotContains('DONATIONCAMPAIGNS_VISIBILITY_PUBLIC', $form);
 
 		$lang = array();
 		include $this->package . '/language/en/info_acp_donationcampaigns.php';
@@ -317,6 +420,9 @@ class settings_template_test extends \phpbb_test_case
 		$this->assert_no_inline_css_or_javascript(
 			'<a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">&laquo; {L_BACK}</a>'
 		);
+		$this->assert_no_inline_css_or_javascript(
+			'<a href="{{ U_BACK }}" style="float: {{ S_CONTENT_FLOW_END }};">&laquo; {{ lang(\'BACK\') }}</a>'
+		);
 	}
 
 	// --------------------------------------- the decimal-places warning
@@ -331,15 +437,21 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_warning_is_hidden_until_a_currency_field_is_touched()
 	{
-		$template = $this->template();
-
 		// Unconditionally hidden: the banner only ever appears through the
 		// script. During confirmation it is not rendered at all.
-		$this->assertStringContainsString('role="alert" hidden>', $template);
 		$this->assertStringContainsString(
-			'<!-- IF S_DONATIONCAMPAIGNS_HAS_AMOUNTS and not S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->',
-			$template,
+			'role="alert" hidden>',
+			$this->render_settings(array('S_DONATIONCAMPAIGNS_HAS_AMOUNTS' => true))
+		);
+		$this->assertStringNotContainsString(
+			'id="donationcampaigns_exponent_warning"',
+			$this->render_settings(array('S_DONATIONCAMPAIGNS_HAS_AMOUNTS' => true, 'S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT' => true)),
 			'The banner would render alongside the server-side validation warning'
+		);
+		$this->assertStringNotContainsString(
+			'id="donationcampaigns_exponent_warning"',
+			$this->render_settings(),
+			'A board without amounts is warned about nothing'
 		);
 	}
 
@@ -362,15 +474,19 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_settings_page_loads_its_script_only_when_it_is_needed()
 	{
-		$template = $this->template();
+		// The tag, not the file name: a template comment mentions the name.
+		$script = '#<script src="[^"]*/adm/style/donationcampaigns_settings\\.js\\?assets_version=\\d+"></script>#';
 
-		$this->assertStringContainsString('<!-- INCLUDEJS donationcampaigns_settings.js -->', $template);
+		$this->assertMatchesRegularExpression($script, $this->render_settings(array('S_DONATIONCAMPAIGNS_HAS_AMOUNTS' => true)));
 
-		// No recorded amounts, no warning, no reason to load anything.
-		$position = strpos($template, 'INCLUDEJS');
-		$guard = strrpos(substr($template, 0, $position), 'S_DONATIONCAMPAIGNS_HAS_AMOUNTS');
-
-		$this->assertNotFalse($guard, 'The script is loaded unconditionally');
+		// No recorded amounts, no warning, no reason to load anything; and
+		// during confirmation there is no banner for it to reveal.
+		$this->assertDoesNotMatchRegularExpression($script, $this->render_settings(), 'The script is loaded unconditionally');
+		$this->assertDoesNotMatchRegularExpression(
+			$script,
+			$this->render_settings(array('S_DONATIONCAMPAIGNS_HAS_AMOUNTS' => true, 'S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT' => true)),
+			'The script is loaded for a banner that is not there'
+		);
 	}
 
 	/**
@@ -461,16 +577,16 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_banner_and_the_validation_warning_cannot_appear_together()
 	{
-		$template = $this->template();
+		// The confirmation step: amounts exist, the server refused the change
+		// and says why.
+		$html = template_renderer::render($this->template(), array(
+			'S_DONATIONCAMPAIGNS_HAS_AMOUNTS'		=> true,
+			'S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT'	=> true,
+			'S_DONATIONCAMPAIGNS_ERROR'				=> true,
+		), array('donationcampaigns_error' => array(array('MESSAGE' => 'Confirm the change'))));
 
-		$banner = strpos($template, 'id="donationcampaigns_exponent_warning"');
-		$guard = strrpos(substr($template, 0, $banner), '<!-- IF ');
-
-		$this->assertSame(
-			'<!-- IF S_DONATIONCAMPAIGNS_HAS_AMOUNTS and not S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->',
-			trim(substr($template, $guard, strpos($template, '-->', $guard) + 3 - $guard)),
-			'The banner is not excluded from the confirmation step'
-		);
+		$this->assertSame(1, substr_count($html, 'class="errorbox"'), 'The banner is not excluded from the confirmation step');
+		$this->assertStringNotContainsString('id="donationcampaigns_exponent_warning"', $html);
 	}
 
 	/**
@@ -479,11 +595,14 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_banner_sits_above_the_currency_fieldset()
 	{
-		$template = $this->template();
+		$html = $this->render_settings(array('S_DONATIONCAMPAIGNS_HAS_AMOUNTS' => true));
 
-		$banner = strpos($template, 'id="donationcampaigns_exponent_warning"');
-		$form = strpos($template, '<form ');
-		$currency = strpos($template, '{L_DONATIONCAMPAIGNS_SETTINGS_CURRENCY}');
+		$banner = strpos($html, 'id="donationcampaigns_exponent_warning"');
+		$form = strpos($html, '<form ');
+		$currency = strpos($html, '<legend>DONATIONCAMPAIGNS_SETTINGS_CURRENCY</legend>');
+
+		$this->assertNotFalse($banner);
+		$this->assertNotFalse($currency);
 
 		$this->assertLessThan($form, $banner, 'The banner is inside the form');
 		$this->assertLessThan($currency, $banner, 'The banner is below the Currency fieldset');
@@ -494,11 +613,14 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_confirmation_checkbox_stays_in_the_currency_fieldset()
 	{
-		$template = $this->template();
+		$html = $this->render_settings(array('S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT' => true));
 
-		$exponent = strpos($template, 'id="donationcampaigns_currency_exponent"');
-		$checkbox = strpos($template, 'id="donationcampaigns_confirm_exponent"');
-		$display = strpos($template, '{L_DONATIONCAMPAIGNS_SETTINGS_DISPLAY}');
+		$exponent = strpos($html, 'id="donationcampaigns_currency_exponent"');
+		$checkbox = strpos($html, 'id="donationcampaigns_confirm_exponent"');
+		$display = strpos($html, '<legend>DONATIONCAMPAIGNS_SETTINGS_DISPLAY</legend>');
+
+		$this->assertNotFalse($checkbox);
+		$this->assertNotFalse($display);
 
 		$this->assertGreaterThan($exponent, $checkbox, 'The checkbox is above the setting it confirms');
 		$this->assertLessThan($display, $checkbox, 'The checkbox drifted out of the Currency fieldset');
@@ -519,27 +641,48 @@ class settings_template_test extends \phpbb_test_case
 	/**
 	 * The columns an administrator reads are the titles, not the ids.
 	 */
+	/**
+	 * The campaign list rendered with one row.
+	 *
+	 * @param array $row
+	 * @param array $vars
+	 * @return string
+	 */
+	protected function render_list(array $row, array $vars = array())
+	{
+		return $this->render('adm/style/acp_donationcampaigns_campaigns.html', $vars, array('donationcampaigns_row' => array($row)));
+	}
+
 	public function test_the_campaign_list_labels_rows_by_title()
 	{
-		$template = $this->list_template();
+		$html = $this->render_list(array(
+			'CAMPAIGN_ID'	=> 987654,
+			'TITLE'			=> '<b>Roof</b>',
+			// Core stores topic_title already escaped (F1).
+			'TOPIC_TITLE'	=> 'Roof &amp; walls',
+		));
 
-		$this->assertStringContainsString('{donationcampaigns_row.TITLE|e}', $template);
-		// Without |e: core stores topic_title already escaped (F1).
-		$this->assertStringContainsString('{donationcampaigns_row.TOPIC_TITLE}', $template);
-		$this->assertStringNotContainsString('{donationcampaigns_row.CAMPAIGN_ID}', $template, 'A raw id is being shown as a label');
+		$this->assertStringContainsString('&lt;b&gt;Roof&lt;/b&gt;', $html);
+		$this->assertStringNotContainsString('<b>Roof</b>', $html);
+		$this->assertStringContainsString('Roof &amp; walls', $html);
+		$this->assertStringNotContainsString('&amp;amp;', $html);
+		$this->assertStringNotContainsString('987654', $html, 'A raw id is being shown as a label');
 	}
 
 	public function test_the_campaign_list_offers_every_action()
 	{
-		$template = $this->list_template();
+		$html = $this->render_list(
+			array('U_EDIT' => 'URL_EDIT', 'U_DELETE' => 'URL_DELETE', 'U_RECALCULATE' => 'URL_RECALCULATE'),
+			array('U_DONATIONCAMPAIGNS_ADD' => 'URL_ADD')
+		);
 
-		foreach (array('U_EDIT', 'U_DELETE', 'U_RECALCULATE') as $action)
+		foreach (array('URL_EDIT', 'URL_DELETE', 'URL_RECALCULATE') as $action)
 		{
-			$this->assertStringContainsString('{donationcampaigns_row.' . $action . '}', $template);
+			$this->assertStringContainsString('href="' . $action . '"', $html);
 		}
 
 		// No create action: campaigns are created from their topic.
-		$this->assertStringNotContainsString('{U_DONATIONCAMPAIGNS_ADD}', $template);
+		$this->assertStringNotContainsString('URL_ADD', $html);
 	}
 
 	public function test_the_campaign_list_includes_pagination()
@@ -549,13 +692,12 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_campaign_list_handles_being_empty()
 	{
-		$t = $this->list_template();
+		$html = $this->render('adm/style/acp_donationcampaigns_campaigns.html');
 
-		// Core keeps the empty state INSIDE the table, as a BEGINELSE row.
-		// A green successbox outside it reads as "operation succeeded".
-		$this->assertStringContainsString('<!-- BEGINELSE -->', $t);
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_LIST_EMPTY_EXPLAIN}', $t);
-		$this->assertStringNotContainsString('successbox', $t);
+		// Core keeps the empty state INSIDE the table, as the loop's empty
+		// row. A green successbox outside it reads as "operation succeeded".
+		$this->assertMatchesRegularExpression('#<tbody>\\s*<tr class="row3">.*?<td colspan="6">DONATIONCAMPAIGNS_LIST_EMPTY_EXPLAIN</td>\\s*</tr>\\s*</tbody>#s', $html);
+		$this->assertStringNotContainsString('successbox', $html);
 	}
 
 	/**
@@ -572,9 +714,9 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_every_campaign_list_language_key_has_an_english_string()
 	{
-		preg_match_all('/\{L_([A-Z0-9_]+)\}/', $this->list_template(), $matches);
+		$keys = $this->language_keys($this->list_template());
 
-		$this->assertNotEmpty($matches[1]);
+		$this->assertNotEmpty($keys);
 
 		$lang = array();
 		include $this->package . '/language/en/common.php';
@@ -582,7 +724,7 @@ class settings_template_test extends \phpbb_test_case
 
 		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'EDIT', 'DELETE', 'BACK', 'ACP_NO_ITEMS');
 
-		foreach (array_unique($matches[1]) as $key)
+		foreach ($keys as $key)
 		{
 			if (in_array($key, $core_keys, true))
 			{
@@ -595,16 +737,7 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_campaign_list_template_is_balanced()
 	{
-		$template = $this->list_template();
-
-		$this->assertSame(
-			substr_count($template, '<!-- IF '),
-			substr_count($template, '<!-- ENDIF -->')
-		);
-		$this->assertSame(
-			substr_count($template, '<!-- BEGIN '),
-			substr_count($template, '<!-- END ')
-		);
+		$this->assert_balanced($this->list_template());
 	}
 
 	// ------------------------------------------------- the campaign form
@@ -634,14 +767,24 @@ class settings_template_test extends \phpbb_test_case
 		$this->assert_no_inline_css_or_javascript($t);
 	}
 
+	/**
+	 * @param array $vars
+	 * @return string
+	 */
+	protected function render_form(array $vars = array())
+	{
+		return $this->render('styles/prosilver/template/donationcampaigns_campaign_form.html', $vars);
+	}
+
 	public function test_the_campaign_form_carries_a_csrf_token()
 	{
-		$this->assertStringContainsString('{S_FORM_TOKEN}', $this->form_template());
+		$this->assertStringContainsString('value="TOKEN_MARKER"', $this->form_of($this->render_form($this->form_token())));
 	}
 
 	public function test_the_campaign_form_offers_every_field()
 	{
-		$t = $this->form_template();
+		// Core stores topic_title already escaped (F1).
+		$t = $this->render_form(array('DONATIONCAMPAIGNS_TOPIC_TITLE' => 'Roof &amp; walls'));
 
 		// No campaign_enabled: enable/disable are separate actions on the
 		// management landing, not a checkbox on this form.
@@ -653,10 +796,11 @@ class settings_template_test extends \phpbb_test_case
 		$this->assertStringNotContainsString('name="campaign_enabled"', $t, 'The enabled checkbox must not be on the edit form');
 
 		// The topic is NOT among them. It is shown as a linked title and can
-		// never be retyped, so there is no input to find.
+		// never be retyped, so there is no input to find. Shown without |e:
+		// core stores topic_title already escaped (F1).
 		$this->assertStringNotContainsString('name="topic_id"', $t);
-		// Without |e: core stores topic_title already escaped (F1).
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_TOPIC_TITLE}', $t);
+		$this->assertStringContainsString('Roof &amp; walls', $t);
+		$this->assertStringNotContainsString('&amp;amp;', $t);
 	}
 
 	/**
@@ -721,14 +865,17 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_donor_privacy_warning_is_next_to_its_checkbox()
 	{
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING}', $this->form_template());
+		$this->assertStringContainsString(
+			'DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING',
+			$this->row_with($this->render_form(), 'name="show_donor_names"')
+		);
 	}
 
 	public function test_every_campaign_form_language_key_has_an_english_string()
 	{
-		preg_match_all('/\{L_([A-Z0-9_]+)\}/', $this->form_template(), $matches);
+		$keys = $this->language_keys($this->form_template());
 
-		$this->assertNotEmpty($matches[1]);
+		$this->assertNotEmpty($keys);
 
 		$lang = array();
 		include $this->package . '/language/en/common.php';
@@ -738,7 +885,7 @@ class settings_template_test extends \phpbb_test_case
 		// architecture_test::test_frontend_templates_use_only_frontend_language_keys).
 		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'ERROR', 'DELETE', 'BACK');
 
-		foreach (array_unique($matches[1]) as $key)
+		foreach ($keys as $key)
 		{
 			if (in_array($key, $core_keys, true))
 			{
@@ -751,10 +898,7 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_campaign_form_template_is_balanced()
 	{
-		$t = $this->form_template();
-
-		$this->assertSame(substr_count($t, '<!-- IF '), substr_count($t, '<!-- ENDIF -->'));
-		$this->assertSame(substr_count($t, '<!-- BEGIN '), substr_count($t, '<!-- END '));
+		$this->assert_balanced($this->form_template());
 	}
 
 	// ---------------------------------------------------- the donation pages
@@ -808,9 +952,9 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_every_donation_language_key_has_an_english_string($name)
 	{
-		preg_match_all('/\{L_([A-Z0-9_]+)\}/', $this->donation_template($name), $matches);
+		$keys = $this->language_keys($this->donation_template($name));
 
-		$this->assertNotEmpty($matches[1]);
+		$this->assertNotEmpty($keys);
 
 		$lang = array();
 		include $this->package . '/language/en/common.php';
@@ -820,7 +964,7 @@ class settings_template_test extends \phpbb_test_case
 		// separately by the architecture test.
 		$core_keys = array('COLON', 'SUBMIT', 'RESET', 'WARNING', 'ERROR', 'EDIT', 'DELETE', 'BACK', 'ACP_NO_ITEMS');
 
-		foreach (array_unique($matches[1]) as $key)
+		foreach ($keys as $key)
 		{
 			if (in_array($key, $core_keys, true))
 			{
@@ -836,15 +980,15 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_donation_template_is_balanced($name)
 	{
-		$t = $this->donation_template($name);
-
-		$this->assertSame(substr_count($t, '<!-- IF '), substr_count($t, '<!-- ENDIF -->'));
-		$this->assertSame(substr_count($t, '<!-- BEGIN '), substr_count($t, '<!-- END '));
+		$this->assert_balanced($this->donation_template($name));
 	}
 
 	public function test_the_donation_form_carries_a_csrf_token()
 	{
-		$this->assertStringContainsString('{S_FORM_TOKEN}', $this->donation_template('donation_form'));
+		$this->assertStringContainsString(
+			'value="TOKEN_MARKER"',
+			$this->form_of($this->render('styles/prosilver/template/donationcampaigns_donation_form.html', $this->form_token()))
+		);
 	}
 
 	public function test_the_donation_form_offers_every_field()
@@ -904,7 +1048,10 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	public function test_the_consent_reminder_is_beside_the_visibility_control()
 	{
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}', $this->donation_template('donation_form'));
+		$this->assertStringContainsString(
+			'DONATIONCAMPAIGNS_PUBLIC_EXPLAIN',
+			$this->row_with($this->render('styles/prosilver/template/donationcampaigns_donation_form.html'), 'name="donation_public"')
+		);
 	}
 
 	/**
@@ -925,19 +1072,23 @@ class settings_template_test extends \phpbb_test_case
 
 	public function test_the_donation_list_includes_pagination_and_an_empty_state()
 	{
-		$t = $this->donation_template('donations');
+		$this->assertStringContainsString('pagination.html', $this->donation_template('donations'));
 
-		$this->assertStringContainsString('pagination.html', $t);
-		$this->assertStringContainsString('<!-- BEGINELSE -->', $t);
-		$this->assertStringContainsString('{L_ACP_NO_ITEMS}', $t);
-		$this->assertStringNotContainsString('successbox', $t);
+		$html = $this->render('adm/style/acp_donationcampaigns_donations.html');
+
+		// The empty state sits inside the table, as the loop's empty row.
+		$this->assertMatchesRegularExpression('#<tbody>\\s*<tr class="row3">\\s*<td colspan="6">ACP_NO_ITEMS</td>\\s*</tr>\\s*</tbody>#s', $html);
+		$this->assertStringNotContainsString('successbox', $html);
 	}
 
 	public function test_the_donation_list_labels_rows_by_donor_not_id()
 	{
-		$t = $this->donation_template('donations');
+		$html = $this->render('adm/style/acp_donationcampaigns_donations.html', array(), array(
+			'donationcampaigns_donation' => array(array('DONATION_ID' => 987654, 'DONOR_NAME' => '<b>Ann</b>')),
+		));
 
-		$this->assertStringContainsString('{donationcampaigns_donation.DONOR_NAME|e}', $t);
-		$this->assertStringNotContainsString('{donationcampaigns_donation.DONATION_ID}', $t);
+		$this->assertStringContainsString('&lt;b&gt;Ann&lt;/b&gt;', $html);
+		$this->assertStringNotContainsString('<b>Ann</b>', $html);
+		$this->assertStringNotContainsString('987654', $html);
 	}
 }
