@@ -6,31 +6,31 @@
    The topic row appears only where a topic already exists. #}
 		<dl>
 			<dt><label for="{{ prefix }}campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br><span><!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT -->{L_DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}<!-- ENDIF --></span></dt>
-			<!-- In the posting form an empty title becomes the topic title on submit (WD1). -->
+			{# In the posting form an empty title becomes the topic title on submit (WD1). #}
 			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}"<!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT --> placeholder="{L_DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER}"<!-- ENDIF --> ></dd>
 		</dl>
 
 		<!-- IF DONATIONCAMPAIGNS_TOPIC_TITLE -->
 		<dl>
 			<dt><label>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED}</span></dt>
-			<!-- The topic is decided by the page this form was opened from and is
-			     shown as text. There is deliberately no input: a campaign belongs
-			     to one topic for life. -->
+			{# The topic is decided by the page this form was opened from and is
+			   shown as text. There is deliberately no input: a campaign belongs
+			   to one topic for life. #}
 			<dd><strong><a href="{U_DONATIONCAMPAIGNS_TOPIC}">{DONATIONCAMPAIGNS_TOPIC_TITLE}</a></strong></dd>
 		</dl>
 		<!-- ENDIF -->
 
 		<dl>
 			<dt><label for="{{ prefix }}campaign_desc">{L_DONATIONCAMPAIGNS_FORM_DESC}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN}</span></dt>
-			<!-- NO |e: generate_text_for_edit() returns text already escaped once,
-			     emitted raw into a textarea exactly as core does with {MESSAGE}. -->
+			{# NO |e: generate_text_for_edit() returns the text already escaped once, so it goes
+			   into the textarea raw, as core does with the post text in posting_editor.html. #}
 			<dd><textarea id="{{ prefix }}campaign_desc" name="{{ prefix }}campaign_desc" rows="6" cols="60">{DONATIONCAMPAIGNS_DESC}</textarea></dd>
 		</dl>
 
 		<dl>
 			<dt><label for="{{ prefix }}target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span></dt>
-			<!-- The currency is shown beside the field, not inside it. type="text",
-			     not number: a numeric input silently drops a comma decimal. -->
+			{# The currency is shown beside the field, not inside it. type="text",
+			   not number: a numeric input silently drops a comma decimal. #}
 			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="{{ prefix }}target_amount" type="text" name="{{ prefix }}target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}"><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
 		</dl>
 

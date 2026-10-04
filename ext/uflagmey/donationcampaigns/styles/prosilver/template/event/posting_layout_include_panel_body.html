@@ -1,8 +1,8 @@
 <!-- IF S_DONATIONCAMPAIGNS_POSTING -->
-<!-- The campaign panel of a new topic (ADR-019). Same structure as core's poll
-     panel (posting_poll_body.html), so forum_fn.js switches it with its tab;
-     without JavaScript nothing hides it and it shows below the other panels.
-     Errors are shown in core's error box at the top of the form. -->
+{# The campaign panel of a new topic (ADR-019). Same structure as core's poll
+   panel (posting_poll_body.html), so forum_fn.js switches it with its tab;
+   without JavaScript nothing hides it and it shows below the other panels.
+   Errors are shown in core's error box at the top of the form. #}
 <div class="panel bg3" id="donationcampaigns-panel">
 	<div class="inner">
 
@@ -17,8 +17,8 @@
 		{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': 'donationcampaigns_'} %}
 	</fieldset>
 
-	<!-- Marks a redisplay (preview, error, attachment refresh): the entered
-	     values are then shown instead of the defaults. -->
+	{# Marks a redisplay (preview, error, attachment refresh): the entered
+	   values are then shown instead of the defaults. #}
 	<input type="hidden" name="donationcampaigns_panel" value="1">
 
 	</div>

@@ -699,4 +699,22 @@ class posting_listener_test extends campaign_list_test_case
 		// Our own error box would duplicate core's: errors go to core's.
 		$this->assertStringNotContainsString('errorbox', $panel);
 	}
+
+	/**
+	 * REGRESSION (beta4 F1, a defect since beta3). phpBB's lexer rewrites a
+	 * template variable in braces even inside an HTML comment. A developer
+	 * comment in the shared campaign fields named core's MESSAGE variable in
+	 * braces, so every preview of the posting form printed the post text a
+	 * second time into the page source, inside that comment.
+	 */
+	public function test_the_panel_never_prints_the_post_text()
+	{
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render($this->panel_template(), array(
+			'S_DONATIONCAMPAIGNS_POSTING'	=> true,
+			'MESSAGE'						=> 'SECRET-F1',
+		));
+
+		$this->assertStringContainsString('id="donationcampaigns-panel"', $html);
+		$this->assertStringNotContainsString('SECRET-F1', $html);
+	}
 }

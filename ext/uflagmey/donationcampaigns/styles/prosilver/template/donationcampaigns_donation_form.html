@@ -21,10 +21,10 @@
 
 		<dl>
 			<dt><label for="donation_amount">{L_DONATIONCAMPAIGNS_AMOUNT}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_AMOUNT_EXPLAIN}</span></dt>
-			<!-- The currency is shown beside the field, not inside it: the input
-			     carries only the number the parser will read. Same pattern as the
-			     campaign target field. type="text", not number, so a comma decimal
-			     is not silently dropped. -->
+			{# The currency is shown beside the field, not inside it: the input
+			   carries only the number the parser will read. Same pattern as the
+			   campaign target field. type="text", not number, so a comma decimal
+			   is not silently dropped. #}
 			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="donation_amount" type="text" name="donation_amount" size="15" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}"><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
 		</dl>
 

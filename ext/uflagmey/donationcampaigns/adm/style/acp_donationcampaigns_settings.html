@@ -15,11 +15,11 @@
 	</div>
 <!-- ENDIF -->
 
-<!-- Exactly one warning is visible at any moment. Before anything is
-     touched: none. Once a currency field receives input: this banner, revealed
-     by donationcampaigns_settings.js. Once the server has refused a change and
-     is asking for confirmation: the validation box above, and this banner is
-     not rendered at all, because the two said the same thing side by side. -->
+{# Exactly one warning is visible at any moment. Before anything is
+   touched: none. Once a currency field receives input: this banner, revealed
+   by donationcampaigns_settings.js. Once the server has refused a change and
+   is asking for confirmation: the validation box above, and this banner is
+   not rendered at all, because the two said the same thing side by side. #}
 <!-- IF S_DONATIONCAMPAIGNS_HAS_AMOUNTS and not S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->
 	<div class="errorbox" id="donationcampaigns_exponent_warning" role="alert" hidden>
 		<h3>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_WARNING_TITLE}</h3>

@@ -15,8 +15,8 @@
 
 	<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE -->
 		<fieldset class="submit-buttons">
-			<!-- Each button navigates to its own action (formaction). Edit renders
-			     the edit form; Disable and Delete open their confirmation. -->
+			{# Each button navigates to its own action (formaction). Edit renders
+			   the edit form; Disable and Delete open their confirmation. #}
 			<form method="get" action="{U_EDIT}">
 				<input type="submit" formaction="{U_EDIT}" class="button1" value="{L_DONATIONCAMPAIGNS_EDIT}">
 				<!-- IF S_DONATIONCAMPAIGNS_ENABLED -->
@@ -25,7 +25,7 @@
 				<input type="submit" formaction="{U_DELETE}" class="button2" value="{L_DONATIONCAMPAIGNS_DELETE}">
 			</form>
 			<!-- IF not S_DONATIONCAMPAIGNS_ENABLED -->
-				<!-- Enable is a direct write, so it is a POST behind a form key. -->
+				{# Enable is a direct write, so it is a POST behind a form key. #}
 				<form method="post" action="{U_ENABLE}">
 					<input type="submit" class="button1" value="{L_DONATIONCAMPAIGNS_ENABLE}">
 					{S_FORM_TOKEN}
@@ -89,8 +89,8 @@
 <div class="panel">
 	<div class="inner">
 		<fieldset class="submit-buttons">
-			<!-- A GET form discards a query string on its action, so the topic id
-			     is a hidden field rather than part of the URL. -->
+			{# A GET form discards a query string on its action, so the topic id
+			   is a hidden field rather than part of the URL. #}
 			<form method="get" action="{U_VIEWTOPIC}">
 				<input type="hidden" name="t" value="{DONATIONCAMPAIGNS_TOPIC_ID}">
 				<input type="submit" class="button2" value="{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}">

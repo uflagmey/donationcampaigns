@@ -757,6 +757,37 @@ class architecture_test extends \phpbb_test_case
 		$this->assertSame(array(), $problems);
 	}
 
+	/**
+	 * No HTML comment reaches a visitor: developer notes are Twig comments,
+	 * which render as nothing. Second stage of the guard. A template still on
+	 * LEGACY_SYNTAX_PENDING may keep phpBB's legacy tags, which only look like
+	 * comments; nothing else may start with "<!--". With the list gone, no
+	 * "<!--" at all.
+	 */
+	public function test_templates_carry_no_html_comments()
+	{
+		$legacy_tag = '/^<!--\s*(?:IF|ELSE ?IF|ELSE|ENDIF|BEGIN|BEGINELSE|END|INCLUDE|INCLUDEJS|INCLUDECSS|INCLUDEPHP|DEFINE|UNDEFINE|ENDDEFINE|EVENT|PHP|ENDPHP)\b/';
+		$problems = array();
+
+		foreach ($this->shipped_templates() as $template)
+		{
+			$pending = in_array($template, self::LEGACY_SYNTAX_PENDING, true);
+			preg_match_all('/<!--.*?(?:-->|\z)/s', file_get_contents($this->package . '/' . $template), $comments);
+
+			foreach ($comments[0] as $comment)
+			{
+				if ($pending && preg_match($legacy_tag, $comment))
+				{
+					continue;
+				}
+
+				$problems[] = $template . ': ' . substr(preg_replace('/\s+/', ' ', $comment), 0, 60);
+			}
+		}
+
+		$this->assertSame(array(), $problems);
+	}
+
 	public function test_the_pending_list_names_only_shipped_templates()
 	{
 		$this->assertSame(array(), array_diff(self::LEGACY_SYNTAX_PENDING, $this->shipped_templates()));
