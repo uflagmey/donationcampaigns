@@ -47,6 +47,14 @@ command -v "$pandoc" >/dev/null 2>&1 || { echo "pandoc not found" >&2; exit 1; }
 chrome="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 [ -x "$chrome" ] || { echo "Google Chrome not found at: $chrome" >&2; exit 1; }
 
+# Seconds to wait for Chrome to finish one PDF.
+chrome_timeout="${CHROME_TIMEOUT:-120}"
+
+# True when $1 exists and ends with the PDF end-of-file marker.
+pdf_complete() {
+	[ -s "$1" ] && tail -c 64 "$1" | grep -aq '%%EOF'
+}
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
@@ -81,8 +89,13 @@ build() {
 		--output "$html"
 
 	echo "chrome: printing to PDF -> $out"
-	# Legacy --headless prints and exits reliably; --headless=new can hang.
+	# Chrome 154 (macOS) writes the PDF and then does NOT exit; older builds
+	# did. So the script does not rely on Chrome exiting: Chrome runs in the
+	# background, and the script waits until the PDF is complete (ends with
+	# %%EOF and its size has stopped changing), then stops Chrome itself.
+	# A Chrome that exits on its own ends the loop just the same.
 	# A throwaway --user-data-dir keeps this independent of a running Chrome.
+	rm -f "$out"
 	"$chrome" \
 		--headless \
 		--disable-gpu \
@@ -95,8 +108,28 @@ build() {
 		--run-all-compositor-stages-before-draw \
 		--virtual-time-budget=15000 \
 		--print-to-pdf="$out" \
-		"file://$html" 2>/dev/null
+		"file://$html" >/dev/null 2>&1 &
+	local pid=$! waited=0 size last=-1
+	while kill -0 "$pid" 2>/dev/null; do
+		if pdf_complete "$out"; then
+			size="$(wc -c < "$out")"
+			if [ "$size" = "$last" ]; then
+				kill "$pid" 2>/dev/null || true
+				break
+			fi
+			last="$size"
+		fi
+		if [ "$waited" -ge "$chrome_timeout" ]; then
+			kill "$pid" 2>/dev/null || true
+			echo "chrome: no complete PDF after ${chrome_timeout}s: $out" >&2
+			exit 1
+		fi
+		sleep 1
+		waited=$((waited + 1))
+	done
+	wait "$pid" 2>/dev/null || true
 
+	pdf_complete "$out" || { echo "chrome: no complete PDF written: $out" >&2; exit 1; }
 	echo "done: $out"
 }
 
