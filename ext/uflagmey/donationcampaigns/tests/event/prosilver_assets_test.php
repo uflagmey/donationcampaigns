@@ -531,4 +531,47 @@ class prosilver_assets_test extends \phpbb_test_case
 			$this->template()
 		);
 	}
+
+	// ------------------------------------------------ shared campaign fields
+
+	/**
+	 * The campaign fields exist once (beta3): the frontend form and the
+	 * posting panel include the same file with their own name prefix.
+	 */
+	public function test_the_campaign_fields_are_one_include_with_a_name_prefix()
+	{
+		$fields = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_fields.html');
+
+		foreach (array('campaign_title', 'campaign_desc', 'target_amount', 'external_url', 'external_link_text', 'show_donor_names', 'show_donation_count', 'show_donation_date') as $name)
+		{
+			$this->assertStringContainsString('name="{{ prefix }}' . $name . '"', $fields, "{$name} is not prefixed");
+			$this->assertStringContainsString('id="{{ prefix }}' . $name . '"', $fields);
+			$this->assertStringContainsString('for="{{ prefix }}' . $name . '"', $fields);
+		}
+
+		$form = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
+		$this->assertStringContainsString("{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': ''} %}", $form);
+		$this->assertStringNotContainsString('name="target_amount"', $form, 'The frontend form still carries its own copy of the fields');
+	}
+
+	/**
+	 * With the empty prefix the frontend form posts exactly the names it
+	 * posted before the extraction, so nothing downstream changes.
+	 */
+	public function test_the_frontend_form_keeps_its_field_names()
+	{
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html'),
+			array('DONATIONCAMPAIGNS_TOPIC_TITLE' => 'Topic 11')
+		);
+
+		foreach (array('campaign_title', 'campaign_desc', 'target_amount', 'external_url', 'external_link_text', 'show_donor_names', 'show_donation_count', 'show_donation_date') as $name)
+		{
+			$this->assertStringContainsString('name="' . $name . '"', $html);
+		}
+
+		// The topic row stays where it was, between title and description.
+		$this->assertLessThan(strpos($html, 'name="campaign_desc"'), strpos($html, 'Topic 11'));
+		$this->assertGreaterThan(strpos($html, 'name="campaign_title"'), strpos($html, 'Topic 11'));
+	}
 }

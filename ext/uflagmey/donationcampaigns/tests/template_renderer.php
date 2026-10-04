@@ -25,7 +25,7 @@ namespace uflagmey\donationcampaigns\tests;
  *
  * One Twig construct is understood, because shared markup depends on it:
  *
- *   {% include '@uflagmey_donationcampaigns/x.html' with {'a': VAR} only %}
+ *   {% include '@uflagmey_donationcampaigns/x.html' with {'a': VAR, 'b': 'text'} [only] %}
  *
  * The partial is inlined, {{ a }} becomes {VAR} and {{ lang('KEY') }} becomes
  * {L_KEY}, so the rest of the renderer treats it like any legacy markup —
@@ -55,17 +55,23 @@ class template_renderer
 	 */
 	public static function inline_includes($html)
 	{
-		$pattern = "/\\{% include '@uflagmey_donationcampaigns\\/([a-z_]+\\.html)' with \\{(.*?)\\} only %\\}/s";
+		$pattern = "/\\{% include '@uflagmey_donationcampaigns\\/([a-z_]+\\.html)' with \\{(.*?)\\}(?: only)? %\\}/s";
 
 		return preg_replace_callback($pattern, function ($include) {
 			$partial = file_get_contents(dirname(__DIR__) . '/styles/prosilver/template/' . $include[1]);
 
-			preg_match_all("/'([a-z_]+)'\\s*:\\s*([A-Za-z0-9_.]+)/", $include[2], $pairs, PREG_SET_ORDER);
+			// A value is either a template variable (mapped to {VAR}) or a
+			// string literal (inserted as is).
+			preg_match_all("/'([a-z_]+)'\\s*:\\s*(?:'([^']*)'|([A-Za-z0-9_.]+))/", $include[2], $pairs, PREG_SET_ORDER);
 
 			foreach ($pairs as $pair)
 			{
-				$partial = str_replace('{{ ' . $pair[1] . ' }}', '{' . $pair[2] . '}', $partial);
+				$value = (isset($pair[3]) && $pair[3] !== '') ? '{' . $pair[3] . '}' : $pair[2];
+				$partial = str_replace('{{ ' . $pair[1] . ' }}', $value, $partial);
 			}
+
+			// The Twig comment heading a partial renders as nothing.
+			$partial = preg_replace('/\\{#.*?#\\}\\n?/s', '', $partial);
 
 			$partial = preg_replace("/\\{\\{ lang\\('([A-Z0-9_]+)'\\) \\}\\}/", '{L_$1}', $partial);
 

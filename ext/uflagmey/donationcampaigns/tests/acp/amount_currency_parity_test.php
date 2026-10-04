@@ -45,7 +45,10 @@ class amount_currency_parity_test extends \phpbb_test_case
 	 */
 	private function template($path)
 	{
-		return file_get_contents(dirname(dirname(__DIR__)) . '/' . $path);
+		// Shared includes inlined (the campaign fields moved into one in beta3).
+		return \uflagmey\donationcampaigns\tests\template_renderer::inline_includes(
+			file_get_contents(dirname(dirname(__DIR__)) . '/' . $path)
+		);
 	}
 
 	/**

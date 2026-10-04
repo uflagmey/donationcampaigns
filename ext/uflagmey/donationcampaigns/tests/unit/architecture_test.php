@@ -335,9 +335,10 @@ class architecture_test extends \phpbb_test_case
 	 */
 	public function test_the_description_textarea_does_not_double_escape()
 	{
-		// The campaign form moved to the frontend in the RC2 cutover; the
-		// textarea contract is unchanged.
-		$form = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
+		// The campaign form moved to the frontend in the RC2 cutover, and its
+		// fields into a shared include in beta3 (frontend form + posting
+		// panel); the textarea contract is unchanged.
+		$form = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_fields.html');
 
 		$this->assertStringContainsString(
 			'{DONATIONCAMPAIGNS_DESC}</textarea>',

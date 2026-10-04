@@ -614,7 +614,11 @@ class settings_template_test extends \phpbb_test_case
 	 */
 	protected function form_template()
 	{
-		return file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html');
+		// The form as it renders: its fields live in a shared include since
+		// beta3, inlined here with the frontend's empty name prefix.
+		return \uflagmey\donationcampaigns\tests\template_renderer::inline_includes(
+			file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html')
+		);
 	}
 
 	public function test_the_campaign_form_template_exists()
