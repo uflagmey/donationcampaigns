@@ -9,165 +9,179 @@
 namespace uflagmey\donationcampaigns\tests;
 
 /**
- * Renders a phpBB template far enough to assert what reaches the page.
+ * Renders a template with phpBB's real template engine.
  *
- * Escaping now happens in the templates, with Twig's |e filter, so a test that
- * only inspects assigned variables can no longer see whether output is safe.
- * Standing up phpBB's real Twig environment needs a booted board; this
- * reproduces the two behaviours the escaping contract depends on:
+ * Escaping happens in the templates, so a test that only inspects assigned
+ * variables cannot see whether output is safe; it has to render. This class
+ * renders through the engine the board uses, built the way phpBB 3.3.17 builds
+ * it for its own template tests (tests/template/template_test_case.php,
+ * setup_engine()): phpbb\template\twig\environment, twig, extension, lexer and
+ * context, from the read-only phpBB test tree, on that tree's Twig 2.16.1.
+ * tests/bootstrap.php refuses to run the suite on any other phpBB or Twig.
  *
- *   {VAR|e}   escaped, exactly as Twig's |e would
- *   {VAR}     emitted verbatim, because phpBB disables autoescaping
+ * Consequences a test relies on:
  *
- * Conditionals are ignored — their branches are left in place — because what
- * is being asserted is how a value is ESCAPED, not which branch renders. The
- * real templates are additionally exercised on the Docker board.
- *
- * One Twig construct is understood, because shared markup depends on it:
- *
- *   {% include '@uflagmey_donationcampaigns/x.html' with {'a': VAR, 'b': 'text'} [only] %}
- *
- * The partial is inlined, {{ a }} becomes {VAR} and {{ lang('KEY') }} becomes
- * {L_KEY}, so the rest of the renderer treats it like any legacy markup —
- * inside a BEGIN loop, too. Anything else in {{ }} fails loudly rather than
- * rendering something real Twig would not.
+ *   - Conditions are evaluated. A branch renders only when its condition
+ *     holds for the variables the test assigned.
+ *   - Legacy syntax ({VAR}, {VAR|e}, <!-- IF -->, …) and native Twig both go
+ *     through phpBB's lexer, exactly as on the board, with autoescape off.
+ *   - Block rows get phpBB's own row variables (S_ROW_COUNT, S_FIRST_ROW,
+ *     S_LAST_ROW, S_NUM_ROWS) from phpbb\template\context.
+ *   - lang() is phpBB's, over a language object with no language files
+ *     loaded, so {L_KEY} and {{ lang('KEY') }} render as KEY. Whether a key
+ *     has a translation is the language tests' business.
+ *   - Core's overall_header.html, overall_footer.html and pagination.html are
+ *     empty stubs: the board's own markup is not under test here.
+ *   - The extension's @uflagmey_donationcampaigns namespace resolves to its
+ *     prosilver template/ and theme/ directories, as phpbb\template\twig\twig
+ *     registers it; INCLUDECSS and INCLUDEJS resolve real files.
  */
 class template_renderer
 {
+	/** @var string|null Directory holding the core stubs and the rendered source */
+	protected static $work_dir;
+
 	/**
-	 * @param string $template Raw template source
-	 * @param array $vars Flat template variables
-	 * @param array $blocks Block variables, keyed by block name
+	 * Render a template source with the given variables.
+	 *
+	 * @param string $template Template source, legacy or native Twig
+	 * @param array $vars Template variables
+	 * @param array $blocks Block rows, keyed by block name, in assignment order
 	 * @return string
 	 */
 	public static function render($template, array $vars, array $blocks = array())
 	{
-		$html = self::render_blocks(self::inline_includes($template), $blocks);
+		global $phpbb_root_path, $phpEx;
 
-		return self::substitute($html, $vars);
+		$work_dir = self::work_dir();
+		$name = 'render_' . sha1($template) . '.html';
+		file_put_contents($work_dir . '/' . $name, $template);
+
+		$config = new \phpbb\config\config(array('load_tplcompile' => true, 'tpl_allow_php' => false, 'assets_version' => 1));
+		$language = new \phpbb\language\language(new \phpbb\language\language_file_loader($phpbb_root_path, $phpEx));
+		$user = new \phpbb\user($language, '\phpbb\datetime');
+		$filesystem = new \phpbb\filesystem\filesystem();
+		$path_helper = new \phpbb\path_helper(
+			new \phpbb\symfony_request(new \phpbb_mock_request()),
+			$filesystem,
+			new \phpbb_mock_request(),
+			$phpbb_root_path,
+			$phpEx
+		);
+		$context = new \phpbb\template\context();
+		$environment = new \phpbb\template\twig\environment(
+			$config,
+			$filesystem,
+			$path_helper,
+			$phpbb_root_path . 'cache/twig',
+			null,
+			new \phpbb\template\twig\loader($filesystem, ''),
+			null,
+			array(
+				'cache'			=> false,
+				'debug'			=> false,
+				'auto_reload'	=> true,
+				'autoescape'	=> false,
+			)
+		);
+		$template_engine = new \phpbb\template\twig\twig(
+			$path_helper,
+			$config,
+			$context,
+			$environment,
+			$phpbb_root_path . 'cache/twig',
+			$user,
+			array(new \phpbb\template\twig\extension($context, $environment, $language))
+		);
+		$environment->setLexer(new \phpbb\template\twig\lexer($environment));
+
+		$package = dirname(__DIR__);
+		$template_engine->set_custom_style('donationcampaigns_tests', array(
+			$work_dir,
+			$package . '/styles/prosilver/template',
+			$package . '/adm/style',
+		));
+		$environment->getLoader()->addPath($package . '/styles/prosilver/template', 'uflagmey_donationcampaigns');
+		$environment->getLoader()->addPath($package . '/styles/prosilver/theme', 'uflagmey_donationcampaigns');
+
+		$template_engine->assign_vars($vars);
+
+		foreach ($blocks as $block => $rows)
+		{
+			foreach ($rows as $row)
+			{
+				$template_engine->assign_block_vars($block, $row);
+			}
+		}
+
+		$template_engine->set_filenames(array('body' => $name));
+
+		return $template_engine->assign_display('body');
 	}
 
 	/**
-	 * Inline the extension's own includes, mapping their variables.
+	 * A template's source with the extension's own includes pasted in.
 	 *
-	 * @param string $html
+	 * For tests that read template SOURCE (structure, attributes, names) of a
+	 * page whose markup partly lives in a shared partial. Only what is certain
+	 * from the source is resolved: a string-literal argument such as
+	 * 'prefix': '' is substituted; a variable argument stays as the partial
+	 * writes it ({{ percent }}), because what it renders as is the renderer's
+	 * job, not a text substitution's. The partial's heading comment renders as
+	 * nothing and is dropped.
+	 *
+	 * @param string $source
 	 * @return string
 	 */
-	public static function inline_includes($html)
+	public static function inline_partials($source)
 	{
 		$pattern = "/\\{% include '@uflagmey_donationcampaigns\\/([a-z_]+\\.html)' with \\{(.*?)\\}(?: only)? %\\}/s";
 
 		return preg_replace_callback($pattern, function ($include) {
 			$partial = file_get_contents(dirname(__DIR__) . '/styles/prosilver/template/' . $include[1]);
 
-			// A value is either a template variable (mapped to {VAR}) or a
-			// string literal (inserted as is).
-			preg_match_all("/'([a-z_]+)'\\s*:\\s*(?:'([^']*)'|([A-Za-z0-9_.]+))/", $include[2], $pairs, PREG_SET_ORDER);
+			preg_match_all("/'([a-z_]+)'\\s*:\\s*'([^']*)'/", $include[2], $literals, PREG_SET_ORDER);
 
-			foreach ($pairs as $pair)
+			foreach ($literals as $literal)
 			{
-				$value = (isset($pair[3]) && $pair[3] !== '') ? '{' . $pair[3] . '}' : $pair[2];
-				$partial = str_replace('{{ ' . $pair[1] . ' }}', $value, $partial);
+				$partial = str_replace('{{ ' . $literal[1] . ' }}', $literal[2], $partial);
 			}
 
-			// The Twig comment heading a partial renders as nothing.
-			$partial = preg_replace('/\\{#.*?#\\}\\n?/s', '', $partial);
-
-			$partial = preg_replace("/\\{\\{ lang\\('([A-Z0-9_]+)'\\) \\}\\}/", '{L_$1}', $partial);
-
-			if (strpos($partial, '{{') !== false)
-			{
-				throw new \RuntimeException($include[1] . ' uses a Twig expression the test renderer does not model');
-			}
-
-			return rtrim($partial, "\n");
-		}, $html);
+			return rtrim(preg_replace('/\\{#.*?#\\}\\n?/s', '', $partial), "\n");
+		}, $source);
 	}
 
 	/**
-	 * Expand each <!-- BEGIN x --> … <!-- END x --> once per row.
+	 * A per-process directory with the core stubs, removed at shutdown.
 	 *
-	 * @param string $html
-	 * @param array $blocks
+	 * Created at run time rather than shipped as fixtures, so no template-like
+	 * file sits in the repository outside the extension's real templates.
+	 *
 	 * @return string
 	 */
-	protected static function render_blocks($html, array $blocks)
+	protected static function work_dir()
 	{
-		// Blocks are discovered from the TEMPLATE, not from what was assigned.
-		// A block the module assigned nothing to still has to render — that is
-		// precisely the empty-table case, and driving the loop from $blocks
-		// would silently leave its markup unexpanded and pass either way.
-		preg_match_all('/<!-- BEGIN ([a-z_]+) -->/', $html, $found);
-
-		foreach ($found[1] as $name)
+		if (self::$work_dir === null)
 		{
-			$rows = isset($blocks[$name]) ? $blocks[$name] : array();
+			self::$work_dir = sys_get_temp_dir() . '/donationcampaigns-templates-' . getmypid();
 
-			$pattern = '/<!-- BEGIN ' . preg_quote($name, '/') . ' -->(.*?)<!-- END ' . preg_quote($name, '/') . ' -->/s';
-
-			if (!preg_match($pattern, $html, $match))
+			if (!is_dir(self::$work_dir))
 			{
-				continue;
+				mkdir(self::$work_dir);
 			}
 
-			$body = $match[1];
-			$empty = '';
-
-			// phpBB's BEGINELSE: the part after it renders instead of the
-			// loop when the block has no rows. The ACP's empty-table row
-			// lives there, so a renderer that ignored it would report an
-			// empty list as no markup at all.
-			if (strpos($body, '<!-- BEGINELSE -->') !== false)
+			foreach (array('overall_header.html', 'overall_footer.html', 'pagination.html') as $stub)
 			{
-				list($body, $empty) = explode('<!-- BEGINELSE -->', $body, 2);
+				file_put_contents(self::$work_dir . '/' . $stub, '');
 			}
 
-			$rendered = '';
-
-			foreach ($rows as $row)
-			{
-				$prefixed = array();
-
-				foreach ($row as $key => $value)
-				{
-					$prefixed[$name . '.' . $key] = $value;
-				}
-
-				$rendered .= self::substitute($body, $prefixed);
-			}
-
-			if (!$rows)
-			{
-				$rendered = $empty;
-			}
-
-			$html = preg_replace($pattern, str_replace('$', '\\$', $rendered), $html, 1);
+			$work_dir = self::$work_dir;
+			register_shutdown_function(function () use ($work_dir) {
+				array_map('unlink', glob($work_dir . '/*'));
+				rmdir($work_dir);
+			});
 		}
 
-		return $html;
-	}
-
-	/**
-	 * @param string $html
-	 * @param array $vars
-	 * @return string
-	 */
-	protected static function substitute($html, array $vars)
-	{
-		foreach ($vars as $name => $value)
-		{
-			if (is_bool($value) || is_array($value))
-			{
-				continue;
-			}
-
-			$value = (string) $value;
-
-			// The filter form first, or the bare replacement would eat it.
-			$html = str_replace('{' . $name . '|e}', htmlspecialchars($value, ENT_QUOTES, 'UTF-8'), $html);
-			$html = str_replace('{' . $name . '}', $value, $html);
-		}
-
-		return $html;
+		return self::$work_dir;
 	}
 }

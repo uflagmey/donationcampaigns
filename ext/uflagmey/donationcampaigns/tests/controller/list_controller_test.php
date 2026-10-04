@@ -372,7 +372,7 @@ class list_controller_test extends campaign_list_test_case
 
 		$this->assertSame(array(), $this->rows());
 		$this->assertSame('donationcampaigns_list.html', $this->helper->rendered['template']);
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY}', $this->render_page());
+		$this->assertStringContainsString('<p>DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY</p>', $this->render_page());
 	}
 
 	public function test_a_guest_sees_the_guest_readable_campaigns()

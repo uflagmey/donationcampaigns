@@ -153,7 +153,7 @@ class donations_mode_test extends campaign_acp_test_case
 		$this->run_donations();
 
 		$this->assertSame(array(), $this->listed());
-		$this->assertStringContainsString('{L_ACP_NO_ITEMS}', $this->render('donations'));
+		$this->assertStringContainsString('<td colspan="6">ACP_NO_ITEMS</td>', $this->render('donations'));
 	}
 
 	public function test_amounts_and_dates_are_formatted_for_display()

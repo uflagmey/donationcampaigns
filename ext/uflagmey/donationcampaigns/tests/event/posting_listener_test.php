@@ -300,7 +300,8 @@ class posting_listener_test extends campaign_list_test_case
 
 	public function test_every_panel_field_carries_the_prefix()
 	{
-		$html = \uflagmey\donationcampaigns\tests\template_renderer::render($this->panel_template(), array());
+		// The panel renders only on a page the listener enabled it for.
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render($this->panel_template(), array('S_DONATIONCAMPAIGNS_POSTING' => true));
 
 		preg_match_all('/name="([a-z_]+)"/', $html, $names);
 
@@ -535,7 +536,8 @@ class posting_listener_test extends campaign_list_test_case
 
 		$box = \uflagmey\donationcampaigns\tests\template_renderer::render(
 			file_get_contents(dirname(dirname(__DIR__)) . '/styles/prosilver/template/event/viewtopic_body_poll_before.html'),
-			array('DONATIONCAMPAIGNS_CAMPAIGN_TITLE' => $title)
+			// The box renders only for a topic the listener found a campaign for.
+			array('S_DONATIONCAMPAIGNS_SHOW' => true, 'DONATIONCAMPAIGNS_CAMPAIGN_TITLE' => $title)
 		);
 		$this->assertStringContainsString('Kosten &amp; &quot;Miete&quot; &lt;2026&gt; &#039;x&#039;', $box);
 		$this->assertStringNotContainsString('&amp;amp;', $box);

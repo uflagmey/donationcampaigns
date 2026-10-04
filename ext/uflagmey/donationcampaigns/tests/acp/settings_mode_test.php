@@ -788,8 +788,8 @@ class settings_mode_test extends \phpbb_test_case
 		$this->config->set('donationcampaigns_list_enabled', 1);
 		$this->run_settings();
 
-		// The renderer leaves both IF branches in place, so the assertion is
-		// on the markup the template offers, not on which branch fires.
+		// Both radios always render; the conditions only decide which of the
+		// two carries the id the label points at, and the checked state.
 		$html = $this->render('settings');
 
 		$this->assertSame(2, substr_count($html, 'name="donationcampaigns_list_enabled"'));

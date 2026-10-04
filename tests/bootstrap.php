@@ -60,6 +60,24 @@ require_once $phpbb_root_path . 'phpbb/class_loader.php';
 $phpbb_class_loader = new \phpbb\class_loader('phpbb\\', $phpbb_root_path . 'phpbb/', $phpEx);
 $phpbb_class_loader->register();
 
+// The template tests render with phpBB's own engine (tests/template_renderer.php),
+// so they are only evidence for the phpBB and Twig the board runs. A different
+// tree must stop the suite, never skip tests: a skipped escaping test is a
+// green build that proves nothing. Twig itself is already loaded at this point:
+// includes/startup.php requires the phpBB tree's vendor/autoload.php, and stops
+// with its own message when that is missing.
+if (PHPBB_VERSION !== '3.3.17')
+{
+	fwrite(STDERR, sprintf("phpBB 3.3.17 expected, the test tree at\n  %s\nis %s.\n", $phpbb_test_path, PHPBB_VERSION));
+	exit(1);
+}
+
+if (\Twig\Environment::VERSION !== '2.16.1')
+{
+	fwrite(STDERR, sprintf("Twig 2.16.1 expected (phpBB 3.3.17's composer.lock), found %s.\n", \Twig\Environment::VERSION));
+	exit(1);
+}
+
 require_once $phpbb_root_path . 'includes/utf/utf_tools.php';
 require_once $phpbb_root_path . 'includes/functions.php';
 // generate_text_for_display() lives here. It is the approved path for
@@ -76,6 +94,8 @@ require_once $phpbb_test_path . '/tests/mock/user.php';
 require_once $phpbb_test_path . '/tests/mock/cache.php';
 require_once $phpbb_test_path . '/tests/mock/event_dispatcher.php';
 require_once $phpbb_test_path . '/tests/mock/extension_manager.php';
+// The request double behind the path helper of the template engine.
+require_once $phpbb_test_path . '/tests/mock/request.php';
 
 // Autoloader for the extension under test. Mirrors phpBB's own extension
 // autoloading: namespace uflagmey\donationcampaigns maps to the package root.

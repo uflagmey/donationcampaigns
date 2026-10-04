@@ -37,14 +37,14 @@ class prosilver_assets_test extends \phpbb_test_case
 	}
 
 	/**
-	 * The box as it renders: the shared progress partial inlined, so every
+	 * The box's source with the shared progress partial pasted in, so every
 	 * structural rule below also covers the markup the box includes.
 	 *
 	 * @return string
 	 */
 	protected function template()
 	{
-		return \uflagmey\donationcampaigns\tests\template_renderer::inline_includes(file_get_contents($this->template_file));
+		return \uflagmey\donationcampaigns\tests\template_renderer::inline_partials(file_get_contents($this->template_file));
 	}
 
 	/**
@@ -203,6 +203,10 @@ class prosilver_assets_test extends \phpbb_test_case
 
 		foreach ($matches[1] as $attribute)
 		{
+			// A Twig expression belongs to the class it is glued to
+			// (donationcampaigns-bar--{{ step }}), not a class of its own.
+			$attribute = preg_replace('/\{\{.*?\}\}/', 'X', $attribute);
+
 			foreach (preg_split('/\s+/', trim($attribute)) as $class)
 			{
 				if ($class === '' || in_array($class, $phpbb_classes, true))
@@ -305,19 +309,27 @@ class prosilver_assets_test extends \phpbb_test_case
 
 	public function test_the_progress_indicator_is_semantic()
 	{
-		$template = $this->template();
+		// Rendered, because the box hands its figures to the shared partial
+		// under other names; only rendering shows which figure lands where.
+		// 250 % of target: capped and real figure differ.
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(file_get_contents($this->template_file), array(
+			'S_DONATIONCAMPAIGNS_SHOW'			=> true,
+			'DONATIONCAMPAIGNS_PERCENT'			=> 100,
+			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> 250,
+			'DONATIONCAMPAIGNS_PERCENT_STEP'	=> 100,
+		));
 
-		$this->assertStringContainsString('role="progressbar"', $template);
+		$this->assertStringContainsString('role="progressbar"', $html);
 		// ARIA requires valuenow within valuemin/valuemax, so it carries the
 		// clamped figure. The real percentage -- which may exceed 100 -- is
 		// announced through aria-valuetext, which takes precedence for
 		// assistive technology, so nobody hears a different number from the
 		// one on screen.
-		$this->assertStringContainsString('aria-valuenow="{DONATIONCAMPAIGNS_PERCENT}"', $template);
-		$this->assertStringContainsString('aria-valuetext="{DONATIONCAMPAIGNS_PERCENT_RAW}%"', $template);
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_PERCENT_RAW}%', $template);
-		$this->assertStringContainsString('aria-valuemin="0"', $template);
-		$this->assertStringContainsString('aria-valuemax="100"', $template);
+		$this->assertStringContainsString('aria-valuenow="100"', $html);
+		$this->assertStringContainsString('aria-valuetext="250%"', $html);
+		$this->assertStringContainsString('250%', $html);
+		$this->assertStringContainsString('aria-valuemin="0"', $html);
+		$this->assertStringContainsString('aria-valuemax="100"', $html);
 	}
 
 	/**

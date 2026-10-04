@@ -1104,10 +1104,9 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$this->view(10);
 
-		// The template gates the button on the URL. template_renderer does not
-		// evaluate conditionals -- it leaves both branches in place -- so the
-		// assertion is on the value the gate reads, with the gate itself
-		// asserted statically in prosilver_assets_test.
+		// The template gates the button on the URL. This test asserts the
+		// value the gate reads; the gate itself is asserted in
+		// prosilver_assets_test.
 		$this->assertSame('', $this->template->vars['DONATIONCAMPAIGNS_URL']);
 	}
 

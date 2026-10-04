@@ -109,7 +109,7 @@ class campaigns_mode_test extends campaign_acp_test_case
 
 		// And the page says where campaigns come from, rather than leaving an
 		// administrator hunting for a button that is not there.
-		$this->assertStringContainsString('{L_DONATIONCAMPAIGNS_LIST_EMPTY_EXPLAIN}', $this->render('campaigns'));
+		$this->assertStringContainsString('<td colspan="6">DONATIONCAMPAIGNS_LIST_EMPTY_EXPLAIN</td>', $this->render('campaigns'));
 	}
 
 	public function test_the_campaign_title_is_shown()
