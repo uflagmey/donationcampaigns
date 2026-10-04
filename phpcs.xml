@@ -18,6 +18,31 @@
 	-->
 	<rule ref="./.phpbb-test/phpbb-release-3.3.17/build/code_sniffer/ruleset-php-extensions.xml"/>
 
+	<!--
+		VariableAnalysis (sirbrillig/phpcs-variable-analysis), as run by the
+		phpBB Extension Check on the release package.
+
+		Scope: the shipped code only. tests/ is export-ignored, so the release
+		package the EC checks contains none of it (beta3 decision).
+	-->
+	<rule ref="./vendor/sirbrillig/phpcs-variable-analysis/VariableAnalysis">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+
+	<!--
+		One targeted exception, this sniff code and these files only: phpBB's
+		language-file contract. Every language file starts with core's guard
+		"if (empty($lang) || !is_array($lang)) { $lang = array(); }", and $lang
+		comes from the including scope: phpbb\language\language_file_loader::
+		load_file($path, $component, $locale, &$lang) includes the file inside
+		that method, so $lang is its by-reference parameter. The sniff cannot
+		see that and reports $lang as undefined. The EC will still list these eight
+		lines; the justification for it is recorded in the EC plan.
+	-->
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
+		<exclude-pattern>*/language/*</exclude-pattern>
+	</rule>
+
 	<arg name="encoding" value="utf-8"/>
 	<arg name="extensions" value="php"/>
 	<arg value="p"/>
