@@ -1209,14 +1209,14 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 	public function test_the_public_description_is_not_escaped_by_the_template()
 	{
-		$template = file_get_contents(
-			dirname(dirname(__DIR__)) . '/styles/prosilver/template/event/viewtopic_body_poll_before.html'
-		);
-
 		// generate_text_for_display() has already produced safe HTML; escaping
 		// it here would render an administrator's [b] as visible tags.
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_DESC}', $template);
-		$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC|e}', $template);
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents(dirname(dirname(__DIR__)) . '/styles/prosilver/template/event/viewtopic_body_poll_before.html'),
+			array('S_DONATIONCAMPAIGNS_SHOW' => true, 'DONATIONCAMPAIGNS_DESC' => '<strong>Roof</strong>')
+		);
+
+		$this->assertStringContainsString('<div class="donationcampaigns-desc"><strong>Roof</strong></div>', $html);
 	}
 
 	// ------------------------------------------------- the topic tools link
