@@ -554,6 +554,12 @@ class architecture_test extends \phpbb_test_case
 	{
 		$template = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_list.html');
 
+		// ADR-013: no inline CSS. prosilver hides .responsive-show with an
+		// inline style; the list does it with its own class instead.
+		$this->assertDoesNotMatchRegularExpression('/\sstyle\s*=/i', $template);
+		$this->assertStringContainsString('class="responsive-show donationcampaigns-list-forum"', $template);
+		$this->assertMatchesRegularExpression('/\.donationcampaigns-list-forum\s*\{\s*display:\s*none;/', file_get_contents($this->package . '/styles/prosilver/theme/donationcampaigns.css'));
+
 		// Template variables only — prose in a comment may say "donor".
 		preg_match_all('/\{([A-Za-z0-9_.|]+)\}/', $template, $matches);
 		$this->assertNotEmpty($matches[1]);

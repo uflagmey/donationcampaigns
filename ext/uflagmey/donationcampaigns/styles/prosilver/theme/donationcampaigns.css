@@ -127,6 +127,14 @@
 	width: 40%;
 }
 
+/* The forum repeated under the title, for narrow screens only. Hidden here;
+   prosilver's responsive.css shows .responsive-show (display: block
+   !important) below its breakpoint. Core hides it with an inline style,
+   which ADR-013 does not allow. */
+.donationcampaigns-list-forum {
+	display: none;
+}
+
 .donationcampaigns-list-figures {
 	display: block;
 	line-height: 1.4;
