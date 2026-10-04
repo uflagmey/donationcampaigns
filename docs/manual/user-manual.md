@@ -46,6 +46,10 @@ donations permanently.
 > *forum* permissions, granted to nobody. Assign them again after updating (see §4). Existing
 > campaigns and donations are not affected.
 
+> **Updating from 1.0.0-beta2:** nothing changes for your visitors. The new campaign list page
+> stays off until you switch it on (§3, §8); the new tab in the posting form only does something
+> when its checkbox is ticked (§5).
+
 ## 3. Configure the currency
 
 Go to **ACP** → **Extensions** → **Donation campaigns** → **Settings**.

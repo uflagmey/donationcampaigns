@@ -2,9 +2,11 @@
 
 ## 1.0.0-beta3
 
-**Status:** Third public beta, in preparation. It implements two more points of
-the review feedback received on phpBB.com: a board-wide campaign list with an
-ACP switch, and creating a campaign together with a new topic, like a poll.
+**Status:** Third public beta. It implements two more points of the review
+feedback received on phpBB.com: a board-wide campaign list with an ACP switch,
+and creating a campaign together with a new topic, like a poll. No breaking
+change: an update from beta2 changes nothing visible until the new page is
+switched on.
 
 Requires phpBB **3.3.16 or later** (below 4.0). prosilver only. PHP **8.2 or newer**.
 
@@ -71,26 +73,34 @@ See ADR-019 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blo
    migration runner as usual) and **purge the cache**.
 2. The migration `m10_campaign_list` adds one setting,
    `donationcampaigns_list_enabled`, switched **off**. Nothing else changes in
-   the database.
-3. Switch the campaign list on in the ACP settings if you want it.
+   the database, and nothing changes for visitors: no new page, no new
+   quick-links entry, until the setting is switched on.
+3. The posting-form tab appears at once for users who may manage campaigns in a
+   forum. It changes nothing unless its checkbox is ticked.
+4. Switch the campaign list on in the ACP settings if you want it.
+
+Updating straight from **1.0.0-beta1**: read the beta2 notes first — the beta1
+moderator permissions were replaced and must be re-assigned
+([RELEASE_NOTES_BETA2.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/RELEASE_NOTES_BETA2.md)).
 
 ---
 
 ## For translators
 
-New keys:
+14 new keys, none changed or removed:
 
-| File | Key |
-|---|---|
-| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE` — page title, breadcrumb and quick-links entry ("Spendenkampagnen") |
-| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY` |
-| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN`, `…_FORUM`, `…_PROGRESS` — column headings |
-| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL` — plural array, "%d campaign" / "%d campaigns" |
-| `info_acp_donationcampaigns.php` | `DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED`, `DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN` |
-| `common.php` | `DONATIONCAMPAIGNS_POSTING_TAB` — the tab in the posting form ("Spendenkampagne") |
-| `common.php` | `DONATIONCAMPAIGNS_POSTING_EXPLAIN`, `DONATIONCAMPAIGNS_POSTING_ATTACH` — panel text and checkbox |
-| `common.php` | `DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN`, `DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER` — "leave empty to use the topic title" |
-| `logs.php` | `LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED` — critical log entry, one `%s` (topic ID) |
+| File | Key | Note |
+|---|---|---|
+| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE` | Page title, breadcrumb and quick-links entry ("Spendenkampagnen") |
+| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY` | Shown when the visitor may see no campaign |
+| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN`, `DONATIONCAMPAIGNS_PUBLIC_LIST_FORUM`, `DONATIONCAMPAIGNS_PUBLIC_LIST_PROGRESS` | Column headings |
+| `common.php` | `DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL` | Plural array: `1 => '%d campaign'`, `2 => '%d campaigns'` |
+| `common.php` | `DONATIONCAMPAIGNS_POSTING_TAB` | The tab in the posting form ("Spendenkampagne") |
+| `common.php` | `DONATIONCAMPAIGNS_POSTING_EXPLAIN` | Text at the top of the panel |
+| `common.php` | `DONATIONCAMPAIGNS_POSTING_ATTACH` | The checkbox that switches the campaign on |
+| `common.php` | `DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN`, `DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER` | "Leave empty to use the topic title" and the placeholder in the empty field |
+| `info_acp_donationcampaigns.php` | `DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED`, `DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN` | The ACP switch |
+| `logs.php` | `LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED` | Critical log entry; one `%s`, the topic ID |
 
 The public list keys are deliberately `…_PUBLIC_LIST_…`: the ACP campaign list
 already uses `DONATIONCAMPAIGNS_LIST_…`, and those keys are unchanged.

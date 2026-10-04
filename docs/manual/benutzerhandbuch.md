@@ -49,6 +49,10 @@ ACP-Menü angelegt. **Deaktivieren** blendet später alles aus, behält aber die
 > zwei *Foren*-Berechtigungen, die zunächst niemandem erteilt sind. Vergib sie nach dem Update neu
 > (siehe §4). Bestehende Kampagnen und Spenden bleiben unverändert.
 
+> **Update von 1.0.0-beta2:** Für deine Besucher ändert sich nichts. Die neue Seite mit der
+> Kampagnenliste bleibt aus, bis du sie einschaltest (§3, §8); der neue Reiter im Beitragsformular
+> bewirkt nur etwas, wenn sein Häkchen gesetzt ist (§5).
+
 ## 3. Währung einstellen
 
 Gehe zu **Administrationsbereich** → **Erweiterungen** → **Spendenkampagnen** → **Einstellungen**.
