@@ -103,6 +103,7 @@ class posting_listener implements EventSubscriberInterface
 	{
 		return array(
 			'core.posting_modify_template_vars'		=> 'assign_panel',
+			'core.posting_modify_submission_errors'	=> 'validate_panel',
 		);
 	}
 
@@ -154,6 +155,84 @@ class posting_listener implements EventSubscriberInterface
 			'DONATIONCAMPAIGNS_EXTERNAL_URL'		=> $values['external_url'],
 			'DONATIONCAMPAIGNS_LINK_TEXT'			=> $values['external_link_text'],
 		));
+	}
+
+	/**
+	 * Refuse the post while the campaign fields are invalid
+	 * (core.posting_modify_submission_errors, posting.php:1428).
+	 *
+	 * Runs on submit AND preview, like core's own poll checks, so a wrong
+	 * target is reported before the topic is posted. An attachment refresh or
+	 * a draft action is neither and is left alone. Only the FIELD rules run:
+	 * the topic does not exist yet. create_campaign() runs the full rules once
+	 * it does.
+	 *
+	 * core expects sentences in "error", not language keys; ours are appended
+	 * after whatever is already there.
+	 *
+	 * @param \phpbb\event\data $event
+	 * @return void
+	 */
+	public function validate_panel($event)
+	{
+		if (!$event['submit'] && !$this->request->is_set_post('preview'))
+		{
+			return;
+		}
+
+		if (!$this->applies($event['mode'], $event['forum_id']) || !$this->attached())
+		{
+			return;
+		}
+
+		$this->language->add_lang(array('common', 'info_acp_donationcampaigns'), 'uflagmey/donationcampaigns');
+
+		list($input, $amount_error) = $this->input($event['post_data']);
+
+		$errors = $this->form->merge_amount_error($this->campaigns->validate_fields($input), $amount_error);
+
+		if (empty($errors))
+		{
+			return;
+		}
+
+		$error = $event['error'];
+		foreach ($errors as $key)
+		{
+			$error[] = $this->language->lang($key);
+		}
+		$event['error'] = $error;
+	}
+
+	/**
+	 * The campaign input from the posted panel, and the target's parse error.
+	 *
+	 * An empty title becomes the topic subject (WD1). core stores the subject
+	 * HTML-escaped (request->variable() → htmlspecialchars, ENT_COMPAT); the
+	 * campaign title is stored raw and escaped at output, so the subject is
+	 * decoded with the exact inverse first. Otherwise "Kosten & Miete" would
+	 * be stored as "Kosten &amp; Miete" and shown escaped twice.
+	 *
+	 * @param array $post_data core's post_data (post_subject)
+	 * @return array{0:array, 1:string}
+	 */
+	protected function input(array $post_data)
+	{
+		$values = $this->form->submitted_values(self::PREFIX);
+
+		list($target, $amount_error) = $this->form->parse_target($values['target_amount']);
+
+		if (trim($values['campaign_title']) === '')
+		{
+			$subject = isset($post_data['post_subject']) ? (string) $post_data['post_subject'] : '';
+			$values['campaign_title'] = htmlspecialchars_decode($subject, ENT_COMPAT);
+		}
+
+		$values['target_amount'] = $target;
+		// A campaign created with its topic starts enabled, as on the frontend.
+		$values['campaign_enabled'] = true;
+
+		return array($values, $amount_error);
 	}
 
 	/**

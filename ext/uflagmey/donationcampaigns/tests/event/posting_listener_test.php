@@ -167,6 +167,7 @@ class posting_listener_test extends campaign_list_test_case
 	{
 		$this->assertSame(array(
 			'core.posting_modify_template_vars'		=> 'assign_panel',
+			'core.posting_modify_submission_errors'	=> 'validate_panel',
 		), posting_listener::getSubscribedEvents());
 	}
 
@@ -310,6 +311,124 @@ class posting_listener_test extends campaign_list_test_case
 		$this->assertContains('donationcampaigns_attach', $names[1]);
 		$this->assertContains('donationcampaigns_panel', $names[1]);
 		$this->assertContains('donationcampaigns_target_amount', $names[1]);
+	}
+
+	// ===================================================== validation (Task 6)
+
+	/**
+	 * core.posting_modify_submission_errors as posting.php dispatches it.
+	 */
+	protected function submission_event($mode = 'post', $forum_id = self::FORUM_A, $submit = true, $subject = 'A new topic', array $error = array())
+	{
+		return new \phpbb\event\data(array(
+			'post_data'	=> array('post_subject' => utf8_htmlspecialchars($subject)),
+			'poll'		=> array(),
+			'mode'		=> $mode,
+			'post_id'	=> 0,
+			'topic_id'	=> 0,
+			'forum_id'	=> $forum_id,
+			'submit'	=> $submit,
+			'error'		=> $error,
+		));
+	}
+
+	protected function validate(array $post, \phpbb\event\data $event = null)
+	{
+		$event = $event ?: $this->submission_event();
+		$this->listener($post)->validate_panel($event);
+
+		return $event['error'];
+	}
+
+	public function test_unticked_nothing_is_validated_whatever_the_fields_hold()
+	{
+		$this->assertSame(array(), $this->validate($this->panel(array('target_amount' => 'garbage', 'external_url' => 'javascript:x'), false)));
+	}
+
+	public function test_valid_fields_add_no_error()
+	{
+		$this->assertSame(array(), $this->validate($this->panel()));
+	}
+
+	/**
+	 * Errors go into core's error array as SENTENCES (posting.php:1408), after
+	 * whatever core or another extension already put there.
+	 */
+	public function test_an_invalid_target_blocks_the_post_with_a_translated_message()
+	{
+		$event = $this->submission_event('post', self::FORUM_A, true, 'A new topic', array('Core error first'));
+
+		$errors = $this->validate($this->panel(array('target_amount' => '0')), $event);
+
+		$this->assertSame('Core error first', $errors[0]);
+		$this->assertCount(2, $errors);
+		$this->assertStringNotContainsString('DONATIONCAMPAIGNS_', $errors[1]);
+		$this->assertSame($this->language->lang('DONATIONCAMPAIGNS_ERROR_TARGET_POSITIVE'), $errors[1]);
+	}
+
+	public function test_a_grouped_amount_reports_the_formatter_error_first()
+	{
+		$errors = $this->validate($this->panel(array('target_amount' => '1,000.00', 'external_url' => 'javascript:x')));
+
+		$this->assertNotSame($this->language->lang('DONATIONCAMPAIGNS_ERROR_TARGET_POSITIVE'), $errors[0]);
+		$this->assertNotContains($this->language->lang('DONATIONCAMPAIGNS_ERROR_TARGET_POSITIVE'), $errors);
+		$this->assertContains($this->language->lang('DONATIONCAMPAIGNS_ERROR_URL_INVALID'), $errors);
+	}
+
+	/**
+	 * A preview validates like a poll does: the errors suppress the preview.
+	 */
+	public function test_a_preview_validates()
+	{
+		$post = $this->panel(array('target_amount' => '0')) + array('preview' => 'Preview');
+
+		$this->assertNotEmpty($this->validate($post, $this->submission_event('post', self::FORUM_A, false)));
+	}
+
+	/**
+	 * An attachment refresh or a draft action is neither submit nor preview.
+	 */
+	public function test_a_refresh_does_not_validate()
+	{
+		$post = $this->panel(array('target_amount' => '0')) + array('add_file' => 'Add the file');
+
+		$this->assertSame(array(), $this->validate($post, $this->submission_event('post', self::FORUM_A, false)));
+	}
+
+	/**
+	 * WD1: an empty campaign title becomes the topic title, so it is not an
+	 * error while the topic has a subject.
+	 */
+	public function test_an_empty_title_is_fine_when_the_topic_has_a_subject()
+	{
+		$this->assertSame(array(), $this->validate($this->panel(array('campaign_title' => '   '))));
+	}
+
+	public function test_an_empty_title_without_a_subject_is_reported()
+	{
+		$errors = $this->validate($this->panel(array('campaign_title' => '')), $this->submission_event('post', self::FORUM_A, true, ''));
+
+		$this->assertContains($this->language->lang('DONATIONCAMPAIGNS_ERROR_TITLE_REQUIRED'), $errors);
+	}
+
+	public function test_a_title_from_a_long_subject_is_checked_like_a_typed_one()
+	{
+		$this->assertSame(array(), $this->validate($this->panel(array('campaign_title' => '')), $this->submission_event('post', self::FORUM_A, true, 'Kosten & "Miete" <2026>')));
+	}
+
+	public function test_injected_fields_without_the_permission_are_ignored()
+	{
+		$this->assertSame(array(), $this->validate($this->panel(array('target_amount' => '0')), $this->submission_event('post', self::FORUM_B)));
+	}
+
+	/**
+	 * Fields injected into a reply, a quote or an edit are never validated.
+	 *
+	 * @dataProvider other_modes
+	 */
+	public function test_injected_fields_outside_a_new_topic_are_ignored($mode)
+	{
+		$this->assertSame(array(), $this->validate($this->panel(array('target_amount' => '0')), $this->submission_event($mode)));
 	}
 
 	// ---------------------------------------------------------------- markup
