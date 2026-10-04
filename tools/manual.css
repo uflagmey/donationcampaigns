@@ -1,0 +1,27 @@
+/*
+ * Additions for the two user manuals, loaded after documentation.css by
+ * tools/build-documentation-pdf.sh (targets manual-de, manual-en).
+ *
+ * The manuals use block quotes only for warnings and hints, so they get the
+ * amber call-out look of the beta1 manuals instead of the neutral grey
+ * quote style of the Complete Documentation.
+ */
+
+blockquote {
+	border-left: 4px solid #d9a521;
+	background: #fef9e7;
+	color: #6b5214;
+	padding: 0.4em 1.1em;
+}
+
+blockquote strong {
+	color: #5a4410;
+}
+
+/* Screenshots: never wider than the text column, centred, framed. */
+img {
+	display: block;
+	max-width: 100%;
+	margin: 0.8em auto;
+	border: 1px solid #e2e8ee;
+}
