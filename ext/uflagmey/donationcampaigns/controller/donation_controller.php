@@ -175,7 +175,7 @@ class donation_controller
 	{
 		$this->load_language();
 
-		list($donation, $campaign, $topic) = $this->load_donation_in_topic((int) $donation_id);
+		list($donation, , $topic) = $this->load_donation_in_topic((int) $donation_id);
 		$this->require_donations($topic['forum_id']);
 
 		$exponent = (int) $this->config['donationcampaigns_currency_exponent'];

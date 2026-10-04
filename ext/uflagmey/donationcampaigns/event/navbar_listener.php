@@ -63,10 +63,12 @@ class navbar_listener implements EventSubscriberInterface
 	}
 
 	/**
-	 * @param \phpbb\event\data $event
+	 * core.page_header passes its event data; this listener needs none of it,
+	 * so it declares no parameter (PHP accepts the extra argument).
+	 *
 	 * @return void
 	 */
-	public function assign_list_link($event)
+	public function assign_list_link()
 	{
 		// empty() also covers a missing key: before m10 has run, the list is off.
 		if (empty($this->config['donationcampaigns_list_enabled']))

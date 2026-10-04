@@ -192,7 +192,7 @@ class main_module
 	 */
 	protected function campaigns_mode()
 	{
-		global $request, $template, $language, $config, $phpbb_log, $user, $phpbb_container;
+		global $request, $language, $phpbb_container;
 
 		$this->tpl_name = 'acp_donationcampaigns_campaigns';
 		$this->page_title = $language->lang('ACP_DONATIONCAMPAIGNS_CAMPAIGNS');
