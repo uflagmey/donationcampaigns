@@ -9,11 +9,13 @@
 # for administrators, so they ship; DEVELOPERS is written for contributors.
 /docs/DEVELOPERS.md   export-ignore
 
-# Superseded release notes. The current release ships RELEASE_NOTES_BETA3.md;
-# the RC1, beta1 and beta2 notes are historical and stay in the repository only.
+# Superseded release notes. The current release ships RELEASE_NOTES_BETA4.md;
+# the RC1, beta1, beta2 and beta3 notes are historical and stay in the
+# repository only.
 /RELEASE_NOTES_RC1.md   export-ignore
 /RELEASE_NOTES_BETA1.md   export-ignore
 /RELEASE_NOTES_BETA2.md   export-ignore
+/RELEASE_NOTES_BETA3.md   export-ignore
 
 # The archive-control file itself has no meaning inside a released package.
 /.gitattributes   export-ignore
