@@ -46,8 +46,6 @@ class architecture_test extends \phpbb_test_case
 		'adm/style/acp_donationcampaigns_campaigns.html',
 		'adm/style/acp_donationcampaigns_donations.html',
 		'adm/style/acp_donationcampaigns_settings.html',
-		'styles/prosilver/template/donationcampaigns_list.html',
-		'styles/prosilver/template/donationcampaigns_manage.html',
 	);
 
 	/**

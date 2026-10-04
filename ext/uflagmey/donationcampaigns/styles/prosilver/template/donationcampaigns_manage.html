@@ -1,74 +1,74 @@
-<!-- INCLUDE overall_header.html -->
+{% include 'overall_header.html' %}
 
 <div class="panel">
 	<div class="inner">
 
-	<h2 class="donationcampaigns-heading">{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}</h2>
-	<p>{L_DONATIONCAMPAIGNS_MANAGE_EXPLAIN}</p>
+	<h2 class="donationcampaigns-heading">{{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}</h2>
+	<p>{{ lang('DONATIONCAMPAIGNS_MANAGE_EXPLAIN') }}</p>
 
 	<dl class="details">
-		<dt>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</dt> <dd><strong><a href="{U_DONATIONCAMPAIGNS_TOPIC}">{DONATIONCAMPAIGNS_TOPIC_TITLE}</a></strong></dd>
-		<dt>{L_DONATIONCAMPAIGNS_STATUS}{L_COLON}</dt> <dd><!-- IF S_DONATIONCAMPAIGNS_ENABLED -->{L_DONATIONCAMPAIGNS_ENABLED}<!-- ELSE -->{L_DONATIONCAMPAIGNS_DISABLED}<!-- ENDIF --></dd>
-		<dt>{L_DONATIONCAMPAIGNS_COLLECTED}{L_COLON}</dt> <dd>{DONATIONCAMPAIGNS_COLLECTED|e} / {DONATIONCAMPAIGNS_TARGET|e}</dd>
-		<dt>{L_DONATIONCAMPAIGNS_LIST_DONATIONS}{L_COLON}</dt> <dd>{DONATIONCAMPAIGNS_COUNT}</dd>
+		<dt>{{ lang('DONATIONCAMPAIGNS_FORM_TOPIC') }}{{ lang('COLON') }}</dt> <dd><strong><a href="{{ U_DONATIONCAMPAIGNS_TOPIC }}">{{ DONATIONCAMPAIGNS_TOPIC_TITLE }}</a></strong></dd>
+		<dt>{{ lang('DONATIONCAMPAIGNS_STATUS') }}{{ lang('COLON') }}</dt> <dd>{% if S_DONATIONCAMPAIGNS_ENABLED %}{{ lang('DONATIONCAMPAIGNS_ENABLED') }}{% else %}{{ lang('DONATIONCAMPAIGNS_DISABLED') }}{% endif %}</dd>
+		<dt>{{ lang('DONATIONCAMPAIGNS_COLLECTED') }}{{ lang('COLON') }}</dt> <dd>{{ DONATIONCAMPAIGNS_COLLECTED|e }} / {{ DONATIONCAMPAIGNS_TARGET|e }}</dd>
+		<dt>{{ lang('DONATIONCAMPAIGNS_LIST_DONATIONS') }}{{ lang('COLON') }}</dt> <dd>{{ DONATIONCAMPAIGNS_COUNT }}</dd>
 	</dl>
 
-	<!-- IF S_DONATIONCAMPAIGNS_CAN_MANAGE -->
+	{% if S_DONATIONCAMPAIGNS_CAN_MANAGE %}
 		<fieldset class="submit-buttons">
 			{# Each button navigates to its own action (formaction). Edit renders
 			   the edit form; Disable and Delete open their confirmation. #}
-			<form method="get" action="{U_EDIT}">
-				<input type="submit" formaction="{U_EDIT}" class="button1" value="{L_DONATIONCAMPAIGNS_EDIT}">
-				<!-- IF S_DONATIONCAMPAIGNS_ENABLED -->
-					<input type="submit" formaction="{U_DISABLE}" class="button2" value="{L_DONATIONCAMPAIGNS_DISABLE}">
-				<!-- ENDIF -->
-				<input type="submit" formaction="{U_DELETE}" class="button2" value="{L_DONATIONCAMPAIGNS_DELETE}">
+			<form method="get" action="{{ U_EDIT }}">
+				<input type="submit" formaction="{{ U_EDIT }}" class="button1" value="{{ lang('DONATIONCAMPAIGNS_EDIT') }}">
+				{% if S_DONATIONCAMPAIGNS_ENABLED %}
+					<input type="submit" formaction="{{ U_DISABLE }}" class="button2" value="{{ lang('DONATIONCAMPAIGNS_DISABLE') }}">
+				{% endif %}
+				<input type="submit" formaction="{{ U_DELETE }}" class="button2" value="{{ lang('DONATIONCAMPAIGNS_DELETE') }}">
 			</form>
-			<!-- IF not S_DONATIONCAMPAIGNS_ENABLED -->
+			{% if not S_DONATIONCAMPAIGNS_ENABLED %}
 				{# Enable is a direct write, so it is a POST behind a form key. #}
-				<form method="post" action="{U_ENABLE}">
-					<input type="submit" class="button1" value="{L_DONATIONCAMPAIGNS_ENABLE}">
-					{S_FORM_TOKEN}
+				<form method="post" action="{{ U_ENABLE }}">
+					<input type="submit" class="button1" value="{{ lang('DONATIONCAMPAIGNS_ENABLE') }}">
+					{{ S_FORM_TOKEN }}
 				</form>
-			<!-- ENDIF -->
+			{% endif %}
 		</fieldset>
-	<!-- ENDIF -->
+	{% endif %}
 
 	</div>
 </div>
 
-<!-- IF S_DONATIONCAMPAIGNS_CAN_DONATIONS -->
+{% if S_DONATIONCAMPAIGNS_CAN_DONATIONS %}
 	<div class="forumbg forumbg-table">
 		<div class="inner">
 
 		<table class="table1 donationcampaigns-ledger">
 		<thead>
 		<tr>
-			<th scope="col">{L_DONATIONCAMPAIGNS_DONOR}</th>
-			<th scope="col">{L_DONATIONCAMPAIGNS_AMOUNT}</th>
-			<th scope="col">{L_DONATIONCAMPAIGNS_RECEIVED_ON}</th>
-			<th scope="col">{L_DONATIONCAMPAIGNS_VISIBILITY}</th>
-			<th scope="col">{L_DONATIONCAMPAIGNS_LIST_ACTIONS}</th>
+			<th scope="col">{{ lang('DONATIONCAMPAIGNS_DONOR') }}</th>
+			<th scope="col">{{ lang('DONATIONCAMPAIGNS_AMOUNT') }}</th>
+			<th scope="col">{{ lang('DONATIONCAMPAIGNS_RECEIVED_ON') }}</th>
+			<th scope="col">{{ lang('DONATIONCAMPAIGNS_VISIBILITY') }}</th>
+			<th scope="col">{{ lang('DONATIONCAMPAIGNS_LIST_ACTIONS') }}</th>
 		</tr>
 		</thead>
 		<tbody>
-		<!-- BEGIN donationcampaigns_donation -->
-			<tr class="<!-- IF donationcampaigns_donation.S_ROW_COUNT is even -->bg1<!-- ELSE -->bg2<!-- ENDIF -->">
-				<td><strong>{donationcampaigns_donation.DONOR_NAME|e}</strong></td>
-				<td>{donationcampaigns_donation.AMOUNT|e}</td>
-				<td>{donationcampaigns_donation.RECEIVED_ON|e}</td>
-				<td><!-- IF donationcampaigns_donation.S_PUBLIC -->{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}<!-- ELSE -->{L_DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS}<!-- ENDIF --></td>
+		{% for donationcampaigns_donation in loops.donationcampaigns_donation %}
+			<tr class="{% if donationcampaigns_donation.S_ROW_COUNT is even %}bg1{% else %}bg2{% endif %}">
+				<td><strong>{{ donationcampaigns_donation.DONOR_NAME|e }}</strong></td>
+				<td>{{ donationcampaigns_donation.AMOUNT|e }}</td>
+				<td>{{ donationcampaigns_donation.RECEIVED_ON|e }}</td>
+				<td>{% if donationcampaigns_donation.S_PUBLIC %}{{ lang('DONATIONCAMPAIGNS_VISIBILITY_PUBLIC') }}{% else %}{{ lang('DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS') }}{% endif %}</td>
 				<td>
-					<a href="{donationcampaigns_donation.U_EDIT}">{L_DONATIONCAMPAIGNS_EDIT_ENTRY}</a>
+					<a href="{{ donationcampaigns_donation.U_EDIT }}">{{ lang('DONATIONCAMPAIGNS_EDIT_ENTRY') }}</a>
 					&nbsp;|&nbsp;
-					<a href="{donationcampaigns_donation.U_DELETE}">{L_DELETE}</a>
+					<a href="{{ donationcampaigns_donation.U_DELETE }}">{{ lang('DELETE') }}</a>
 				</td>
 			</tr>
-		<!-- BEGINELSE -->
+		{% else %}
 			<tr class="bg1">
-				<td colspan="5">{L_DONATIONCAMPAIGNS_NO_DONATIONS_YET}</td>
+				<td colspan="5">{{ lang('DONATIONCAMPAIGNS_NO_DONATIONS_YET') }}</td>
 			</tr>
-		<!-- END donationcampaigns_donation -->
+		{% endfor %}
 		</tbody>
 		</table>
 
@@ -78,25 +78,25 @@
 	<div class="panel">
 		<div class="inner">
 			<fieldset class="submit-buttons">
-				<form method="get" action="{U_ADD_DONATION}">
-					<input type="submit" class="button1" value="{L_DONATIONCAMPAIGNS_ADD_DONATION}">
+				<form method="get" action="{{ U_ADD_DONATION }}">
+					<input type="submit" class="button1" value="{{ lang('DONATIONCAMPAIGNS_ADD_DONATION') }}">
 				</form>
 			</fieldset>
 		</div>
 	</div>
-<!-- ENDIF -->
+{% endif %}
 
 <div class="panel">
 	<div class="inner">
 		<fieldset class="submit-buttons">
 			{# A GET form discards a query string on its action, so the topic id
 			   is a hidden field rather than part of the URL. #}
-			<form method="get" action="{U_VIEWTOPIC}">
-				<input type="hidden" name="t" value="{DONATIONCAMPAIGNS_TOPIC_ID}">
-				<input type="submit" class="button2" value="{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}">
+			<form method="get" action="{{ U_VIEWTOPIC }}">
+				<input type="hidden" name="t" value="{{ DONATIONCAMPAIGNS_TOPIC_ID }}">
+				<input type="submit" class="button2" value="{{ lang('DONATIONCAMPAIGNS_BACK_TO_TOPIC') }}">
 			</form>
 		</fieldset>
 	</div>
 </div>
 
-<!-- INCLUDE overall_footer.html -->
+{% include 'overall_footer.html' %}

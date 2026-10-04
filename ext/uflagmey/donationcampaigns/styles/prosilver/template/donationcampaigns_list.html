@@ -1,16 +1,16 @@
-<!-- INCLUDE overall_header.html -->
+{% include 'overall_header.html' %}
 
 {# The board-wide campaign list (ADR-018). Read only: no form, no action.
    A row names the campaign, its forum and its progress, never a donor;
    the details stay in the topic. On narrow screens the forum column is
    hidden and the forum is named under the title, as prosilver does. #}
-<h2 class="donationcampaigns-heading">{L_DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE}</h2>
+<h2 class="donationcampaigns-heading">{{ lang('DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE') }}</h2>
 
-<!-- IF .donationcampaigns_list -->
+{% if loops.donationcampaigns_list|length %}
 	<div class="action-bar bar-top">
 		<div class="pagination">
-			{DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL}
-			<!-- IF .pagination --><!-- INCLUDE pagination.html --><!-- ENDIF -->
+			{{ DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL }}
+			{% if loops.pagination|length %}{% include 'pagination.html' %}{% endif %}
 		</div>
 	</div>
 
@@ -19,29 +19,29 @@
 		<table class="table1 donationcampaigns-list">
 			<thead>
 				<tr>
-					<th class="name">{L_DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN}</th>
-					<th class="responsive-hide">{L_DONATIONCAMPAIGNS_PUBLIC_LIST_FORUM}</th>
-					<th class="donationcampaigns-list-progress">{L_DONATIONCAMPAIGNS_PUBLIC_LIST_PROGRESS}</th>
+					<th class="name">{{ lang('DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN') }}</th>
+					<th class="responsive-hide">{{ lang('DONATIONCAMPAIGNS_PUBLIC_LIST_FORUM') }}</th>
+					<th class="donationcampaigns-list-progress">{{ lang('DONATIONCAMPAIGNS_PUBLIC_LIST_PROGRESS') }}</th>
 				</tr>
 			</thead>
 			<tbody>
-			<!-- BEGIN donationcampaigns_list -->
-				<tr class="<!-- IF donationcampaigns_list.S_ROW_COUNT is even -->bg1<!-- ELSE -->bg2<!-- ENDIF -->">
+			{% for donationcampaigns_list in loops.donationcampaigns_list %}
+				<tr class="{% if donationcampaigns_list.S_ROW_COUNT is even %}bg1{% else %}bg2{% endif %}">
 					<td>
-						<a href="{donationcampaigns_list.U_TOPIC}" class="topictitle">{donationcampaigns_list.TITLE|e}</a>
-						<span class="responsive-show donationcampaigns-list-forum"><a href="{donationcampaigns_list.U_FORUM}">{donationcampaigns_list.FORUM_NAME}</a></span>
+						<a href="{{ donationcampaigns_list.U_TOPIC }}" class="topictitle">{{ donationcampaigns_list.TITLE|e }}</a>
+						<span class="responsive-show donationcampaigns-list-forum"><a href="{{ donationcampaigns_list.U_FORUM }}">{{ donationcampaigns_list.FORUM_NAME }}</a></span>
 					</td>
-					<td class="responsive-hide"><a href="{donationcampaigns_list.U_FORUM}">{donationcampaigns_list.FORUM_NAME}</a></td>
+					<td class="responsive-hide"><a href="{{ donationcampaigns_list.U_FORUM }}">{{ donationcampaigns_list.FORUM_NAME }}</a></td>
 					<td class="donationcampaigns-list-progress">
 						{% include '@uflagmey_donationcampaigns/donationcampaigns_progress.html' with {'percent': donationcampaigns_list.PERCENT, 'percent_raw': donationcampaigns_list.PERCENT_RAW, 'step': donationcampaigns_list.STEP} only %}
 						<span class="donationcampaigns-list-figures">
-							{donationcampaigns_list.COLLECTED|e} / {donationcampaigns_list.TARGET|e} &mdash; {donationcampaigns_list.PERCENT_RAW}%
-							<!-- IF donationcampaigns_list.S_REACHED --><br><strong>{L_DONATIONCAMPAIGNS_TARGET_REACHED}</strong><!-- ENDIF -->
-							<!-- IF donationcampaigns_list.COUNT --><br>{donationcampaigns_list.COUNT|e}<!-- ENDIF -->
+							{{ donationcampaigns_list.COLLECTED|e }} / {{ donationcampaigns_list.TARGET|e }} &mdash; {{ donationcampaigns_list.PERCENT_RAW }}%
+							{% if donationcampaigns_list.S_REACHED %}<br><strong>{{ lang('DONATIONCAMPAIGNS_TARGET_REACHED') }}</strong>{% endif %}
+							{% if donationcampaigns_list.COUNT %}<br>{{ donationcampaigns_list.COUNT|e }}{% endif %}
 						</span>
 					</td>
 				</tr>
-			<!-- END donationcampaigns_list -->
+			{% endfor %}
 			</tbody>
 		</table>
 		</div>
@@ -49,16 +49,16 @@
 
 	<div class="action-bar bar-bottom">
 		<div class="pagination">
-			{DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL}
-			<!-- IF .pagination --><!-- INCLUDE pagination.html --><!-- ENDIF -->
+			{{ DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL }}
+			{% if loops.pagination|length %}{% include 'pagination.html' %}{% endif %}
 		</div>
 	</div>
-<!-- ELSE -->
+{% else %}
 	<div class="panel">
 		<div class="inner">
-			<p>{L_DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY}</p>
+			<p>{{ lang('DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY') }}</p>
 		</div>
 	</div>
-<!-- ENDIF -->
+{% endif %}
 
-<!-- INCLUDE overall_footer.html -->
+{% include 'overall_footer.html' %}
