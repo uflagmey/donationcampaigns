@@ -8,13 +8,17 @@
 
 namespace uflagmey\donationcampaigns\tests\event;
 
+use uflagmey\donationcampaigns\tests\template_renderer;
+
 /**
- * The shipped prosilver assets, checked as files.
+ * The shipped prosilver assets, checked as files and as rendered.
  *
  * ADR-013 fixes where they live and what they may contain, and the template's
  * filename is the entire mechanism by which phpBB decides where the block
  * renders — a typo produces silence, not an error. Both are asserted here
- * rather than left to a manual browser check.
+ * rather than left to a manual browser check. What the box shows, and how a
+ * value is escaped in it, is asserted on the box phpBB's engine renders, so
+ * it holds whichever template syntax produced it.
  */
 class prosilver_assets_test extends \phpbb_test_case
 {
@@ -44,7 +48,37 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	protected function template()
 	{
-		return \uflagmey\donationcampaigns\tests\template_renderer::inline_partials(file_get_contents($this->template_file));
+		return template_renderer::inline_partials(file_get_contents($this->template_file));
+	}
+
+	/**
+	 * The box rendered with phpBB's engine, for a topic with a campaign.
+	 *
+	 * @param array $vars On top of S_DONATIONCAMPAIGNS_SHOW
+	 * @param array $blocks
+	 * @return string
+	 */
+	protected function render_box(array $vars = array(), array $blocks = array())
+	{
+		return template_renderer::render(
+			file_get_contents($this->template_file),
+			array_merge(array('S_DONATIONCAMPAIGNS_SHOW' => true), $vars),
+			$blocks
+		);
+	}
+
+	/**
+	 * The paragraph of a rendered box that carries $class.
+	 *
+	 * @param string $html
+	 * @param string $class
+	 * @return string
+	 */
+	protected function paragraph($html, $class)
+	{
+		$this->assertSame(1, preg_match('#<p class="' . preg_quote($class, '#') . '">(.*?)</p>#s', $html, $match), "No paragraph {$class}");
+
+		return $match[1];
 	}
 
 	/**
@@ -150,9 +184,11 @@ class prosilver_assets_test extends \phpbb_test_case
 
 		$contents = file_get_contents($header);
 
-		$this->assertStringContainsString(
-			'INCLUDECSS @uflagmey_donationcampaigns/donationcampaigns.css',
-			$contents
+		// Rendered in front of core's header, the stylesheet arrives where
+		// core puts every INCLUDECSS: through the header's asset placeholder.
+		$this->assertMatchesRegularExpression(
+			'#<link href="[^"]*/styles/prosilver/theme/donationcampaigns\\.css\\?assets_version=\\d+" rel="stylesheet"#',
+			template_renderer::render($contents . "{% include 'overall_header.html' %}", array())
 		);
 		$this->assertStringNotContainsString('<link', $contents, 'Use INCLUDECSS, not a hand-built link tag');
 	}
@@ -299,24 +335,54 @@ class prosilver_assets_test extends \phpbb_test_case
 
 	public function test_the_whole_block_is_guarded_by_the_show_flag()
 	{
-		$template = trim($this->template());
+		// Everything else assigned, the flag not: nothing renders at all.
+		$vars = array(
+			'S_DONATIONCAMPAIGNS_TOPIC_LINK'	=> true,
+			'U_DONATIONCAMPAIGNS_TOPIC_LINK'	=> 'MANAGE_URL',
+			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> 'Roof',
+			'DONATIONCAMPAIGNS_DESC'			=> 'Text',
+			'S_DONATIONCAMPAIGNS_REACHED'		=> true,
+			'S_DONATIONCAMPAIGNS_SHOW_COUNT'	=> true,
+			'DONATIONCAMPAIGNS_COUNT'			=> '3 donations',
+			'S_DONATIONCAMPAIGNS_SHOW_DONORS'	=> true,
+			'DONATIONCAMPAIGNS_URL'				=> 'https://example.com/',
+			'DONATIONCAMPAIGNS_LINK_TEXT'		=> 'Donate',
+		);
+		$blocks = array('donationcampaigns_donor' => array(array('NAME' => 'Ann', 'AMOUNT' => '1 €')));
 
-		$this->assertStringStartsWith('<!-- IF S_DONATIONCAMPAIGNS_SHOW -->', $template);
-		$this->assertStringEndsWith('<!-- ENDIF -->', $template);
+		$this->assertSame('', trim(template_renderer::render(file_get_contents($this->template_file), $vars, $blocks)));
+		$this->assertStringContainsString('donationcampaigns-panel', $this->render_box($vars, $blocks));
 	}
 
 	// ------------------------------------------------------- accessibility
 
-	public function test_the_progress_indicator_is_semantic()
+	/**
+	 * Three distinct figures per case, so a swap of any two shows: below
+	 * target the capped and the real figure agree and the width step differs;
+	 * above target the capped figure and the step agree and the real one
+	 * differs.
+	 *
+	 * @return array
+	 */
+	public function progress_figures()
+	{
+		return array(
+			'below target'	=> array(42, 42, 40),
+			'above target'	=> array(100, 250, 100),
+		);
+	}
+
+	/**
+	 * @dataProvider progress_figures
+	 */
+	public function test_the_progress_indicator_is_semantic($percent, $raw, $step)
 	{
 		// Rendered, because the box hands its figures to the shared partial
 		// under other names; only rendering shows which figure lands where.
-		// 250 % of target: capped and real figure differ.
-		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(file_get_contents($this->template_file), array(
-			'S_DONATIONCAMPAIGNS_SHOW'			=> true,
-			'DONATIONCAMPAIGNS_PERCENT'			=> 100,
-			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> 250,
-			'DONATIONCAMPAIGNS_PERCENT_STEP'	=> 100,
+		$html = $this->render_box(array(
+			'DONATIONCAMPAIGNS_PERCENT'			=> $percent,
+			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> $raw,
+			'DONATIONCAMPAIGNS_PERCENT_STEP'	=> $step,
 		));
 
 		$this->assertStringContainsString('role="progressbar"', $html);
@@ -325,11 +391,14 @@ class prosilver_assets_test extends \phpbb_test_case
 		// announced through aria-valuetext, which takes precedence for
 		// assistive technology, so nobody hears a different number from the
 		// one on screen.
-		$this->assertStringContainsString('aria-valuenow="100"', $html);
-		$this->assertStringContainsString('aria-valuetext="250%"', $html);
-		$this->assertStringContainsString('250%', $html);
+		$this->assertStringContainsString('aria-valuenow="' . $percent . '"', $html);
+		$this->assertStringContainsString('aria-valuetext="' . $raw . '%"', $html);
 		$this->assertStringContainsString('aria-valuemin="0"', $html);
 		$this->assertStringContainsString('aria-valuemax="100"', $html);
+		// The width comes from the step class, never from the figures.
+		$this->assertStringContainsString('donationcampaigns-bar--' . $step . '"', $html);
+		// The figure on screen is the real one.
+		$this->assertStringContainsString($raw . '%', $this->paragraph($html, 'donationcampaigns-figures'));
 	}
 
 	/**
@@ -373,21 +442,26 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	public function test_progress_has_a_text_equivalent()
 	{
-		$template = $this->template();
+		$figures = $this->paragraph($this->render_box(array(
+			'DONATIONCAMPAIGNS_COLLECTED'		=> '<i>1.00</i>',
+			'DONATIONCAMPAIGNS_TARGET'			=> '<i>2.00</i>',
+			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> 37,
+		)), 'donationcampaigns-figures');
 
-		// The money values carry |e; the percentage is an integer.
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_COLLECTED|e}', $template);
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_TARGET|e}', $template);
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_PERCENT_RAW}', $template);
+		// The money values are escaped; the percentage is an integer.
+		$this->assertStringContainsString('<strong>&lt;i&gt;1.00&lt;/i&gt;</strong>', $figures);
+		$this->assertStringContainsString('<strong>&lt;i&gt;2.00&lt;/i&gt;</strong>', $figures);
+		$this->assertStringContainsString('37%', $figures);
 	}
 
 	public function test_the_target_reached_state_is_not_signalled_by_colour_alone()
 	{
-		$this->assertStringContainsString(
-			'{L_DONATIONCAMPAIGNS_TARGET_REACHED}',
-			$this->template(),
+		$this->assertSame(
+			'DONATIONCAMPAIGNS_TARGET_REACHED',
+			$this->paragraph($this->render_box(array('S_DONATIONCAMPAIGNS_REACHED' => true)), 'donationcampaigns-reached'),
 			'Reaching the target must be stated in words, not only shown in colour'
 		);
+		$this->assertStringNotContainsString('donationcampaigns-reached', $this->render_box());
 	}
 
 	public function test_the_box_has_a_heading()
@@ -401,7 +475,10 @@ class prosilver_assets_test extends \phpbb_test_case
 
 		// The label is the campaign's own configured text, escaped once, not a
 		// fixed string. A board links to bank details as readily as to PayPal.
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_LINK_TEXT|e}', $template);
+		$this->assertStringContainsString(
+			'rel="noopener noreferrer nofollow">&lt;b&gt;Bank &amp;amp; transfer&lt;/b&gt;</a>',
+			$this->render_box(array('DONATIONCAMPAIGNS_URL' => 'https://example.com/', 'DONATIONCAMPAIGNS_LINK_TEXT' => '<b>Bank &amp; transfer</b>'))
+		);
 		$this->assertStringNotContainsString('DONATE_LINK', $template, 'A fixed Donate label is still hard-coded');
 		$this->assertDoesNotMatchRegularExpression('/>\s*(here|click here|link)\s*</i', $template);
 	}
@@ -483,16 +560,24 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	public function test_every_administrator_controlled_value_carries_the_escape_filter()
 	{
-		$template = $this->template();
-
-		foreach (array('DONATIONCAMPAIGNS_CAMPAIGN_TITLE', 'DONATIONCAMPAIGNS_COLLECTED', 'DONATIONCAMPAIGNS_TARGET', 'DONATIONCAMPAIGNS_URL') as $var)
+		// Each value is told apart by its letter, so a value that slips
+		// through unescaped is named.
+		$vars = array('DONATIONCAMPAIGNS_URL' => 'https://example.com/', 'DONATIONCAMPAIGNS_LINK_TEXT' => 'Donate');
+		foreach (array('DONATIONCAMPAIGNS_CAMPAIGN_TITLE' => 'a', 'DONATIONCAMPAIGNS_COLLECTED' => 'b', 'DONATIONCAMPAIGNS_TARGET' => 'c', 'DONATIONCAMPAIGNS_URL' => 'd') as $var => $tag)
 		{
-			$this->assertStringContainsString('{' . $var . '|e}', $template, "{$var} is rendered without |e");
-			$this->assertStringNotContainsString('{' . $var . '}', $template, "{$var} also appears unescaped");
+			$vars[$var] = '<' . $tag . '>"';
 		}
 
-		$this->assertStringContainsString('{donationcampaigns_donor.NAME|e}', $template);
-		$this->assertStringNotContainsString('{donationcampaigns_donor.NAME}', $template);
+		$html = $this->render_box(
+			array_merge($vars, array('S_DONATIONCAMPAIGNS_SHOW_DONORS' => true)),
+			array('donationcampaigns_donor' => array(array('NAME' => '<e>"', 'AMOUNT' => '1')))
+		);
+
+		foreach (array('DONATIONCAMPAIGNS_CAMPAIGN_TITLE' => 'a', 'DONATIONCAMPAIGNS_COLLECTED' => 'b', 'DONATIONCAMPAIGNS_TARGET' => 'c', 'DONATIONCAMPAIGNS_URL' => 'd', 'donationcampaigns_donor.NAME' => 'e') as $var => $tag)
+		{
+			$this->assertStringContainsString('&lt;' . $tag . '&gt;&quot;', $html, "{$var} is not rendered escaped");
+			$this->assertStringNotContainsString('<' . $tag . '>', $html, "{$var} also appears unescaped");
+		}
 	}
 
 	/**
@@ -502,10 +587,9 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	public function test_the_description_is_rendered_without_the_escape_filter()
 	{
-		$template = $this->template();
+		$html = $this->render_box(array('DONATIONCAMPAIGNS_DESC' => '<strong>Roof</strong> &amp; walls'));
 
-		$this->assertStringContainsString('{DONATIONCAMPAIGNS_DESC}', $template);
-		$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC|e}', $template);
+		$this->assertStringContainsString('<div class="donationcampaigns-desc"><strong>Roof</strong> &amp; walls</div>', $html);
 	}
 
 	/**
@@ -531,17 +615,27 @@ class prosilver_assets_test extends \phpbb_test_case
 	public function test_the_manage_button_reuses_the_topic_tools_rule()
 	{
 		$this->assertMatchesRegularExpression(
-			'#<!-- IF S_DONATIONCAMPAIGNS_TOPIC_LINK -->\s*(<!--.*?-->\s*)?<a href="\{U_DONATIONCAMPAIGNS_TOPIC_LINK\}"[^>]*donationcampaigns-manage#s',
-			$this->template()
+			'#<a href="MANAGE_URL" class="[^"]*donationcampaigns-manage"#',
+			$this->render_box(array('S_DONATIONCAMPAIGNS_TOPIC_LINK' => true, 'U_DONATIONCAMPAIGNS_TOPIC_LINK' => 'MANAGE_URL'))
+		);
+		$this->assertStringNotContainsString(
+			'donationcampaigns-manage',
+			$this->render_box(array('U_DONATIONCAMPAIGNS_TOPIC_LINK' => 'MANAGE_URL'))
 		);
 	}
 
 	public function test_a_donation_date_is_shown_only_when_assigned()
 	{
-		$this->assertStringContainsString(
-			'<!-- IF donationcampaigns_donor.DATE --> ({donationcampaigns_donor.DATE|e})<!-- ENDIF -->',
-			$this->template()
-		);
+		$donors = $this->paragraph($this->render_box(
+			array('S_DONATIONCAMPAIGNS_SHOW_DONORS' => true),
+			array('donationcampaigns_donor' => array(
+				array('NAME' => 'Ann', 'AMOUNT' => '1 €', 'DATE' => '<1 Sep>'),
+				array('NAME' => 'Bob', 'AMOUNT' => '2 €', 'DATE' => ''),
+			))
+		), 'donationcampaigns-donors');
+
+		$this->assertStringContainsString('Ann &mdash; 1 € (&lt;1 Sep&gt;)<br>', $donors);
+		$this->assertMatchesRegularExpression('#Bob &mdash; 2 €\s*</p>|Bob &mdash; 2 €\s*$#', $donors);
 	}
 
 	// ------------------------------------------------ shared campaign fields
