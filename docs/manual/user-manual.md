@@ -130,6 +130,10 @@ Campaigns are **created from the topic they belong to** — there is no topic nu
 One campaign per topic. The same **Donation campaign** menu entry later opens the **management
 page** for that campaign.
 
+> **Privacy and the donation date:** in a small community, date and amount together can make even
+> an *anonymous* donation traceable to a person. Only switch the date on if that is acceptable for
+> your campaign.
+
 ### Together with a new topic
 
 When you start a **new topic** in a forum where you may manage campaigns, the posting form has a
@@ -138,10 +142,6 @@ and fill in the same fields — leave the title empty to use the topic title. A 
 post, like a wrong poll does, and keeps everything you typed. The campaign is created together with
 the topic; if the topic needs approval, the campaign waits with it. The tab does not appear when
 replying or editing, and **drafts do not keep the campaign fields**.
-
-> **Privacy and the donation date:** in a small community, date and amount together can make even
-> an *anonymous* donation traceable to a person. Only switch the date on if that is acceptable for
-> your campaign.
 
 ## 6. Manage an existing campaign
 
@@ -184,6 +184,8 @@ donation in the list has **Edit** and **Delete** actions. A donation with its na
 > **Ask a donor before publishing their name.** The extension cannot know whether you have their
 > consent.
 
+<div class="page-break"></div>
+
 ## 8. What your visitors see
 
 On the topic, above the first post, the box shows the title, the optional description, a progress
@@ -194,7 +196,7 @@ included with its amount; a private donation appears as *Anonymous* with its amo
 ![The campaign box as a visitor sees it](../images/campaign-box-en.png)
 
 With the donation date switched on, a donor-list entry reads like this:
-"Laura Fischer — 20.00 € (3 Oct 2026)".
+"Laura Fischer — 20.00 € (3 Oct 2026)".
 
 ### The campaign list
 

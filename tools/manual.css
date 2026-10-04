@@ -18,6 +18,13 @@ blockquote strong {
 	color: #5a4410;
 }
 
+/* A forced page break, placed in the Markdown as an empty
+   <div class="page-break"></div> (gfm has no heading attributes). Used where a
+   section must stay together with its screenshot. */
+.page-break {
+	page-break-before: always;
+}
+
 /* Screenshots: never wider than the text column, centred, framed. */
 img {
 	display: block;

@@ -137,6 +137,10 @@ einzutragen.
 Eine Kampagne pro Thema. Derselbe Menüpunkt **Spendenkampagne** öffnet später die
 **Verwaltungsseite** dieser Kampagne.
 
+> **Datenschutz beim Spendendatum:** Datum und Betrag zusammen können in einer kleinen Gemeinschaft
+> auch eine *anonyme* Spende einer Person zuordenbar machen. Schalte das Datum nur ein, wenn das für
+> deine Kampagne in Ordnung ist.
+
 ### Zusammen mit einem neuen Thema
 
 Wenn du in einem Forum, in dem du Kampagnen verwalten darfst, ein **neues Thema** beginnst, zeigt
@@ -146,10 +150,6 @@ leer, wird der Thementitel verwendet. Eine falsche Eingabe hält den Beitrag an,
 fehlerhaften Umfrage, und alles Eingegebene bleibt erhalten. Die Kampagne wird zusammen mit dem
 Thema angelegt; muss das Thema freigegeben werden, wartet die Kampagne mit. Beim Antworten und
 Bearbeiten erscheint der Reiter nicht, und **Entwürfe speichern die Kampagnenfelder nicht**.
-
-> **Datenschutz beim Spendendatum:** Datum und Betrag zusammen können in einer kleinen Gemeinschaft
-> auch eine *anonyme* Spende einer Person zuordenbar machen. Schalte das Datum nur ein, wenn das für
-> deine Kampagne in Ordnung ist.
 
 ## 6. Eine bestehende Kampagne verwalten
 
@@ -196,6 +196,8 @@ Namen **zählt trotzdem** zur Summe und zur Spendenanzahl; nur der Name wird zur
 > **Frage einen Spender, bevor du seinen Namen veröffentlichst.** Die Erweiterung kann nicht
 > wissen, ob seine Einwilligung vorliegt.
 
+<div class="page-break"></div>
+
 ## 8. Was deine Besucher sehen
 
 Im Thema, über dem ersten Beitrag, zeigt die Box den Titel, die optionale Beschreibung, einen
@@ -207,7 +209,7 @@ wird also nie verborgen.
 ![Die Kampagnen-Box aus Sicht eines Besuchers](../images/campaign-box.png)
 
 Mit eingeschaltetem Spendendatum sieht ein Eintrag der Spenderliste so aus:
-„Forenkönig — 15,00 € (03.10.2026)“.
+„Forenkönig — 15,00 € (03.10.2026)“.
 
 ### Die Kampagnenliste
 
