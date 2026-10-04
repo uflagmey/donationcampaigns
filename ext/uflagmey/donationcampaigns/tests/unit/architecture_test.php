@@ -199,10 +199,17 @@ class architecture_test extends \phpbb_test_case
 		$code = $this->code_of($path);
 
 		// utf8_htmlspecialchars() contains the substring, so strip it first.
-		// htmlspecialchars_decode() is the opposite operation: the posting
-		// form turns core's escaped subject back into raw text before it
-		// becomes a campaign title (ADR-019), so it is allowed too.
-		$without_wrapper = str_replace(array('utf8_htmlspecialchars', 'htmlspecialchars_decode'), '', $code);
+		$allowed = array('utf8_htmlspecialchars');
+
+		// htmlspecialchars_decode() is the opposite operation, and exactly one
+		// file needs it: the posting listener turns core's escaped subject
+		// back into raw text before it becomes a campaign title (ADR-019).
+		if ($relative === 'event/posting_listener.php')
+		{
+			$allowed[] = 'htmlspecialchars_decode';
+		}
+
+		$without_wrapper = str_replace($allowed, '', $code);
 
 		$this->assertStringNotContainsString(
 			'htmlspecialchars',
