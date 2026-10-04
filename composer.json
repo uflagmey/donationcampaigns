@@ -9,6 +9,9 @@
         "squizlabs/php_codesniffer": "^3.13.6"
     },
     "config": {
+        "platform": {
+            "php": "8.2"
+        },
         "sort-packages": true
     }
 }
