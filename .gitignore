@@ -41,6 +41,10 @@ desktop.ini
 # Claude Code local state (machine-specific, not project framing)
 /.claude/settings.local.json
 
+# Release and dev-build archives, built locally from `git archive`; they are
+# attached to GitHub releases, never committed.
+/DonationCampaigns-*.zip
+
 # Local overrides and scratch
 *.local
 *.log
