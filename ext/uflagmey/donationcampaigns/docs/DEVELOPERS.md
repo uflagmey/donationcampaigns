@@ -236,6 +236,11 @@ Verified against core source, not inferred from names.
 | `overall_header_head_append` (template) | — | `INCLUDECSS` for the stylesheet |
 | `core.page_header` | `functions.php:3845` | Quick-links entry for the board-wide list (ADR-018); returns at once while the ACP switch is off |
 | `navbar_header_quick_links_after` (template) | `navbar_header.html:75` | Last item of the quick-links menu. prosilver hides the whole menu when quick links and search are both off for the viewer, and the entry with it |
+| `core.posting_modify_template_vars` | `posting.php:2089` | Posting panel values (ADR-019); only `mode = post` with the manage permission |
+| `core.posting_modify_submission_errors` | `posting.php:1428` | Field validation on submit and preview; `error` takes sentences, not keys |
+| `core.posting_modify_submit_post_after` | `posting.php:1603` | Campaign creation; the new id is in `data['topic_id']` (`functions_posting.php:2021`), the event's `topic_id` is still 0; runs before the approval branch (`posting.php:1619`) |
+| `posting_editor_add_panel_tab` (template) | `posting_editor.html:134` | The tab, after the poll tab; same markup, so `forum_fn.js` switches it |
+| `posting_layout_include_panel_body` (template) | `posting_layout.html:59` | The panel, after the poll panel |
 | `content_visibility::get_forums_visibility_sql()` | `content_visibility.php:250` | Topic approval / soft-delete SQL for the board list. Intersects the `m_approve` forums with the given list **only if that list is non-empty** — never call it with an empty list (ADR-018) |
 
 ## The escaping contract
@@ -254,7 +259,10 @@ and `forum_name` sit in the database as `Kosten &amp; Miete`. Core's templates
 print them without `|e`, and so do ours. Until beta3 three templates added
 `|e` and showed `Kosten &amp; Miete` (fixed in 1.0.0-beta3).
 `architecture_test::CORE_ESCAPED_FIELDS` names these fields; a template that
-escapes them fails the build.
+escapes them fails the build. The reverse also occurs: the posting form turns
+core's escaped subject into a raw campaign title with
+`htmlspecialchars_decode(…, ENT_COMPAT)`, the exact inverse of core's encoding
+(ADR-019).
 
 Escaping happens at output, in exactly two places:
 
@@ -595,6 +603,70 @@ needs a target above zero). The bar markup is one partial,
 listener on every page (`core.page_header`), idle while the switch is off. The
 navbar entry is shown whenever the switch is on, even to a viewer for whom the
 list is empty — checking would cost a query on every page.
+
+### ADR-019 — Creating a campaign from the posting form
+
+**Decision (1.0.0-beta3).** When a manager starts a NEW topic, the posting form
+offers a "Donation campaign" tab next to "Poll creation". Its panel holds an
+"attach" checkbox and the same campaign fields as the frontend form. Ticked, the
+fields are validated with the post, and the campaign is created right after the
+topic. Decisions D1–D8 (`plans/2026-10-04-posting-form-campaign.md`) plus the
+owner's answers WD1–WD4:
+
+- **New topics only** (`mode = post`, D1). Editing stays with the management
+  landing; offering the fields when editing the first post would be a second edit
+  path for the same campaign.
+- **Who:** `access::can_manage()` in the posting forum (D2) — checked in each of
+  the three events, never inferred from the panel having been shown, because the
+  fields can be posted by hand. Fields injected into a reply, quote or edit, or
+  posted without the permission, are ignored (tests for each).
+- **The checkbox is the switch** (D3): unticked, nothing is validated or created.
+- **Field names carry the prefix `donationcampaigns_`** (WD4). The posting form is
+  the most shared field namespace among extensions. The fields live in one include,
+  `donationcampaigns_campaign_fields.html`, with a `prefix` parameter: `''` in the
+  frontend form (names unchanged — verified byte-identical on the board) and
+  `'donationcampaigns_'` in the panel. `service/campaign_form.php` reads either.
+- **Title:** an empty campaign title becomes the topic subject at submit, decoded
+  with `htmlspecialchars_decode(…, ENT_COMPAT)`, because core stores the subject
+  escaped and the campaign title is stored raw (WD1). There is no prefill: a
+  prefilled value would drift when the subject changes after a preview. The
+  frontend form still requires a title.
+- **Validation** on submit and on preview, like core's poll checks, through
+  `campaign_service::validate_fields()` — the field rules without the topic rules,
+  which cannot run before the topic exists. `validate()` was split into three parts
+  composed in the original order; a golden test of 648 input combinations,
+  committed before the split, proves the result unchanged, including the error
+  order that `assert_valid()` depends on.
+- **Creation** through `campaign_service::create_campaign()` with the full rules,
+  and the same moderator-log entry as a frontend create (D8). This listener is not
+  a second write path: it reaches the one write path from a second place.
+- **Approval queue** (D7): `submit_post()` inserts a queued topic too, and the
+  event runs before core's approval message, so the campaign is created and
+  becomes visible with its topic. Disapproval deletes the topic through
+  `delete_topics()`, and the existing cascade removes the campaign (verified live).
+
+**Preview, errors, drafts, double submit.** A redisplay shows what was entered
+(a hidden `donationcampaigns_panel` field marks it). Drafts store only subject and
+message, so the panel is lost on "Save draft" and empty on "Load draft" (D6). A
+resubmitted form is stopped by core: the flood check, then `posting.lock`, whose
+lifetime is `flood_interval`. On a board with `flood_interval = 0` core itself
+posts the topic twice; each topic then gets its own campaign — no conflict, no
+error (observed live).
+
+**Failure after the post is saved** (WD2). Nothing is rolled back. If
+`create_campaign()` throws, a `critical` entry
+(`LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED`) is written and, for an approved
+topic, the event variable `redirect_url` is pointed at the management landing,
+whose form offers a second try; for a queued topic core shows its fixed message
+after the event, so only the log entry. **Limit:** a database error in phpBB is
+not an exception — the DBAL calls `trigger_error(E_USER_ERROR)`, core shows its
+"General Error" page and logs `LOG_GENERAL_ERROR` itself. The topic is saved
+without a campaign in that case too, and the landing still offers to create it;
+intercepting it would mean bypassing the DBAL.
+
+**Shared parts.** `campaign_form` (request reading, target parsing, the "amount
+error replaces TARGET_POSITIVE" merge, new-campaign defaults) moved unchanged out
+of `campaign_controller`; the controller tests are unchanged.
 
 ## Styles
 
