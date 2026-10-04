@@ -265,7 +265,7 @@ class viewtopic_listener implements EventSubscriberInterface
 
 		foreach ($donations as $donation)
 		{
-			$named = $donation['donation_public'] && trim($donation['donor_name']) !== '';
+			$named = $donation['donation_public'] && trim($donation['donor_name'], " \f\n\r\t\v\0") !== '';
 
 			// A private or nameless donation is listed as Anonymous. The stored
 			// name is read into $name only when it may be shown; otherwise it is
@@ -356,7 +356,7 @@ class viewtopic_listener implements EventSubscriberInterface
 	 */
 	protected function safe_url($url)
 	{
-		$url = trim($url);
+		$url = trim($url, " \f\n\r\t\v\0");
 
 		if ($url === '' || strpos($url, '//') === 0)
 		{

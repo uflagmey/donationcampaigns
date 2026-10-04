@@ -45,6 +45,25 @@ class architecture_test extends \phpbb_test_case
 	 */
 	const SKELETON_LICENSE_SHA256 = 'd8c320ffc0030d1b096ae4732b50d2b811cf95e9a9b7377c1127b2563e0a0388';
 
+	/**
+	 * The one character list a whitespace trim may use, as written in the
+	 * source: PHP 8.6's default for trim(), ltrim() and rtrim().
+	 *
+	 * PHP 8.6 added the form feed to the default list, so a call without a
+	 * second argument trims differently on 8.2-8.5 than on 8.6 (EC
+	 * PHPCompatibility X, NewTrimCharactersDefault.NotSet). Naming the list
+	 * makes every supported version trim like 8.6.
+	 */
+	const TRIM_CHARACTERS = '" \f\n\r\t\v\0"';
+
+	/**
+	 * Whitespace trims that deliberately use another character list.
+	 *
+	 * 'path/relative/to/the/package.php:line' => 'reason'. Empty on purpose:
+	 * add an entry only with a written reason.
+	 */
+	const TRIM_CHARACTERS_ALLOWLIST = array();
+
 	/** @var string */
 	protected $package;
 
@@ -664,6 +683,136 @@ class architecture_test extends \phpbb_test_case
 				"Repository {$class} is not registered"
 			);
 		}
+	}
+
+	/**
+	 * Every trim(), ltrim() and rtrim() names its characters. A whitespace
+	 * trim uses exactly TRIM_CHARACTERS; a list without any whitespace
+	 * character (e.g. ltrim($digits, '0')) is not a whitespace trim and may
+	 * differ. Anything the source cannot show (a variable, a constant) fails
+	 * unless it is on the allowlist.
+	 *
+	 * @dataProvider production_files
+	 */
+	public function test_every_trim_names_its_characters($path)
+	{
+		$relative = str_replace($this->package . '/', '', $path);
+		$tokens = token_get_all(file_get_contents($path));
+		$violations = array();
+
+		foreach ($tokens as $i => $token)
+		{
+			if (!is_array($token) || !in_array($token[0], array(T_STRING, T_NAME_FULLY_QUALIFIED), true)
+				|| !in_array(strtolower(ltrim($token[1], '\\')), array('trim', 'ltrim', 'rtrim'), true))
+			{
+				continue;
+			}
+
+			$previous = $this->neighbour($tokens, $i, -1);
+			$next = $this->neighbour($tokens, $i, 1);
+
+			// A method or function of that name, or a declaration, is not the PHP function.
+			if ($next === null || $tokens[$next] !== '('
+				|| ($previous !== null && is_array($tokens[$previous]) && in_array($tokens[$previous][0], array(T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_FUNCTION), true)))
+			{
+				continue;
+			}
+
+			$where = $relative . ':' . $token[2];
+			$characters = $this->second_argument($tokens, $next);
+
+			if (isset(self::TRIM_CHARACTERS_ALLOWLIST[$where]))
+			{
+				continue;
+			}
+
+			if ($characters === '')
+			{
+				$violations[] = "{$where} {$token[1]}() has no character list";
+			}
+			else if ($characters !== self::TRIM_CHARACTERS && !$this->is_literal_without_whitespace($characters))
+			{
+				$violations[] = "{$where} {$token[1]}() trims {$characters}, expected " . self::TRIM_CHARACTERS;
+			}
+		}
+
+		$this->assertSame(array(), $violations, implode("\n", $violations));
+	}
+
+	/**
+	 * @param array $tokens
+	 * @param int   $i
+	 * @param int   $step -1 or 1
+	 * @return int|null Index of the nearest token that is not whitespace or a comment
+	 */
+	protected function neighbour(array $tokens, $i, $step)
+	{
+		for ($j = $i + $step; isset($tokens[$j]); $j += $step)
+		{
+			if (!is_array($tokens[$j]) || !in_array($tokens[$j][0], array(T_WHITESPACE, T_COMMENT, T_DOC_COMMENT), true))
+			{
+				return $j;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param array $tokens
+	 * @param int   $open Index of the opening parenthesis of the call
+	 * @return string Source of the second argument without surrounding whitespace, '' if there is none
+	 */
+	protected function second_argument(array $tokens, $open)
+	{
+		$depth = 0;
+		$argument = 0;
+		$source = '';
+
+		for ($j = $open; isset($tokens[$j]); $j++)
+		{
+			$text = is_array($tokens[$j]) ? $tokens[$j][1] : $tokens[$j];
+
+			if (in_array($text, array('(', '[', '{'), true) || (is_array($tokens[$j]) && in_array($tokens[$j][0], array(T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES), true)))
+			{
+				$depth++;
+			}
+			else if (in_array($text, array(')', ']', '}'), true))
+			{
+				$depth--;
+
+				if ($depth === 0)
+				{
+					break;
+				}
+			}
+			else if ($text === ',' && $depth === 1)
+			{
+				$argument++;
+				continue;
+			}
+
+			if ($argument === 1 && $depth >= 1)
+			{
+				$source .= $text;
+			}
+		}
+
+		return trim($source, " \f\n\r\t\v\0");
+	}
+
+	/**
+	 * @param string $source
+	 * @return bool True for a plain string literal that contains no whitespace character
+	 */
+	protected function is_literal_without_whitespace($source)
+	{
+		if (!preg_match('/^\'([^\'\\\\]*)\'$/', $source, $match) && !preg_match('/^"([^"\\\\$]*)"$/', $source, $match))
+		{
+			return false;
+		}
+
+		return strpbrk($match[1], " \f\n\r\t\v\0") === false;
 	}
 
 	/**

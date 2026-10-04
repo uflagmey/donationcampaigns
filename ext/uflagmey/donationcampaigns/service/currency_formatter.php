@@ -78,7 +78,7 @@ class currency_formatter
 	public function parse($input, $exponent)
 	{
 		$exponent = (int) $exponent;
-		$value = trim((string) $input);
+		$value = trim((string) $input, " \f\n\r\t\v\0");
 
 		if ($value === '')
 		{

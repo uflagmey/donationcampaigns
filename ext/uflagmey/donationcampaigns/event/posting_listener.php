@@ -341,7 +341,7 @@ class posting_listener implements EventSubscriberInterface
 
 		list($target, $amount_error) = $this->form->parse_target($values['target_amount']);
 
-		if (trim($values['campaign_title']) === '')
+		if (trim($values['campaign_title'], " \f\n\r\t\v\0") === '')
 		{
 			$subject = isset($post_data['post_subject']) ? (string) $post_data['post_subject'] : '';
 			$values['campaign_title'] = htmlspecialchars_decode($subject, ENT_COMPAT);

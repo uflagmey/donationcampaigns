@@ -595,7 +595,7 @@ class main_module
 	{
 		global $language;
 
-		$donor_name = trim((string) $donor_name);
+		$donor_name = trim((string) $donor_name, " \f\n\r\t\v\0");
 
 		return ($donor_name !== '') ? $donor_name : $language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
 	}

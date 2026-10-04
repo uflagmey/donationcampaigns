@@ -565,6 +565,19 @@ class campaign_service_test extends \phpbb_test_case
 	}
 
 	/**
+	 * A form feed is trimmed on every supported PHP version, not only from
+	 * PHP 8.6 on (EC PHPCompatibility X).
+	 */
+	public function test_create_campaign_trims_a_form_feed_around_the_title()
+	{
+		$id = $this->service->create_campaign($this->input(array(
+			'campaign_title'	=> "\fLegal fund\f",
+		)));
+
+		$this->assertSame('Legal fund', $this->campaigns->find_by_id($id)['campaign_title']);
+	}
+
+	/**
 	 * Validation is not merely available to the caller, it is enforced here.
 	 * An ACP module that forgot to call validate() would otherwise write an
 	 * invalid row, and the rules would live in exactly one place that anyone

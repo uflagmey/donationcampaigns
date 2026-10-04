@@ -614,7 +614,7 @@ class campaign_controller
 	 */
 	protected function donor_label($donor_name)
 	{
-		$donor_name = trim((string) $donor_name);
+		$donor_name = trim((string) $donor_name, " \f\n\r\t\v\0");
 
 		return ($donor_name !== '') ? $donor_name : $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
 	}

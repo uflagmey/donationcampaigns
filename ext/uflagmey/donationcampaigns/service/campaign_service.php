@@ -427,7 +427,7 @@ class campaign_service
 	{
 		$errors = array();
 
-		$title = isset($input['campaign_title']) ? trim((string) $input['campaign_title']) : '';
+		$title = isset($input['campaign_title']) ? trim((string) $input['campaign_title'], " \f\n\r\t\v\0") : '';
 
 		if ($title === '')
 		{
@@ -503,7 +503,7 @@ class campaign_service
 	{
 		$errors = array();
 
-		$url = isset($input['external_url']) ? trim((string) $input['external_url']) : '';
+		$url = isset($input['external_url']) ? trim((string) $input['external_url'], " \f\n\r\t\v\0") : '';
 
 		if ($url !== '' && !$this->is_safe_url($url))
 		{
@@ -516,7 +516,7 @@ class campaign_service
 			$errors[] = 'DONATIONCAMPAIGNS_ERROR_URL_TOO_LONG';
 		}
 
-		$link_text = isset($input['external_link_text']) ? trim((string) $input['external_link_text']) : '';
+		$link_text = isset($input['external_link_text']) ? trim((string) $input['external_link_text'], " \f\n\r\t\v\0") : '';
 
 		// The label belongs to the button, and the button only exists when
 		// there is somewhere to send people. With no URL nothing is rendered,
@@ -551,7 +551,7 @@ class campaign_service
 	 */
 	protected function is_safe_url($url)
 	{
-		$url = trim($url);
+		$url = trim($url, " \f\n\r\t\v\0");
 
 		if (strpos($url, '//') === 0)
 		{
@@ -831,7 +831,7 @@ class campaign_service
 		{
 			if (isset($data[$field]))
 			{
-				$data[$field] = trim((string) $data[$field]);
+				$data[$field] = trim((string) $data[$field], " \f\n\r\t\v\0");
 			}
 		}
 

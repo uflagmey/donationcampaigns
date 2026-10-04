@@ -503,7 +503,7 @@ class donation_controller
 	 */
 	protected function donor_label($donor_name)
 	{
-		$donor_name = trim((string) $donor_name);
+		$donor_name = trim((string) $donor_name, " \f\n\r\t\v\0");
 
 		return ($donor_name !== '') ? $donor_name : $this->language->lang('DONATIONCAMPAIGNS_ANONYMOUS');
 	}
@@ -537,7 +537,7 @@ class donation_controller
 	 */
 	protected function parse_date($value)
 	{
-		$value = trim((string) $value);
+		$value = trim((string) $value, " \f\n\r\t\v\0");
 
 		if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $parts))
 		{

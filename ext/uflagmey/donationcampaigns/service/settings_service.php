@@ -237,7 +237,7 @@ class settings_service
 			return '';
 		}
 
-		return trim((string) $input[$key]);
+		return trim((string) $input[$key], " \f\n\r\t\v\0");
 	}
 
 	/**

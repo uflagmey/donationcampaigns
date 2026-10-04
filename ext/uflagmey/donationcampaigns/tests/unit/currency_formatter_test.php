@@ -104,6 +104,16 @@ class currency_formatter_test extends \phpbb_test_case
 		$this->assertSame($expected, $this->formatter->parse($input, $exponent));
 	}
 
+	/**
+	 * trim() strips the form feed by default only from PHP 8.6 on. The
+	 * extension names its characters explicitly, so every supported PHP
+	 * version trims the same way (EC PHPCompatibility X).
+	 */
+	public function test_parse_trims_a_form_feed_on_every_php_version()
+	{
+		$this->assertSame(1000, $this->formatter->parse("\f10.00\f", 2));
+	}
+
 	public function parse_invalid_data()
 	{
 		return array(

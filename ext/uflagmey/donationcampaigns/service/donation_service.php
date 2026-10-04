@@ -356,7 +356,7 @@ class donation_service
 			throw new donationcampaigns_exception('DONATIONCAMPAIGNS_ERROR_AMOUNT_TOO_LARGE');
 		}
 
-		$donor_name = isset($input['donor_name']) ? trim((string) $input['donor_name']) : '';
+		$donor_name = isset($input['donor_name']) ? trim((string) $input['donor_name'], " \f\n\r\t\v\0") : '';
 
 		// An empty name is valid: it is how an anonymous donation is recorded,
 		// and the front end renders it as "Anonymous".

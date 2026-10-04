@@ -193,6 +193,17 @@ class donation_service_test extends donation_test_case
 		$this->assertSame('Clara S.', $this->donations->find_by_id($id)['donor_name']);
 	}
 
+	/**
+	 * A form feed is trimmed on every supported PHP version, not only from
+	 * PHP 8.6 on (EC PHPCompatibility X).
+	 */
+	public function test_a_form_feed_around_a_donor_name_is_trimmed()
+	{
+		$id = $this->service->add_donation(1, $this->donation(array('donor_name' => "\fClara S.\f")));
+
+		$this->assertSame('Clara S.', $this->donations->find_by_id($id)['donor_name']);
+	}
+
 	public function test_add_donation_rejects_an_overlong_donor_name()
 	{
 		try
