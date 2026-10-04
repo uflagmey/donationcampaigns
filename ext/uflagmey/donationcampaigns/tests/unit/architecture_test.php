@@ -446,6 +446,24 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * The same rule for the shared campaign form reader (beta3): free text
+	 * raw, only the description and the flags through variable().
+	 */
+	public function test_the_campaign_form_reads_free_text_raw()
+	{
+		$code = $this->code_of($this->package . '/service/campaign_form.php');
+
+		preg_match_all('/->variable\(\$prefix \. \'([a-z_]+)\'/', $code, $matches);
+
+		$this->assertNotEmpty($matches[1]);
+
+		foreach ($matches[1] as $name)
+		{
+			$this->assertContains($name, array('campaign_desc', 'show_donor_names', 'show_donation_count', 'show_donation_date'), "{$name} is read with variable(), which escapes it on input");
+		}
+	}
+
+	/**
 	 * No production file may reach into the database handle except to open a
 	 * transaction. The services take $db for exactly that.
 	 *

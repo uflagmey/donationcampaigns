@@ -123,6 +123,16 @@ services:
             - '@uflagmey.donationcampaigns.campaign_list_repository'
             - '@uflagmey.donationcampaigns.donation_repository'
 
+    # Reads the campaign fields for both creation paths: the frontend form and
+    # the posting form (ADR-019). No rules, no SQL.
+    uflagmey.donationcampaigns.campaign_form:
+        class: uflagmey\donationcampaigns\service\campaign_form
+        arguments:
+            - '@request'
+            - '@uflagmey.donationcampaigns.currency_formatter'
+            - '@config'
+            - '@language'
+
     uflagmey.donationcampaigns.access:
         class: uflagmey\donationcampaigns\service\access
         arguments:
@@ -148,6 +158,7 @@ services:
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
             - '@uflagmey.donationcampaigns.date_formatter'
+            - '@uflagmey.donationcampaigns.campaign_form'
 
     uflagmey.donationcampaigns.controller.donation:
         class: uflagmey\donationcampaigns\controller\donation_controller

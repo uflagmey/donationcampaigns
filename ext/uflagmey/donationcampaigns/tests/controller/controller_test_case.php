@@ -197,7 +197,8 @@ abstract class controller_test_case extends \phpbb_test_case
 			$this->donations,
 			new topic_repository($this->db, 'phpbb_topics'),
 			new currency_formatter($language, $this->config),
-			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language)
+			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language),
+			new \uflagmey\donationcampaigns\service\campaign_form($request, new currency_formatter($language, $this->config), $this->config, $language)
 		);
 
 		$this->donation_controller = new donation_controller(

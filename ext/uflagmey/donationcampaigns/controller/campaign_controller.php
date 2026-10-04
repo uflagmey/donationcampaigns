@@ -87,6 +87,9 @@ class campaign_controller
 	/** @var \uflagmey\donationcampaigns\service\date_formatter */
 	protected $dates;
 
+	/** @var \uflagmey\donationcampaigns\service\campaign_form */
+	protected $form;
+
 	public function __construct(
 		\phpbb\controller\helper $helper,
 		\phpbb\path_helper $path_helper,
@@ -102,7 +105,8 @@ class campaign_controller
 		\uflagmey\donationcampaigns\repository\donation_repository $donations,
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
 		\uflagmey\donationcampaigns\service\currency_formatter $formatter,
-		\uflagmey\donationcampaigns\service\date_formatter $dates
+		\uflagmey\donationcampaigns\service\date_formatter $dates,
+		\uflagmey\donationcampaigns\service\campaign_form $form
 	)
 	{
 		$this->helper = $helper;
@@ -120,6 +124,7 @@ class campaign_controller
 		$this->topics = $topics;
 		$this->formatter = $formatter;
 		$this->dates = $dates;
+		$this->form = $form;
 	}
 
 	/**
@@ -385,18 +390,7 @@ class campaign_controller
 
 		if ($is_new)
 		{
-			$values = array(
-				'campaign_title'		=> '',
-				'campaign_desc'			=> '',
-				'target_amount'			=> '',
-				'external_url'			=> '',
-				'external_link_text'	=> $this->language->lang('DONATIONCAMPAIGNS_LINK_TEXT_DEFAULT'),
-				'show_donor_names'		=> true,
-				'show_donation_count'	=> true,
-				// Proposed for NEW campaigns only; existing campaigns keep the
-				// schema default (off) until someone ticks it (ADR-017).
-				'show_donation_date'	=> true,
-			);
+			$values = $this->form->defaults();
 		}
 		else
 		{
@@ -432,19 +426,9 @@ class campaign_controller
 				throw $this->not_available();
 			}
 
-			$values = $this->submitted_values();
+			$values = $this->form->submitted_values();
 
-			$amount_error = '';
-			$target = 0;
-
-			try
-			{
-				$target = $this->formatter->parse($values['target_amount'], $exponent);
-			}
-			catch (donationcampaigns_exception $e)
-			{
-				$amount_error = $e->get_language_key();
-			}
+			list($target, $amount_error) = $this->form->parse_target($values['target_amount']);
 
 			// The topic is fixed: from the loaded topic on create and from the
 			// stored campaign on edit, never from the body. The enabled flag is
@@ -456,13 +440,10 @@ class campaign_controller
 				'campaign_enabled'	=> $is_new ? true : (bool) $campaign['campaign_enabled'],
 			));
 
-			$errors = $this->campaign_service->validate($input, $is_new ? 0 : $campaign['campaign_id']);
-
-			if ($amount_error !== '')
-			{
-				$errors = array_values(array_diff($errors, array('DONATIONCAMPAIGNS_ERROR_TARGET_POSITIVE')));
-				array_unshift($errors, $amount_error);
-			}
+			$errors = $this->form->merge_amount_error(
+				$this->campaign_service->validate($input, $is_new ? 0 : $campaign['campaign_id']),
+				$amount_error
+			);
 
 			if (empty($errors))
 			{
@@ -535,30 +516,6 @@ class campaign_controller
 		return $this->helper->render('donationcampaigns_campaign_form.html', $this->language->lang(
 			$is_new ? 'DONATIONCAMPAIGNS_ADD_CAMPAIGN' : 'DONATIONCAMPAIGNS_EDIT_CAMPAIGN'
 		));
-	}
-
-	/**
-	 * The campaign form as submitted, minus everything derived or fixed.
-	 *
-	 * No topic_id, no enabled flag, no collected total, no BBCode metadata: those
-	 * are resolved, decided elsewhere, or derived. Plain text is read raw and
-	 * escaped at output; the description is read escaped because it then goes
-	 * through the BBCode storage encoder.
-	 *
-	 * @return array
-	 */
-	protected function submitted_values()
-	{
-		return array(
-			'campaign_title'		=> $this->raw_text('campaign_title'),
-			'campaign_desc'			=> $this->request->variable('campaign_desc', '', true),
-			'target_amount'			=> $this->raw_text('target_amount'),
-			'external_url'			=> $this->raw_text('external_url'),
-			'external_link_text'	=> $this->raw_text('external_link_text'),
-			'show_donor_names'		=> (bool) $this->request->variable('show_donor_names', 0),
-			'show_donation_count'	=> (bool) $this->request->variable('show_donation_count', 0),
-			'show_donation_date'	=> (bool) $this->request->variable('show_donation_date', 0),
-		);
 	}
 
 	// -------------------------------------------------------- landing render
@@ -790,17 +747,6 @@ class campaign_controller
 	protected function escape_for_message($value)
 	{
 		return utf8_htmlspecialchars((string) $value);
-	}
-
-	/**
-	 * @param string $key
-	 * @return string
-	 */
-	protected function raw_text($key)
-	{
-		$value = $this->request->raw_variable($key, '');
-
-		return is_scalar($value) ? (string) $value : '';
 	}
 
 	/**
