@@ -529,6 +529,45 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * ADR-018: the board list controller is the third controller precisely
+	 * because it is NOT a write path. That is enforced here, not promised:
+	 * no write method, no form key, no POST handling.
+	 */
+	public function test_the_list_controller_writes_nothing()
+	{
+		$code = $this->code_of($this->package . '/controller/list_controller.php');
+
+		foreach (array(
+			'create_campaign', 'update_campaign', 'delete_campaign', 'purge_for', 'insert(', 'update(',
+			'add_donation', 'update_donation', 'delete_donation', 'recalculate',
+			'check_form_key', 'add_form_key', 'is_set_post', 'confirm_box', '->log',
+		) as $fragment)
+		{
+			$this->assertStringNotContainsString($fragment, $code, "The read-only list controller contains {$fragment}");
+		}
+	}
+
+	/**
+	 * The list is an overview; donors stay in the topic (C5).
+	 */
+	public function test_the_list_template_names_no_donor()
+	{
+		$template = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_list.html');
+
+		// Template variables only — prose in a comment may say "donor".
+		preg_match_all('/\{([A-Za-z0-9_.|]+)\}/', $template, $matches);
+		$this->assertNotEmpty($matches[1]);
+
+		foreach ($matches[1] as $var)
+		{
+			foreach (array('DONOR', 'DESC', '_URL') as $forbidden)
+			{
+				$this->assertStringNotContainsStringIgnoringCase($forbidden, $var, "The list template renders {$var}");
+			}
+		}
+	}
+
+	/**
 	 * Every service and listener is registered, or it silently does nothing on
 	 * a real board while every unit test passes.
 	 */

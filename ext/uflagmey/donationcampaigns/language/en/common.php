@@ -117,4 +117,15 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Are you sure you want to disable this campaign? It will be hidden from the topic; all donation records are kept.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Are you sure you want to delete this campaign? It has no donations and this cannot be undone.',
 	'DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED'	=> 'This campaign has confirmed donations and cannot be deleted here. Disable it instead, or ask an administrator to delete it.',
+
+	// The board-wide campaign list (beta3, ADR-018).
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE'			=> 'Donation campaigns',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY'			=> 'There are no donation campaigns to show.',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN'		=> 'Campaign',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_FORUM'			=> 'Forum',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_PROGRESS'		=> 'Progress',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL'			=> array(
+		1	=> '%d campaign',
+		2	=> '%d campaigns',
+	),
 ));

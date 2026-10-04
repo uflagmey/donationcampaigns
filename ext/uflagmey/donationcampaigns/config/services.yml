@@ -155,6 +155,21 @@ services:
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
 
+    # The board-wide campaign list (ADR-018). Read only: no form, no write.
+    uflagmey.donationcampaigns.controller.list:
+        class: uflagmey\donationcampaigns\controller\list_controller
+        arguments:
+            - '@controller.helper'
+            - '@path_helper'
+            - '@template'
+            - '@language'
+            - '@config'
+            - '@request'
+            - '@pagination'
+            - '@uflagmey.donationcampaigns.campaign_list_service'
+            - '@uflagmey.donationcampaigns.campaign_service'
+            - '@uflagmey.donationcampaigns.currency_formatter'
+
     uflagmey.donationcampaigns.description_formatter:
         class: uflagmey\donationcampaigns\service\description_formatter
 

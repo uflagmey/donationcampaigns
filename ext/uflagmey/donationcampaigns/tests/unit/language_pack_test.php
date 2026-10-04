@@ -200,7 +200,7 @@ class language_pack_test extends \phpbb_test_case
 	{
 		$allowed = array(
 			// Identical in both languages, correctly.
-			'Anonym', 'Status', 'PayPal',
+			'Anonym', 'Status', 'PayPal', 'Forum',
 		);
 
 		$en = $this->strings('en', $file);

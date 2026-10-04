@@ -1,3 +1,10 @@
+# Board-wide campaign list (ADR-018). Read only, GET only; answers 404 while the
+# ACP switch is off.
+uflagmey_donationcampaigns_list:
+    path: /donationcampaigns
+    defaults: { _controller: uflagmey.donationcampaigns.controller.list:display }
+    methods: [GET]
+
 uflagmey_donationcampaigns_manage:
     path: /donationcampaigns/topic/{topic_id}
     defaults: { _controller: uflagmey.donationcampaigns.controller.campaign:manage }

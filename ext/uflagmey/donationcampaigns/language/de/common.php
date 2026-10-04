@@ -117,4 +117,15 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_CONFIRM_DISABLE'				=> 'Soll diese Kampagne wirklich deaktiviert werden? Sie wird im Thema ausgeblendet; alle Spenden bleiben erhalten.',
 	'DONATIONCAMPAIGNS_CONFIRM_DELETE_EMPTY'		=> 'Soll diese Kampagne wirklich gelöscht werden? Sie enthält keine Spenden und dies kann nicht rückgängig gemacht werden.',
 	'DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED'	=> 'Diese Kampagne enthält bestätigte Spenden und kann hier nicht gelöscht werden. Deaktiviere sie stattdessen oder bitte einen Administrator, sie zu löschen.',
+
+	// Die boardweite Kampagnenliste (beta3, ADR-018).
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_TITLE'			=> 'Spendenkampagnen',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_EMPTY'			=> 'Es gibt keine Spendenkampagnen zum Anzeigen.',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_CAMPAIGN'		=> 'Kampagne',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_FORUM'			=> 'Forum',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_PROGRESS'		=> 'Fortschritt',
+	'DONATIONCAMPAIGNS_PUBLIC_LIST_TOTAL'			=> array(
+		1	=> '%d Kampagne',
+		2	=> '%d Kampagnen',
+	),
 ));

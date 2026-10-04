@@ -120,6 +120,19 @@
 	word-wrap: break-word;
 }
 
+/* The board-wide campaign list (beta3). prosilver's table1 supplies the
+   table; these rules only give the progress column room and space its
+   figures. Relative units only, like the box. */
+.donationcampaigns-list .donationcampaigns-list-progress {
+	width: 40%;
+}
+
+.donationcampaigns-list-figures {
+	display: block;
+	line-height: 1.4;
+	margin-top: 4px;
+}
+
 /* Honour a reader who has asked for more contrast. */
 @media (prefers-contrast: more) {
 	.donationcampaigns-bar {
