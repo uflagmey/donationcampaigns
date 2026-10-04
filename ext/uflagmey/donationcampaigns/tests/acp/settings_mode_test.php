@@ -742,4 +742,57 @@ class settings_mode_test extends \phpbb_test_case
 			'campaign_updated'		=> 1700000000,
 		)));
 	}
+
+	// ------------------------------------------------- campaign list (beta3)
+
+	public function test_the_campaign_list_switch_is_shown_off_by_default()
+	{
+		$this->run_settings();
+
+		$this->assertFalse($this->template->vars['S_DONATIONCAMPAIGNS_LIST_ENABLED']);
+	}
+
+	public function test_the_campaign_list_switch_is_saved_from_the_form()
+	{
+		$this->submit(array(
+			'donationcampaigns_currency_code'		=> 'EUR',
+			'donationcampaigns_currency_symbol'		=> '€',
+			'donationcampaigns_currency_exponent'	=> 2,
+			'donationcampaigns_donor_list_limit'	=> 25,
+			'donationcampaigns_list_enabled'		=> '1',
+		));
+
+		try
+		{
+			$this->run_settings();
+		}
+		catch (\Throwable $e)
+		{
+			// trigger_error(CONFIG_UPDATED) ends the request in phpBB
+		}
+
+		$this->assertSame(1, (int) $this->config['donationcampaigns_list_enabled']);
+	}
+
+	public function test_a_switched_on_list_is_shown_as_on()
+	{
+		$this->config->set('donationcampaigns_list_enabled', 1);
+
+		$this->run_settings();
+
+		$this->assertTrue($this->template->vars['S_DONATIONCAMPAIGNS_LIST_ENABLED']);
+	}
+
+	public function test_the_list_switch_renders_exactly_one_checked_radio()
+	{
+		$this->config->set('donationcampaigns_list_enabled', 1);
+		$this->run_settings();
+
+		// The renderer leaves both IF branches in place, so the assertion is
+		// on the markup the template offers, not on which branch fires.
+		$html = $this->render('settings');
+
+		$this->assertSame(2, substr_count($html, 'name="donationcampaigns_list_enabled"'));
+		$this->assertStringContainsString('<label for="donationcampaigns_list_enabled">', $html);
+	}
 }

@@ -173,6 +173,7 @@ class main_module
 			'S_DONATIONCAMPAIGNS_SYMBOL_SPACE'		=> ((string) $values['donationcampaigns_currency_symbol_space'] === '1'),
 			'DONATIONCAMPAIGNS_CURRENCY_EXPONENT'	=> $exponent,
 			'DONATIONCAMPAIGNS_DONOR_LIST_LIMIT'	=> (int) $values['donationcampaigns_donor_list_limit'],
+			'S_DONATIONCAMPAIGNS_LIST_ENABLED'		=> ((string) $values['donationcampaigns_list_enabled'] === '1'),
 		));
 	}
 
@@ -631,7 +632,7 @@ class main_module
 			$submitted[$key] = is_scalar($value) ? (string) $value : '';
 		}
 
-		foreach (array('donationcampaigns_currency_symbol_before', 'donationcampaigns_currency_symbol_space') as $key)
+		foreach (array('donationcampaigns_currency_symbol_before', 'donationcampaigns_currency_symbol_space', 'donationcampaigns_list_enabled') as $key)
 		{
 			$value = $request->raw_variable($key, '');
 

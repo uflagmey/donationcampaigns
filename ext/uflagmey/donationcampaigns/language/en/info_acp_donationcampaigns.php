@@ -44,6 +44,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_SETTINGS_DISPLAY'				=> 'Display',
 	'DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT'			=> 'Donors listed',
 	'DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT_EXPLAIN'	=> 'How many donor names the campaign box lists before summarising the rest. Between 1 and 500.',
+	'DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED'			=> 'Show the campaign list page',
+	'DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN'	=> 'Adds a “Donation campaigns” entry to the quick links and a page listing every campaign the visitor may also see in its topic. No donor names are shown there.',
 
 	// Campaign list
 	'DONATIONCAMPAIGNS_LIST_EXPLAIN'		=> 'Every donation campaign on this board. A campaign is attached to one topic and is shown above that topic\'s first post.',

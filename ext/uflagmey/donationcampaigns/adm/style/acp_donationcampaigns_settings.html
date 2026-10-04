@@ -99,6 +99,17 @@
 		</dt>
 		<dd><input id="donationcampaigns_donor_list_limit" type="number" min="1" max="500" step="1" size="5" name="donationcampaigns_donor_list_limit" value="{DONATIONCAMPAIGNS_DONOR_LIST_LIMIT}" /></dd>
 	</dl>
+
+	<dl>
+		<dt>
+			<label for="donationcampaigns_list_enabled">{L_DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED}{L_COLON}</label>
+			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN}</span>
+		</dt>
+		<dd>
+			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="1"<!-- IF S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked="checked"<!-- ENDIF --> /> {L_YES}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="0"<!-- IF not S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked="checked"<!-- ENDIF --> /> {L_NO}</label>
+		</dd>
+	</dl>
 </fieldset>
 
 <p class="submit-buttons">

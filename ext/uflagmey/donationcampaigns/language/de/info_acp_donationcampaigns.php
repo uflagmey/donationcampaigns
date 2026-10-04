@@ -44,6 +44,8 @@ $lang = array_merge($lang, array(
 	'DONATIONCAMPAIGNS_SETTINGS_DISPLAY'				=> 'Anzeige',
 	'DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT'			=> 'Angezeigte Spender',
 	'DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT_EXPLAIN'	=> 'Wie viele Spendernamen die Kampagnenbox nennt, bevor sie den Rest zusammenfasst. Zwischen 1 und 500.',
+	'DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED'			=> 'Seite mit der Kampagnenliste anzeigen',
+	'DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN'	=> 'Fügt den Schnelllinks einen Eintrag „Spendenkampagnen“ hinzu und zeigt eine Seite mit allen Kampagnen, die der Besucher auch im jeweiligen Thema sehen darf. Spendernamen erscheinen dort nicht.',
 
 	// Kampagnenliste
 	'DONATIONCAMPAIGNS_LIST_EXPLAIN'		=> 'Alle Spendenkampagnen dieses Boards. Eine Kampagne gehört zu genau einem Thema und wird über dessen erstem Beitrag angezeigt.',

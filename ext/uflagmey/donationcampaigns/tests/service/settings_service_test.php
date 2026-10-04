@@ -537,4 +537,33 @@ class settings_service_test extends donation_test_case
 
 		$this->assertSame(0, (int) $this->config['donationcampaigns_currency_symbol_before']);
 	}
+
+	// ------------------------------------------------- campaign list (beta3)
+
+	public function test_the_campaign_list_is_off_before_the_migration()
+	{
+		// setUp's config has no list key, exactly like a board before m10.
+		$this->assertSame(0, $this->settings->current()['donationcampaigns_list_enabled']);
+	}
+
+	public function test_the_campaign_list_switch_is_saved()
+	{
+		$this->settings->save($this->input(array('donationcampaigns_list_enabled' => '1')));
+		$this->assertSame(1, (int) $this->config['donationcampaigns_list_enabled']);
+
+		$this->settings->save($this->input(array('donationcampaigns_list_enabled' => '0')));
+		$this->assertSame(0, (int) $this->config['donationcampaigns_list_enabled']);
+	}
+
+	/**
+	 * A tampered form must not publish the list by accident.
+	 *
+	 * @dataProvider tampered_flag_data
+	 */
+	public function test_anything_but_an_explicit_one_keeps_the_list_off($value)
+	{
+		$this->settings->save($this->input(array('donationcampaigns_list_enabled' => $value)));
+
+		$this->assertSame(0, (int) $this->config['donationcampaigns_list_enabled']);
+	}
 }

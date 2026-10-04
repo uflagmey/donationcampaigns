@@ -85,6 +85,8 @@ class settings_service
 			'donationcampaigns_currency_symbol_space'	=> isset($this->config['donationcampaigns_currency_symbol_space']) ? (int) $this->config['donationcampaigns_currency_symbol_space'] : 1,
 			'donationcampaigns_currency_exponent'	=> (int) $this->config['donationcampaigns_currency_exponent'],
 			'donationcampaigns_donor_list_limit'	=> (int) $this->config['donationcampaigns_donor_list_limit'],
+			// Off until m10 has added the key: an update publishes no page.
+			'donationcampaigns_list_enabled'		=> isset($this->config['donationcampaigns_list_enabled']) ? (int) $this->config['donationcampaigns_list_enabled'] : 0,
 		);
 	}
 
@@ -188,6 +190,7 @@ class settings_service
 			'donationcampaigns_currency_symbol_space'	=> $this->flag($input, 'donationcampaigns_currency_symbol_space'),
 			'donationcampaigns_currency_exponent'	=> $this->number($input, 'donationcampaigns_currency_exponent'),
 			'donationcampaigns_donor_list_limit'	=> $this->number($input, 'donationcampaigns_donor_list_limit'),
+			'donationcampaigns_list_enabled'		=> $this->flag($input, 'donationcampaigns_list_enabled'),
 		);
 	}
 
