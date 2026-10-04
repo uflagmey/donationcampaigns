@@ -195,6 +195,13 @@ Campaigns are managed **from the topic**, not the ACP.
    each donation (the date is listed only when names are shown).
 5. Save, then **Back to topic** — the box is there.
 
+**Or together with a new topic:** when you start a topic in a forum where you
+may manage campaigns, the posting form has a **Donation campaign** tab next to
+the poll tab. Tick *Attach a donation campaign to this topic*, fill in the same
+fields (an empty title takes the topic title), and the campaign is created with
+the topic. Only for new topics; editing always goes through the topic tools.
+Drafts do not keep these fields.
+
 Campaign actions (create, edit, enable/disable, delete an empty campaign)
 require `a_donationcampaigns` or `f_donationcampaigns_manage` in that forum. The
 ACP shows a read-only oversight list of campaigns and admin-only maintenance; it

@@ -191,6 +191,30 @@ form open, nothing you typed is saved. The form comes back with the current
 state and says what happened, so a colleague's campaign is never overwritten by
 a form that was drawn before theirs existed.
 
+### Create a campaign together with a new topic
+
+When you start a **new topic** in a forum where you may manage campaigns, the
+posting form shows a **Donation campaign** tab next to *Poll creation*. Its panel
+has a checkbox, *Attach a donation campaign to this topic*, and the same fields
+as above (without the topic, which does not exist yet).
+
+- Unticked, nothing happens, whatever the fields contain.
+- Ticked, the fields are checked when you preview or submit, like a poll: a
+  wrong target stops the post, the error appears at the top of the form and
+  everything you typed is kept.
+- Leave the title empty to use the topic title.
+- The campaign is created right after the topic and logged like any other new
+  campaign. If the topic needs approval, the campaign waits with it: nobody but
+  moderators sees either until the topic is approved, and a disapproved topic
+  takes its campaign with it.
+- The tab is not offered when replying or editing — later changes go through
+  *Topic tools → Donation campaign* as usual.
+- **Drafts** keep only subject and message: the campaign fields are lost when you
+  save a draft and empty when you load one.
+- In the unlikely case that the topic is saved but the campaign cannot be, the
+  topic stays, the administrator log records it as critical, and you can create
+  the campaign from the topic as usual.
+
 ### About the donation link
 
 The link is rendered as a public button. Only `http://` and `https://` are
@@ -393,6 +417,10 @@ was changed after the data was recorded. See step 3.
 
 **A donor's name appears when it should not.** Check both switches: the
 campaign's *Show donor names* and that donation's *Show donor publicly*.
+
+**The "Donation campaign" tab is missing from the posting form.** It appears
+only for a new topic, and only in forums where the user may manage campaigns
+and read the forum (step 2). It is never shown when replying or editing.
 
 **The campaign list says the page could not be found.** The list is switched off (the
 default) — see step 9b. After updating the files, purge the cache before

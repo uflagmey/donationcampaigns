@@ -133,6 +133,16 @@ einzutragen.
 Eine Kampagne pro Thema. Derselbe Menüpunkt **Spendenkampagne** öffnet später die
 **Verwaltungsseite** dieser Kampagne.
 
+### Zusammen mit einem neuen Thema
+
+Wenn du in einem Forum, in dem du Kampagnen verwalten darfst, ein **neues Thema** beginnst, zeigt
+das Beitragsformular neben *Umfrage erstellen* den Reiter **Spendenkampagne**. Setze das Häkchen
+**Eine Spendenkampagne an dieses Thema anhängen** und fülle dieselben Felder aus – lässt du den Titel
+leer, wird der Thementitel verwendet. Eine falsche Eingabe hält den Beitrag an, wie bei einer
+fehlerhaften Umfrage, und alles Eingegebene bleibt erhalten. Die Kampagne wird zusammen mit dem
+Thema angelegt; muss das Thema freigegeben werden, wartet die Kampagne mit. Beim Antworten und
+Bearbeiten erscheint der Reiter nicht, und **Entwürfe speichern die Kampagnenfelder nicht**.
+
 > **Datenschutz beim Spendendatum:** Datum und Betrag zusammen können in einer kleinen Gemeinschaft
 > auch eine *anonyme* Spende einer Person zuordenbar machen. Schalte das Datum nur ein, wenn das für
 > deine Kampagne in Ordnung ist.
@@ -242,6 +252,8 @@ ACP geschieht, wird im **Administrationsprotokoll** festgehalten (**Administrati
 | Der Menüpunkt **Spendenkampagne** oder die Schaltfläche **Verwalten** fehlt | Der Benutzer hat auf diesem Forum keine der Verwaltungs-Berechtigungen oder darf das Forum nicht lesen (siehe §4). Nach einem Update von beta1: Berechtigungen neu vergeben (siehe §2) |
 | Die Schaltfläche **Bestätigte Spende erfassen** fehlt | Die Berechtigung *Kann bestätigte Spenden verwalten* fehlt – sie ist unabhängig von *Kann Spendenkampagnen verwalten* |
 | Ein Testbenutzer sieht alles, obwohl er keine Berechtigungen hat | Ist er Administrator oder Gründer? Dann greift der Administrator-Zugriff (siehe §4) |
+| Der Reiter **Spendenkampagne** fehlt im Beitragsformular | Er erscheint nur bei einem **neuen Thema** in einem Forum, in dem der Benutzer Kampagnen verwalten darf (siehe §4) – nie beim Antworten oder Bearbeiten |
+| Nach dem Laden eines Entwurfs sind die Kampagnenfelder leer | Entwürfe speichern nur Betreff und Text; die Felder erneut ausfüllen |
 | Die Kampagnenliste meldet, dass die Seite nicht gefunden wurde | **Seite mit der Kampagnenliste anzeigen** ist ausgeschaltet (Standard, siehe §3). Nach einem Update: Cache leeren |
 | Eine Kampagne fehlt in der Kampagnenliste | Ist sie **aktiviert**? Darf der Besucher das Forum lesen? Ist das Forum passwortgeschützt und das Passwort noch nicht eingegeben? (siehe §8) |
 

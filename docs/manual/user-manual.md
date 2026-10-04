@@ -126,6 +126,15 @@ Campaigns are **created from the topic they belong to** — there is no topic nu
 One campaign per topic. The same **Donation campaign** menu entry later opens the **management
 page** for that campaign.
 
+### Together with a new topic
+
+When you start a **new topic** in a forum where you may manage campaigns, the posting form has a
+**Donation campaign** tab next to *Poll creation*. Tick **Attach a donation campaign to this topic**
+and fill in the same fields — leave the title empty to use the topic title. A wrong entry stops the
+post, like a wrong poll does, and keeps everything you typed. The campaign is created together with
+the topic; if the topic needs approval, the campaign waits with it. The tab does not appear when
+replying or editing, and **drafts do not keep the campaign fields**.
+
 > **Privacy and the donation date:** in a small community, date and amount together can make even
 > an *anonymous* donation traceable to a person. Only switch the date on if that is acceptable for
 > your campaign.
@@ -227,6 +236,8 @@ the ACP is recorded in the **administrator log** (**ACP** → **Maintenance** �
 | The **Donation campaign** menu entry or the **Manage** button is missing | The user has neither management permission on that forum, or cannot read the forum (see §4). After an update from beta1: re-assign the permissions (see §2) |
 | The **Add confirmed donation** button is missing | The *Manage confirmed donations* permission is missing — it is independent of *Manage donation campaigns* |
 | A test user sees everything without holding the permissions | Is the user an administrator or founder? Then administrator access applies (see §4) |
+| The **Donation campaign** tab is missing in the posting form | It only appears for a **new topic** in a forum where the user may manage campaigns (see §4) — never when replying or editing |
+| The campaign fields were empty after loading a draft | Drafts keep only subject and message; fill the fields in again |
 | The campaign list says the page could not be found | **Show the campaign list page** is switched off (default, see §3). After an update: purge the cache |
 | A campaign is missing from the campaign list | Is it **enabled**? May the visitor read the forum? Is the forum password-protected and not yet entered? (see §8) |
 
