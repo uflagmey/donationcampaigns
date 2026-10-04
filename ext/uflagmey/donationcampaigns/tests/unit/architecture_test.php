@@ -33,6 +33,18 @@ class architecture_test extends \phpbb_test_case
 	 */
 	const CORE_ESCAPED_FIELDS = array('TOPIC_TITLE', 'FORUM_NAME');
 
+	/**
+	 * SHA-256 of the license text both license files must carry.
+	 *
+	 * It is the license.txt of the official phpBB Skeleton Extension 1.2.3,
+	 * downloaded from phpbb.com (customise/db/official_tool/ext_skeleton) on
+	 * 2026-10-04; byte-identical to the GitHub tag 1.2.3 of
+	 * phpbb-extensions/phpbb-ext-skeleton and to EPV's reference
+	 * src/Resources/gpl-2.0.txt, so EPV's similarity check reports 100 %.
+	 * Copied byte for byte, never retyped.
+	 */
+	const SKELETON_LICENSE_SHA256 = 'd8c320ffc0030d1b096ae4732b50d2b811cf95e9a9b7377c1127b2563e0a0388';
+
 	/** @var string */
 	protected $package;
 
@@ -652,6 +664,23 @@ class architecture_test extends \phpbb_test_case
 				"Repository {$class} is not registered"
 			);
 		}
+	}
+
+	/**
+	 * The shipped license.txt and the repository LICENSE are the phpBB
+	 * skeleton's license text, unchanged — the text the Extension Check
+	 * compares against.
+	 */
+	public function test_the_license_is_the_phpbb_skeleton_text()
+	{
+		$shipped = $this->package . '/license.txt';
+		// The repository root holds LICENSE; the package is ext/uflagmey/donationcampaigns.
+		$repository = dirname(dirname(dirname($this->package))) . '/LICENSE';
+
+		$this->assertFileExists($shipped);
+		$this->assertFileExists($repository);
+		$this->assertFileEquals($shipped, $repository, 'license.txt and LICENSE differ');
+		$this->assertSame(self::SKELETON_LICENSE_SHA256, hash_file('sha256', $shipped), 'license.txt is not the skeleton text');
 	}
 
 	/**
