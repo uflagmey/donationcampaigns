@@ -125,6 +125,29 @@ class template_renderer
 	}
 
 	/**
+	 * A template's source as phpBB's lexer hands it to Twig.
+	 *
+	 * phpBB rewrites its legacy syntax ({VAR|e}, {L_KEY}, <!-- IF -->, …) into
+	 * Twig before Twig reads a template, and leaves native Twig as it is. A
+	 * rule about the source -- which values carry |e -- read from this form
+	 * holds for either spelling, because it is the form the board compiles.
+	 *
+	 * @param string $source
+	 * @return string
+	 */
+	public static function lexed($source)
+	{
+		$lexer = new \phpbb\template\twig\lexer(new \Twig\Environment(new \Twig\Loader\ArrayLoader()));
+		$lexer->tokenize(new \Twig\Source($source, 'lexed'));
+
+		// Twig\Lexer keeps the code it tokenised; phpBB's lexer has no getter.
+		$code = new \ReflectionProperty(\Twig\Lexer::class, 'code');
+		$code->setAccessible(true);
+
+		return $code->getValue($lexer);
+	}
+
+	/**
 	 * A template's source with the extension's own includes pasted in.
 	 *
 	 * For tests that read template SOURCE (structure, attributes, names) of a

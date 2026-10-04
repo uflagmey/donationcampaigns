@@ -346,19 +346,44 @@ class architecture_test extends \phpbb_test_case
 			'donationcampaigns_error.MESSAGE',
 		);
 
+		$checked = 0;
+
 		foreach (glob($this->package . '/adm/style/*.html') as $file)
 		{
-			$contents = file_get_contents($file);
-
-			foreach ($must_escape as $var)
+			foreach ($this->outputs($file) as $output)
 			{
-				$this->assertStringNotContainsString(
-					'{' . $var . '}',
-					$contents,
-					basename($file) . " renders {$var} without |e"
-				);
+				if (in_array($output['var'], $must_escape, true))
+				{
+					$checked++;
+					$this->assertContains('e', $output['filters'], basename($file) . " renders {$output['var']} without |e");
+				}
 			}
 		}
+
+		// A rule that finds nothing to check proves nothing.
+		$this->assertGreaterThan(0, $checked);
+	}
+
+	/**
+	 * Every value a template prints: {{ var|filter… }} in the form phpBB's
+	 * lexer hands to Twig, so legacy {VAR|e} and native {{ VAR|e }} read alike.
+	 *
+	 * @param string $file
+	 * @return array[] each array('var' => string, 'filters' => string[])
+	 */
+	protected function outputs($file)
+	{
+		$lexed = \uflagmey\donationcampaigns\tests\template_renderer::lexed(file_get_contents($file));
+		preg_match_all('/\{\{-?\s*([A-Za-z_][A-Za-z0-9_.]*)\s*((?:\|\s*[a-z_]+(?:\([^)]*\))?\s*)*)-?\}\}/', $lexed, $matches, PREG_SET_ORDER);
+
+		$outputs = array();
+		foreach ($matches as $match)
+		{
+			preg_match_all('/\|\s*([a-z_]+)/', $match[2], $filters);
+			$outputs[] = array('var' => $match[1], 'filters' => $filters[1]);
+		}
+
+		return $outputs;
 	}
 
 	/**
@@ -379,19 +404,28 @@ class architecture_test extends \phpbb_test_case
 		// The campaign form moved to the frontend in the RC2 cutover, and its
 		// fields into a shared include in beta3 (frontend form + posting
 		// panel); the textarea contract is unchanged.
-		$form = file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_fields.html');
+		$fields = $this->package . '/styles/prosilver/template/donationcampaigns_campaign_fields.html';
 
-		$this->assertStringContainsString(
-			'{DONATIONCAMPAIGNS_DESC}</textarea>',
-			$form,
-			'The description textarea escapes text that generate_text_for_edit() already escaped'
+		$desc = array_filter($this->outputs($fields), function ($output) {
+			return $output['var'] === 'DONATIONCAMPAIGNS_DESC';
+		});
+		$this->assertCount(1, $desc, 'The description is printed exactly once, in the textarea');
+		$this->assertSame(array(), reset($desc)['filters'], 'The description textarea escapes text that generate_text_for_edit() already escaped');
+
+		// Rendered: the one escaped layer reaches the textarea unchanged.
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html'),
+			array('DONATIONCAMPAIGNS_DESC' => '&lt;b&gt; &amp;amp;')
 		);
-		$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC|e}', $form);
+		$this->assertStringContainsString('>&lt;b&gt; &amp;amp;</textarea>', $html);
 
 		// No ACP template renders the description at all now.
 		foreach (glob($this->package . '/adm/style/*.html') as $file)
 		{
-			$this->assertStringNotContainsString('{DONATIONCAMPAIGNS_DESC}', file_get_contents($file), basename($file));
+			foreach ($this->outputs($file) as $output)
+			{
+				$this->assertNotSame('DONATIONCAMPAIGNS_DESC', $output['var'], basename($file));
+			}
 		}
 	}
 
@@ -408,22 +442,25 @@ class architecture_test extends \phpbb_test_case
 		);
 		$this->assertNotEmpty($files);
 
+		$printed = array();
+
 		foreach ($files as $file)
 		{
-			preg_match_all('/\{([A-Za-z0-9_.]+)\|e\}/', file_get_contents($file), $matches);
-
-			foreach ($matches[1] as $var)
+			foreach ($this->outputs($file) as $output)
 			{
 				foreach (self::CORE_ESCAPED_FIELDS as $field)
 				{
-					$this->assertStringEndsNotWith(
-						$field,
-						$var,
-						basename($file) . " escapes {$var}, which core already stored escaped"
-					);
+					if (substr($output['var'], -strlen($field)) === $field)
+					{
+						$printed[] = $output['var'];
+						$this->assertNotContains('e', $output['filters'], basename($file) . " escapes {$output['var']}, which core already stored escaped");
+					}
 				}
 			}
 		}
+
+		// Finding none would mean the rule no longer looks at anything.
+		$this->assertNotEmpty($printed);
 	}
 
 	public function test_no_acp_template_marks_a_value_safe()
@@ -620,11 +657,16 @@ class architecture_test extends \phpbb_test_case
 		$this->assertStringContainsString('class="responsive-show donationcampaigns-list-forum"', $template);
 		$this->assertMatchesRegularExpression('/\.donationcampaigns-list-forum\s*\{\s*display:\s*none;/', file_get_contents($this->package . '/styles/prosilver/theme/donationcampaigns.css'));
 
-		// Template variables only — prose in a comment may say "donor".
-		preg_match_all('/\{([A-Za-z0-9_.|]+)\}/', $template, $matches);
-		$this->assertNotEmpty($matches[1]);
+		// Template variables only — prose in a comment may say "donor". Every
+		// name in a print or a tag, as phpBB's lexer hands the file to Twig:
+		// the include's arguments count as much as a printed value.
+		$lexed = \uflagmey\donationcampaigns\tests\template_renderer::lexed($template);
+		$lexed = preg_replace("/'[^']*'/", '', $lexed);
+		preg_match_all('/\{[{%].*?[}%]\}/s', $lexed, $tags);
+		preg_match_all('/[A-Za-z_][A-Za-z0-9_.]*/', implode(' ', $tags[0]), $matches);
+		$this->assertNotEmpty($matches[0]);
 
-		foreach ($matches[1] as $var)
+		foreach (array_unique($matches[0]) as $var)
 		{
 			foreach (array('DONOR', 'DESC', '_URL') as $forbidden)
 			{
