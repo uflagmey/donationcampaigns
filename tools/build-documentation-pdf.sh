@@ -134,6 +134,14 @@ build() {
 }
 
 build_documentation() {
+	# The current release notes follow the version: 1.0.0-beta3 ->
+	# RELEASE_NOTES_BETA3.md. A hard-coded name shipped the previous release's
+	# notes once the version moved on.
+	local suffix notes
+	suffix="$(printf '%s' "${version##*-}" | tr '[:lower:]' '[:upper:]')"
+	notes="$ext/RELEASE_NOTES_${suffix}.md"
+	[ -f "$notes" ] || { echo "Release notes not found: $notes" >&2; exit 1; }
+
 	# Sources, in reading order. Each file's H1 becomes a top-level TOC entry.
 	build "$repo_root/DonationCampaigns-Documentation.pdf" en \
 		"Donation Campaigns" \
@@ -143,7 +151,7 @@ build_documentation() {
 		"$ext/README.md" \
 		"$ext/docs/ADMIN_GUIDE.md" \
 		"$ext/docs/PRIVACY.md" \
-		"$ext/RELEASE_NOTES_BETA2.md" \
+		"$notes" \
 		"$ext/docs/DEVELOPERS.md"
 }
 
