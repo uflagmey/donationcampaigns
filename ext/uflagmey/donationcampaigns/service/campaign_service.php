@@ -27,6 +27,7 @@ use uflagmey\donationcampaigns\exception\donationcampaigns_exception;
  *   get_campaign_for_topic() none — single read, runs on every topic view
  *   get_public_donor_list()  none — single read
  *   validate()               none — reads only
+ *   validate_fields()        none — no I/O at all
  *   create_campaign()        none — one INSERT, atomic by itself
  *   update_campaign()        none — one UPDATE, atomic by itself
  *   progress()               none — pure arithmetic, no I/O
@@ -387,6 +388,43 @@ class campaign_service
 	 */
 	public function validate(array $input, $campaign_id = 0)
 	{
+		// Three parts, composed in the original order: assert_valid() throws
+		// the FIRST error, so the topic errors must stay between the target
+		// and the URL errors. tests/service/fixtures/validate_golden.php pins it.
+		return array_merge(
+			$this->head_field_errors($input),
+			$this->topic_errors($input, $campaign_id),
+			$this->tail_field_errors($input)
+		);
+	}
+
+	/**
+	 * The field rules alone, without the topic rules.
+	 *
+	 * For the posting form (ADR-019): its fields are checked before the topic
+	 * exists, so there is nothing to check a topic against yet. create_campaign()
+	 * runs the full validate() once the topic has been saved.
+	 *
+	 * Same order as validate(), minus the topic errors. Issues no query.
+	 *
+	 * TRANSACTION BOUNDARY: none.
+	 *
+	 * @param array $input
+	 * @return string[] Language keys; empty array when the fields are valid
+	 */
+	public function validate_fields(array $input)
+	{
+		return array_merge($this->head_field_errors($input), $this->tail_field_errors($input));
+	}
+
+	/**
+	 * Title and target — the rules validate() checks before the topic.
+	 *
+	 * @param array $input
+	 * @return string[]
+	 */
+	protected function head_field_errors(array $input)
+	{
 		$errors = array();
 
 		$title = isset($input['campaign_title']) ? trim((string) $input['campaign_title']) : '';
@@ -413,6 +451,20 @@ class campaign_service
 			$errors[] = 'DONATIONCAMPAIGNS_ERROR_AMOUNT_TOO_LARGE';
 		}
 
+		return $errors;
+	}
+
+	/**
+	 * The topic: required, existing, not already carrying another campaign.
+	 *
+	 * @param array $input
+	 * @param int $campaign_id The campaign being edited; 0 when creating
+	 * @return string[]
+	 */
+	protected function topic_errors(array $input, $campaign_id)
+	{
+		$errors = array();
+
 		$topic_id = isset($input['topic_id']) ? (int) $input['topic_id'] : 0;
 
 		if ($topic_id <= 0)
@@ -437,6 +489,19 @@ class campaign_service
 				$errors[] = 'DONATIONCAMPAIGNS_ERROR_TOPIC_HAS_CAMPAIGN';
 			}
 		}
+
+		return $errors;
+	}
+
+	/**
+	 * URL and button label — the rules validate() checks after the topic.
+	 *
+	 * @param array $input
+	 * @return string[]
+	 */
+	protected function tail_field_errors(array $input)
+	{
+		$errors = array();
 
 		$url = isset($input['external_url']) ? trim((string) $input['external_url']) : '';
 

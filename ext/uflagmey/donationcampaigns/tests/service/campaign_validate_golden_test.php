@@ -108,4 +108,38 @@ class campaign_validate_golden_test extends campaign_list_test_case
 			$this->assertSame($golden[$name], $this->service->validate($case[0], $case[1]), $name);
 		}
 	}
+
+	/**
+	 * validate_fields() is validate() without the three topic rules, in the
+	 * same order — for every recorded case.
+	 */
+	public function test_validate_fields_is_validate_without_the_topic_rules()
+	{
+		$golden = include __DIR__ . '/fixtures/validate_golden.php';
+		$topic_keys = array(
+			'DONATIONCAMPAIGNS_ERROR_TOPIC_REQUIRED',
+			'DONATIONCAMPAIGNS_ERROR_TOPIC_NOT_FOUND',
+			'DONATIONCAMPAIGNS_ERROR_TOPIC_HAS_CAMPAIGN',
+		);
+
+		foreach (self::matrix() as $name => $case)
+		{
+			$expected = array_values(array_diff($golden[$name], $topic_keys));
+
+			$this->assertSame($expected, $this->service->validate_fields($case[0]), $name);
+		}
+	}
+
+	/**
+	 * The posting form validates before its topic exists, so the field rules
+	 * must not touch the database at all.
+	 */
+	public function test_validate_fields_issues_no_query()
+	{
+		$this->db->forget();
+
+		$this->service->validate_fields(array('campaign_title' => 'x', 'target_amount' => 100, 'topic_id' => 10));
+
+		$this->assertSame(array(), $this->db->queries);
+	}
 }
