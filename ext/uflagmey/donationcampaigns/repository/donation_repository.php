@@ -181,6 +181,43 @@ class donation_repository
 	}
 
 	/**
+	 * Donation counts for several campaigns, in ONE query.
+	 *
+	 * The board-wide list shows a count per row; asking count_by_campaign()
+	 * once per row would cost a query per campaign on every page view.
+	 * Public and private donations count alike, as in count_by_campaign().
+	 *
+	 * @param int[] $campaign_ids
+	 * @return array<int, int> campaign_id => count; campaigns without
+	 *         donations are absent, an empty input gives an empty array
+	 */
+	public function count_by_campaign_ids(array $campaign_ids)
+	{
+		$campaign_ids = array_values(array_unique(array_map('intval', $campaign_ids)));
+
+		if (empty($campaign_ids))
+		{
+			return array();
+		}
+
+		$sql = 'SELECT campaign_id, COUNT(donation_id) AS total FROM ' . $this->donations_table . '
+			WHERE ' . $this->db->sql_in_set('campaign_id', $campaign_ids) . '
+			GROUP BY campaign_id';
+		$result = $this->db->sql_query($sql);
+
+		$counts = array();
+		while ($row = $this->db->sql_fetchrow($result))
+		{
+			$counts[(int) $row['campaign_id']] = (int) $row['total'];
+		}
+		$this->db->sql_freeresult($result);
+
+		ksort($counts);
+
+		return $counts;
+	}
+
+	/**
 	 * How many donations exist on the whole board.
 	 *
 	 * Used only to decide whether a settings change would reinterpret stored

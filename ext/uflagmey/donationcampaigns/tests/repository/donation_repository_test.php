@@ -210,6 +210,33 @@ class donation_repository_test extends \phpbb_test_case
 		$this->assertSame(0, $this->repository->count_by_campaign(2));
 	}
 
+	// ------------------------------------------- counts for a page (beta3)
+
+	public function test_count_by_campaign_ids_counts_each_campaign_in_one_query()
+	{
+		$this->repository->insert($this->donation(array('campaign_id' => 2, 'donation_amount' => 500)));
+
+		$this->assertSame(array(1 => 3, 2 => 1), $this->repository->count_by_campaign_ids(array(1, 2)));
+	}
+
+	public function test_count_by_campaign_ids_leaves_out_campaigns_without_donations()
+	{
+		$this->assertSame(array(1 => 3), $this->repository->count_by_campaign_ids(array(1, 5)));
+	}
+
+	public function test_count_by_campaign_ids_casts_its_input()
+	{
+		$this->assertSame(array(1 => 3), $this->repository->count_by_campaign_ids(array('1', '1 OR 1=1')));
+	}
+
+	public function test_count_by_campaign_ids_with_no_ids_is_empty_without_a_query()
+	{
+		$db = $this->createMock('\phpbb\db\driver\driver_interface');
+		$db->expects($this->never())->method('sql_query');
+
+		$this->assertSame(array(), (new donation_repository($db, $this->table))->count_by_campaign_ids(array()));
+	}
+
 	// ----------------------------------------------------------------- reads
 
 	public function test_find_by_id_returns_the_donation()
