@@ -666,7 +666,7 @@ class prosilver_assets_test extends \phpbb_test_case
 	 */
 	public function test_the_frontend_form_keeps_its_field_names()
 	{
-		$html = \uflagmey\donationcampaigns\tests\template_renderer::render(
+		$html = template_renderer::render(
 			file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html'),
 			array('DONATIONCAMPAIGNS_TOPIC_TITLE' => 'Topic 11')
 		);

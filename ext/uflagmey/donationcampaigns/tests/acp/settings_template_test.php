@@ -749,7 +749,7 @@ class settings_template_test extends \phpbb_test_case
 	{
 		// The form's source: its fields live in a shared include since beta3,
 		// pasted in here with the frontend's empty name prefix.
-		return \uflagmey\donationcampaigns\tests\template_renderer::inline_partials(
+		return template_renderer::inline_partials(
 			file_get_contents($this->package . '/styles/prosilver/template/donationcampaigns_campaign_form.html')
 		);
 	}
