@@ -13,6 +13,8 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+      - name: Test the EPV gate script
+        run: bash tools/tests/epv-check.test.sh
       - name: Install EPV
         run: composer require --dev phpbb/epv:dev-master --no-interaction
       - name: Run EPV
@@ -21,10 +23,34 @@ jobs:
         # not been verified. See docs/superpowers/specs section 14.
         #
         # --dir must point at the directory that CONTAINS vendor/extension
-        # (ext/), not at the extension itself: pointed at the extension, EPV's
-        # packaging-structure check reports a false "Validation: FAILED" while
-        # still exiting 0, so the job passed on the exit code but the log lied.
-        run: ./vendor/bin/EPV.php run --dir=ext
+        # (ext/), not at the extension itself (see 66f5f87).
+        #
+        # EPV exits 0 even when it reports "Validation: FAILED", so the exit
+        # code gates nothing. tools/epv-check.sh reads EPV's summary line and
+        # fails on any fatal, error or warning; notices are shown only. A
+        # missing summary line fails too.
+        run: tools/epv-check.sh ./vendor/bin/EPV.php run --dir=ext
+
+  yaml:
+    name: YAML parses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Parse every YAML file of the extension
+        # The phpBB Extension Check runs a YAML check that must be error-free;
+        # a file that does not even parse fails here first.
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || pip install pyyaml
+          python3 - <<'PY'
+          import glob, sys, yaml
+          files = sorted(glob.glob('ext/uflagmey/donationcampaigns/config/*.yml'))
+          if not files:
+              sys.exit('no YAML files found')
+          for name in files:
+              with open(name) as handle:
+                  yaml.safe_load(handle)
+              print('ok', name)
+          PY
 
   unit:
     name: Tests (PHP ${{ matrix.php }})
