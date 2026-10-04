@@ -166,7 +166,7 @@ class campaign_controller
 			{
 				return $this->message(
 					$this->language->lang('DONATIONCAMPAIGNS_NO_CAMPAIGN_YET')
-					. '<br /><br />' . $this->return_link($topic['topic_id'])
+					. '<br><br>' . $this->return_link($topic['topic_id'])
 				);
 			}
 
@@ -311,7 +311,7 @@ class campaign_controller
 		{
 			return $this->message(
 				$this->language->lang('DONATIONCAMPAIGNS_DELETE_NON_EMPTY_REFUSED')
-				. '<br /><br />' . $this->return_link($topic['topic_id'])
+				. '<br><br>' . $this->return_link($topic['topic_id'])
 			);
 		}
 

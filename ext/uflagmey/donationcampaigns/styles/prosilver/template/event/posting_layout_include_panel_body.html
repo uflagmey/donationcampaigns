@@ -11,7 +11,7 @@
 	<fieldset class="fields2">
 		<dl>
 			<dt><label for="donationcampaigns_attach">{L_DONATIONCAMPAIGNS_POSTING_ATTACH}{L_COLON}</label></dt>
-			<dd><input type="checkbox" class="radio" name="donationcampaigns_attach" id="donationcampaigns_attach" value="1"<!-- IF S_DONATIONCAMPAIGNS_ATTACH --> checked="checked"<!-- ENDIF --> /></dd>
+			<dd><input type="checkbox" class="radio" name="donationcampaigns_attach" id="donationcampaigns_attach" value="1"<!-- IF S_DONATIONCAMPAIGNS_ATTACH --> checked<!-- ENDIF --> ></dd>
 		</dl>
 
 		{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': 'donationcampaigns_'} %}
@@ -19,7 +19,7 @@
 
 	<!-- Marks a redisplay (preview, error, attachment refresh): the entered
 	     values are then shown instead of the defaults. -->
-	<input type="hidden" name="donationcampaigns_panel" value="1" />
+	<input type="hidden" name="donationcampaigns_panel" value="1">
 
 	</div>
 </div>

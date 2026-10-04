@@ -36,8 +36,8 @@
 						{% include '@uflagmey_donationcampaigns/donationcampaigns_progress.html' with {'percent': donationcampaigns_list.PERCENT, 'percent_raw': donationcampaigns_list.PERCENT_RAW, 'step': donationcampaigns_list.STEP} only %}
 						<span class="donationcampaigns-list-figures">
 							{donationcampaigns_list.COLLECTED|e} / {donationcampaigns_list.TARGET|e} &mdash; {donationcampaigns_list.PERCENT_RAW}%
-							<!-- IF donationcampaigns_list.S_REACHED --><br /><strong>{L_DONATIONCAMPAIGNS_TARGET_REACHED}</strong><!-- ENDIF -->
-							<!-- IF donationcampaigns_list.COUNT --><br />{donationcampaigns_list.COUNT|e}<!-- ENDIF -->
+							<!-- IF donationcampaigns_list.S_REACHED --><br><strong>{L_DONATIONCAMPAIGNS_TARGET_REACHED}</strong><!-- ENDIF -->
+							<!-- IF donationcampaigns_list.COUNT --><br>{donationcampaigns_list.COUNT|e}<!-- ENDIF -->
 						</span>
 					</td>
 				</tr>

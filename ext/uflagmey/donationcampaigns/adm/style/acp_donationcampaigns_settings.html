@@ -35,56 +35,56 @@
 	<dl>
 		<dt>
 			<label for="donationcampaigns_currency_code">{L_DONATIONCAMPAIGNS_SETTINGS_CODE}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_CODE_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_CODE_EXPLAIN}</span>
 		</dt>
-		<dd><input id="donationcampaigns_currency_code" type="text" size="5" maxlength="3" name="donationcampaigns_currency_code" value="{DONATIONCAMPAIGNS_CURRENCY_CODE|e}" /></dd>
+		<dd><input id="donationcampaigns_currency_code" type="text" size="5" maxlength="3" name="donationcampaigns_currency_code" value="{DONATIONCAMPAIGNS_CURRENCY_CODE|e}"></dd>
 	</dl>
 
 	<dl>
 		<dt>
 			<label for="donationcampaigns_currency_symbol">{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_EXPLAIN}</span>
 		</dt>
-		<dd><input id="donationcampaigns_currency_symbol" type="text" size="10" maxlength="10" name="donationcampaigns_currency_symbol" value="{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}" /></dd>
+		<dd><input id="donationcampaigns_currency_symbol" type="text" size="10" maxlength="10" name="donationcampaigns_currency_symbol" value="{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}"></dd>
 	</dl>
 
 	<dl>
 		<dt>
 			<label for="donationcampaigns_currency_symbol_before">{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_BEFORE_EXPLAIN}</span>
 		</dt>
 		<dd>
-			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_before" value="1"<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> id="donationcampaigns_currency_symbol_before" checked="checked"<!-- ENDIF --> /> {L_YES}</label>
-			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_before" value="0"<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> id="donationcampaigns_currency_symbol_before" checked="checked"<!-- ENDIF --> /> {L_NO}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_before" value="1"<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> id="donationcampaigns_currency_symbol_before" checked<!-- ENDIF --> > {L_YES}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_before" value="0"<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> id="donationcampaigns_currency_symbol_before" checked<!-- ENDIF --> > {L_NO}</label>
 		</dd>
 	</dl>
 
 	<dl>
 		<dt>
 			<label for="donationcampaigns_currency_symbol_space">{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_SYMBOL_SPACE_EXPLAIN}</span>
 		</dt>
 		<dd>
-			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_space" value="1"<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_SPACE --> id="donationcampaigns_currency_symbol_space" checked="checked"<!-- ENDIF --> /> {L_YES}</label>
-			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_space" value="0"<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_SPACE --> id="donationcampaigns_currency_symbol_space" checked="checked"<!-- ENDIF --> /> {L_NO}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_space" value="1"<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_SPACE --> id="donationcampaigns_currency_symbol_space" checked<!-- ENDIF --> > {L_YES}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_currency_symbol_space" value="0"<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_SPACE --> id="donationcampaigns_currency_symbol_space" checked<!-- ENDIF --> > {L_NO}</label>
 		</dd>
 	</dl>
 
 	<dl>
 		<dt>
 			<label for="donationcampaigns_currency_exponent">{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_EXPLAIN}</span>
 		</dt>
-		<dd><input id="donationcampaigns_currency_exponent" type="number" min="0" max="4" step="1" size="3" name="donationcampaigns_currency_exponent" value="{DONATIONCAMPAIGNS_CURRENCY_EXPONENT}" /></dd>
+		<dd><input id="donationcampaigns_currency_exponent" type="number" min="0" max="4" step="1" size="3" name="donationcampaigns_currency_exponent" value="{DONATIONCAMPAIGNS_CURRENCY_EXPONENT}"></dd>
 	</dl>
 
 	<!-- IF S_DONATIONCAMPAIGNS_CONFIRM_EXPONENT -->
 		<dl>
 			<dt>
 				<label for="donationcampaigns_confirm_exponent">{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_CONFIRM}{L_COLON}</label>
-				<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_CONFIRM_EXPLAIN}</span>
+				<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_EXPONENT_CONFIRM_EXPLAIN}</span>
 			</dt>
-			<dd><input id="donationcampaigns_confirm_exponent" type="checkbox" class="radio" name="donationcampaigns_confirm_exponent" value="1" /></dd>
+			<dd><input id="donationcampaigns_confirm_exponent" type="checkbox" class="radio" name="donationcampaigns_confirm_exponent" value="1"></dd>
 		</dl>
 	<!-- ENDIF -->
 </fieldset>
@@ -95,26 +95,26 @@
 	<dl>
 		<dt>
 			<label for="donationcampaigns_donor_list_limit">{L_DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_DONOR_LIMIT_EXPLAIN}</span>
 		</dt>
-		<dd><input id="donationcampaigns_donor_list_limit" type="number" min="1" max="500" step="1" size="5" name="donationcampaigns_donor_list_limit" value="{DONATIONCAMPAIGNS_DONOR_LIST_LIMIT}" /></dd>
+		<dd><input id="donationcampaigns_donor_list_limit" type="number" min="1" max="500" step="1" size="5" name="donationcampaigns_donor_list_limit" value="{DONATIONCAMPAIGNS_DONOR_LIST_LIMIT}"></dd>
 	</dl>
 
 	<dl>
 		<dt>
 			<label for="donationcampaigns_list_enabled">{L_DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED}{L_COLON}</label>
-			<br /><span>{L_DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN}</span>
+			<br><span>{L_DONATIONCAMPAIGNS_SETTINGS_LIST_ENABLED_EXPLAIN}</span>
 		</dt>
 		<dd>
-			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="1"<!-- IF S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked="checked"<!-- ENDIF --> /> {L_YES}</label>
-			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="0"<!-- IF not S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked="checked"<!-- ENDIF --> /> {L_NO}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="1"<!-- IF S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked<!-- ENDIF --> > {L_YES}</label>
+			<label><input type="radio" class="radio" name="donationcampaigns_list_enabled" value="0"<!-- IF not S_DONATIONCAMPAIGNS_LIST_ENABLED --> id="donationcampaigns_list_enabled" checked<!-- ENDIF --> > {L_NO}</label>
 		</dd>
 	</dl>
 </fieldset>
 
 <p class="submit-buttons">
-	<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
-	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+	<input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}">&nbsp;
+	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}">
 	{S_FORM_TOKEN}
 </p>
 

@@ -62,7 +62,7 @@ class amount_currency_parity_test extends \phpbb_test_case
 	public function test_the_currency_label_sits_on_the_configured_side_of_the_input($file, $input_name)
 	{
 		$markup = $this->template($file);
-		$input = '<input id="' . preg_quote($input_name, '#') . '"[^>]*name="' . preg_quote($input_name, '#') . '"[^>]*/>';
+		$input = '<input id="' . preg_quote($input_name, '#') . '"[^>]*name="' . preg_quote($input_name, '#') . '"[^>]*>';
 		$label = preg_quote(self::CURRENCY_LABEL, '#');
 
 		$this->assertMatchesRegularExpression(

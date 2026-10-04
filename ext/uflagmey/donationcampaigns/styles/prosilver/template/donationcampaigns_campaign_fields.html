@@ -5,14 +5,14 @@
    extensions. The values come from the including page's template variables.
    The topic row appears only where a topic already exists. #}
 		<dl>
-			<dt><label for="{{ prefix }}campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br /><span><!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT -->{L_DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}<!-- ENDIF --></span></dt>
+			<dt><label for="{{ prefix }}campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br><span><!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT -->{L_DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}<!-- ENDIF --></span></dt>
 			<!-- In the posting form an empty title becomes the topic title on submit (WD1). -->
-			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}"<!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT --> placeholder="{L_DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER}"<!-- ENDIF --> /></dd>
+			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}"<!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT --> placeholder="{L_DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER}"<!-- ENDIF --> ></dd>
 		</dl>
 
 		<!-- IF DONATIONCAMPAIGNS_TOPIC_TITLE -->
 		<dl>
-			<dt><label>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED}</span></dt>
+			<dt><label>{L_DONATIONCAMPAIGNS_FORM_TOPIC}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_TOPIC_EXPLAIN_FIXED}</span></dt>
 			<!-- The topic is decided by the page this form was opened from and is
 			     shown as text. There is deliberately no input: a campaign belongs
 			     to one topic for life. -->
@@ -21,40 +21,40 @@
 		<!-- ENDIF -->
 
 		<dl>
-			<dt><label for="{{ prefix }}campaign_desc">{L_DONATIONCAMPAIGNS_FORM_DESC}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN}</span></dt>
+			<dt><label for="{{ prefix }}campaign_desc">{L_DONATIONCAMPAIGNS_FORM_DESC}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_DESC_EXPLAIN}</span></dt>
 			<!-- NO |e: generate_text_for_edit() returns text already escaped once,
 			     emitted raw into a textarea exactly as core does with {MESSAGE}. -->
 			<dd><textarea id="{{ prefix }}campaign_desc" name="{{ prefix }}campaign_desc" rows="6" cols="60">{DONATIONCAMPAIGNS_DESC}</textarea></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span></dt>
+			<dt><label for="{{ prefix }}target_amount">{L_DONATIONCAMPAIGNS_FORM_TARGET}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_TARGET_EXPLAIN}</span></dt>
 			<!-- The currency is shown beside the field, not inside it. type="text",
 			     not number: a numeric input silently drops a comma decimal. -->
-			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="{{ prefix }}target_amount" type="text" name="{{ prefix }}target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}" /><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
+			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="{{ prefix }}target_amount" type="text" name="{{ prefix }}target_amount" size="15" value="{DONATIONCAMPAIGNS_TARGET_AMOUNT|e}"><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}external_url">{L_DONATIONCAMPAIGNS_FORM_URL}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_URL_EXPLAIN}</span></dt>
-			<dd><input type="text" id="{{ prefix }}external_url" name="{{ prefix }}external_url" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_EXTERNAL_URL|e}" /></dd>
+			<dt><label for="{{ prefix }}external_url">{L_DONATIONCAMPAIGNS_FORM_URL}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_URL_EXPLAIN}</span></dt>
+			<dd><input type="text" id="{{ prefix }}external_url" name="{{ prefix }}external_url" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_EXTERNAL_URL|e}"></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}external_link_text">{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT_EXPLAIN}</span></dt>
-			<dd><input type="text" id="{{ prefix }}external_link_text" name="{{ prefix }}external_link_text" size="45" maxlength="100" value="{DONATIONCAMPAIGNS_LINK_TEXT|e}" /></dd>
+			<dt><label for="{{ prefix }}external_link_text">{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_LINK_TEXT_EXPLAIN}</span></dt>
+			<dd><input type="text" id="{{ prefix }}external_link_text" name="{{ prefix }}external_link_text" size="45" maxlength="100" value="{DONATIONCAMPAIGNS_LINK_TEXT|e}"></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}show_donor_names">{L_DONATIONCAMPAIGNS_SHOW_DONOR_NAMES}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donor_names" class="radio" name="{{ prefix }}show_donor_names" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS --> checked="checked"<!-- ENDIF --> /></dd>
+			<dt><label for="{{ prefix }}show_donor_names">{L_DONATIONCAMPAIGNS_SHOW_DONOR_NAMES}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING}</span></dt>
+			<dd><input type="checkbox" id="{{ prefix }}show_donor_names" class="radio" name="{{ prefix }}show_donor_names" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DONORS --> checked<!-- ENDIF --> ></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}show_donation_count">{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donation_count" class="radio" name="{{ prefix }}show_donation_count" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT --> checked="checked"<!-- ENDIF --> /></dd>
+			<dt><label for="{{ prefix }}show_donation_count">{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN}</span></dt>
+			<dd><input type="checkbox" id="{{ prefix }}show_donation_count" class="radio" name="{{ prefix }}show_donation_count" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_COUNT --> checked<!-- ENDIF --> ></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="{{ prefix }}show_donation_date">{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donation_date" class="radio" name="{{ prefix }}show_donation_date" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DATE --> checked="checked"<!-- ENDIF --> /></dd>
+			<dt><label for="{{ prefix }}show_donation_date">{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN}</span></dt>
+			<dd><input type="checkbox" id="{{ prefix }}show_donation_date" class="radio" name="{{ prefix }}show_donation_date" value="1"<!-- IF S_DONATIONCAMPAIGNS_SHOW_DATE --> checked<!-- ENDIF --> ></dd>
 		</dl>

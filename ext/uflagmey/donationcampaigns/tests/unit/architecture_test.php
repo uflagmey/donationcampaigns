@@ -816,6 +816,65 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
+	 * Shipped markup uses HTML5 syntax: no self-closing "/>" and no quoted
+	 * boolean attribute such as checked="checked". The phpBB Extension Check
+	 * (XHTMLcheck) warns on both in html, php and js files.
+	 *
+	 * @dataProvider markup_files
+	 */
+	public function test_shipped_markup_uses_html5_syntax($path)
+	{
+		$relative = str_replace($this->package . '/', '', $path);
+		$violations = array();
+
+		foreach (file($path) as $number => $line)
+		{
+			// Any "/>" counts: a template condition inside a tag
+			// (<input <!-- IF X -->checked<!-- ENDIF --> />) defeats a tag pattern.
+			if (strpos($line, '/>') !== false)
+			{
+				$violations[] = $relative . ':' . ($number + 1) . ' self-closing tag';
+			}
+
+			if (preg_match('#(?<![\w$>-])(checked|selected|disabled|readonly|multiple|required)\s*=\s*["\']#i', $line))
+			{
+				$violations[] = $relative . ':' . ($number + 1) . ' quoted boolean attribute';
+			}
+		}
+
+		$this->assertSame(array(), $violations, implode("\n", $violations));
+	}
+
+	/**
+	 * Shipped html, php and js files, excluding tests.
+	 *
+	 * @return array
+	 */
+	public function markup_files()
+	{
+		$package = dirname(dirname(__DIR__));
+		$files = array();
+
+		$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($package));
+
+		foreach ($iterator as $file)
+		{
+			$path = $file->getPathname();
+
+			if (!in_array(pathinfo($path, PATHINFO_EXTENSION), array('html', 'php', 'js'), true) || strpos($path, '/tests/') !== false)
+			{
+				continue;
+			}
+
+			$files[str_replace($package . '/', '', $path)] = array($path);
+		}
+
+		ksort($files);
+
+		return $files;
+	}
+
+	/**
 	 * The shipped license.txt and the repository LICENSE are the phpBB
 	 * skeleton's license text, unchanged — the text the Extension Check
 	 * compares against.
