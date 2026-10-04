@@ -53,6 +53,16 @@ See ADR-019 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blo
 
 ---
 
+## Changed
+
+- The templates, the language strings and two controller messages use HTML5
+  syntax: `<br>` and `<input …>` instead of `<br />` and `<input … />`, and
+  `checked` instead of `checked="checked"`. The pages look and behave the
+  same; this follows the phpBB Extension Check (XHTMLcheck). A test keeps the
+  old syntax out.
+
+---
+
 ## Fixed
 
 - Topic titles containing `&`, `"` or `<` were shown escaped twice on the
@@ -62,6 +72,11 @@ See ADR-019 in [DEVELOPERS.md](https://github.com/uflagmey/donationcampaigns/blo
   rejects escaping such a field again.
 - A campaign with a target of zero (possible only by editing the database
   directly) was shown as "target reached". It no longer is.
+- Leading and trailing whitespace in titles, links, donor names, amounts and
+  settings is now trimmed the same way on every supported PHP version. PHP 8.6
+  also trims a form feed by default, earlier versions did not; the extension
+  now names the characters itself, so PHP 8.2 to 8.5 behave like 8.6. A test
+  keeps every trim call explicit.
 
 ---
 
@@ -87,7 +102,17 @@ moderator permissions were replaced and must be re-assigned
 
 ## For translators
 
-14 new keys, none changed or removed:
+14 new keys, 13 keys changed in markup only, none removed.
+
+**Changed markup:** every `<br />` in the strings is now `<br>` (HTML5).
+Please do the same in your translation; the wording is unchanged.
+
+| File | Keys |
+|---|---|
+| `common.php` | `DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN`, `DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN`, `DONATIONCAMPAIGNS_DONATION_SAVED_RETURN`, `DONATIONCAMPAIGNS_DONATION_DELETED_RETURN` |
+| `logs.php` | `LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED`, `…_CAMPAIGN_EDITED`, `…_CAMPAIGN_ENABLED`, `…_CAMPAIGN_DISABLED`, `…_CAMPAIGN_DELETED`, `…_TOTAL_RECALCULATED`, `…_DONATION_ADDED`, `…_DONATION_EDITED`, `…_DONATION_DELETED` |
+
+**New keys:**
 
 | File | Key | Note |
 |---|---|---|
