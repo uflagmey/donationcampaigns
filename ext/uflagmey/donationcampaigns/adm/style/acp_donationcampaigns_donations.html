@@ -1,62 +1,62 @@
-<!-- INCLUDE overall_header.html -->
+{% include 'overall_header.html' %}
 
 <a id="maincontent"></a>
 
-<a href="{U_BACK}" style="float: {S_CONTENT_FLOW_END};">&laquo; {L_BACK}</a>
+<a href="{{ U_BACK }}" style="float: {{ S_CONTENT_FLOW_END }};">&laquo; {{ lang('BACK') }}</a>
 
-<h1>{L_ACP_DONATIONCAMPAIGNS_DONATIONS}</h1>
+<h1>{{ lang('ACP_DONATIONCAMPAIGNS_DONATIONS') }}</h1>
 
-<p>{L_DONATIONCAMPAIGNS_DONATIONS_OVERSIGHT_EXPLAIN}</p>
+<p>{{ lang('DONATIONCAMPAIGNS_DONATIONS_OVERSIGHT_EXPLAIN') }}</p>
 
 <p>
-	<strong>{L_DONATIONCAMPAIGNS_LIST_CAMPAIGN}{L_COLON}</strong> {DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}
+	<strong>{{ lang('DONATIONCAMPAIGNS_LIST_CAMPAIGN') }}{{ lang('COLON') }}</strong> {{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}
 	&nbsp;&mdash;&nbsp;
-	<strong>{L_DONATIONCAMPAIGNS_FORM_COLLECTED}{L_COLON}</strong> {DONATIONCAMPAIGNS_COLLECTED_AMOUNT|e}
+	<strong>{{ lang('DONATIONCAMPAIGNS_FORM_COLLECTED') }}{{ lang('COLON') }}</strong> {{ DONATIONCAMPAIGNS_COLLECTED_AMOUNT|e }}
 </p>
 
-<p><a class="button2" href="{U_DONATIONCAMPAIGNS_MANAGE}">{L_DONATIONCAMPAIGNS_MANAGE_ON_TOPIC}</a></p>
+<p><a class="button2" href="{{ U_DONATIONCAMPAIGNS_MANAGE }}">{{ lang('DONATIONCAMPAIGNS_MANAGE_ON_TOPIC') }}</a></p>
 
 <fieldset class="tabulated">
-<legend>{L_ACP_DONATIONCAMPAIGNS_DONATIONS}</legend>
+<legend>{{ lang('ACP_DONATIONCAMPAIGNS_DONATIONS') }}</legend>
 
 <table class="table1 zebra-table">
 <thead>
 <tr>
-	<th scope="col">{L_DONATIONCAMPAIGNS_DONOR}</th>
-	<th scope="col">{L_DONATIONCAMPAIGNS_AMOUNT}</th>
-	<th scope="col">{L_DONATIONCAMPAIGNS_RECEIVED_ON}</th>
-	<th scope="col">{L_DONATIONCAMPAIGNS_RECORDED_ON}</th>
-	<th scope="col">{L_DONATIONCAMPAIGNS_VISIBILITY}</th>
-	<th scope="col">{L_DONATIONCAMPAIGNS_LIST_ACTIONS}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_DONOR') }}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_AMOUNT') }}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_RECEIVED_ON') }}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_RECORDED_ON') }}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_VISIBILITY') }}</th>
+	<th scope="col">{{ lang('DONATIONCAMPAIGNS_LIST_ACTIONS') }}</th>
 </tr>
 </thead>
 <tbody>
-<!-- BEGIN donationcampaigns_donation -->
+{% for donationcampaigns_donation in loops.donationcampaigns_donation %}
 	<tr>
-		<td><strong>{donationcampaigns_donation.DONOR_NAME|e}</strong></td>
-		<td>{donationcampaigns_donation.AMOUNT|e}</td>
-		<td>{donationcampaigns_donation.DONATED_AT|e}</td>
-		<td>{donationcampaigns_donation.RECORDED_AT|e}</td>
+		<td><strong>{{ donationcampaigns_donation.DONOR_NAME|e }}</strong></td>
+		<td>{{ donationcampaigns_donation.AMOUNT|e }}</td>
+		<td>{{ donationcampaigns_donation.DONATED_AT|e }}</td>
+		<td>{{ donationcampaigns_donation.RECORDED_AT|e }}</td>
 		<td>
-			<!-- IF donationcampaigns_donation.S_PUBLIC -->{L_DONATIONCAMPAIGNS_VISIBILITY_PUBLIC}<!-- ELSE -->{L_DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS}<!-- ENDIF -->
+			{% if donationcampaigns_donation.S_PUBLIC %}{{ lang('DONATIONCAMPAIGNS_VISIBILITY_PUBLIC') }}{% else %}{{ lang('DONATIONCAMPAIGNS_VISIBILITY_ANONYMOUS') }}{% endif %}
 		</td>
 		<td>
-			<a href="{donationcampaigns_donation.U_EDIT}">{L_DONATIONCAMPAIGNS_EDIT_ON_TOPIC}</a>
+			<a href="{{ donationcampaigns_donation.U_EDIT }}">{{ lang('DONATIONCAMPAIGNS_EDIT_ON_TOPIC') }}</a>
 		</td>
 	</tr>
-<!-- BEGINELSE -->
+{% else %}
 	<tr class="row3">
-		<td colspan="6">{L_ACP_NO_ITEMS}</td>
+		<td colspan="6">{{ lang('ACP_NO_ITEMS') }}</td>
 	</tr>
-<!-- END donationcampaigns_donation -->
+{% endfor %}
 </tbody>
 </table>
 </fieldset>
 
 <div class="pagination">
-<!-- IF .pagination -->
-	<!-- INCLUDE pagination.html -->
-<!-- ENDIF -->
+{% if loops.pagination|length %}
+	{% include 'pagination.html' %}
+{% endif %}
 </div>
 
-<!-- INCLUDE overall_footer.html -->
+{% include 'overall_footer.html' %}

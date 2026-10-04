@@ -34,21 +34,6 @@ class architecture_test extends \phpbb_test_case
 	const CORE_ESCAPED_FIELDS = array('TOPIC_TITLE', 'FORUM_NAME');
 
 	/**
-	 * Templates still written in phpBB's legacy syntax, relative to the
-	 * package. 1.0.0-beta4 converts them to native Twig.
-	 *
-	 * A ratchet: a template on this list must still contain legacy syntax, so
-	 * a converted file cannot stay listed; a template off the list must not
-	 * contain any. Each conversion removes its files; when the list is empty
-	 * it is deleted with the check that reads it.
-	 */
-	const LEGACY_SYNTAX_PENDING = array(
-		'adm/style/acp_donationcampaigns_campaigns.html',
-		'adm/style/acp_donationcampaigns_donations.html',
-		'adm/style/acp_donationcampaigns_settings.html',
-	);
-
-	/**
 	 * SHA-256 of the license text both license files must carry.
 	 *
 	 * It is the license.txt of the official phpBB Skeleton Extension 1.2.3,
@@ -731,13 +716,8 @@ class architecture_test extends \phpbb_test_case
 		foreach ($templates as $template)
 		{
 			$found = $this->legacy_syntax(file_get_contents($this->package . '/' . $template));
-			$pending = in_array($template, self::LEGACY_SYNTAX_PENDING, true);
 
-			if ($pending && !$found)
-			{
-				$problems[] = "{$template} is native Twig now: remove it from LEGACY_SYNTAX_PENDING";
-			}
-			else if (!$pending && $found)
+			if ($found)
 			{
 				$problems[] = "{$template} uses phpBB's legacy template syntax (" . count($found) . 'x), e.g. ' . implode(' ', array_slice(array_unique($found), 0, 3));
 			}
@@ -747,39 +727,27 @@ class architecture_test extends \phpbb_test_case
 	}
 
 	/**
-	 * No HTML comment reaches a visitor: developer notes are Twig comments,
-	 * which render as nothing. Second stage of the guard. A template still on
-	 * LEGACY_SYNTAX_PENDING may keep phpBB's legacy tags, which only look like
-	 * comments; nothing else may start with "<!--". With the list gone, no
-	 * "<!--" at all.
+	 * No "<!--" in a shipped template. Developer notes are Twig comments,
+	 * which render as nothing; an HTML comment would reach every visitor's
+	 * page source, and phpBB's lexer would still rewrite a variable inside it
+	 * (beta4 F1). phpBB's legacy tags looked like comments; there are none
+	 * left to allow.
 	 */
 	public function test_templates_carry_no_html_comments()
 	{
-		$legacy_tag = '/^<!--\s*(?:IF|ELSE ?IF|ELSE|ENDIF|BEGIN|BEGINELSE|END|INCLUDE|INCLUDEJS|INCLUDECSS|INCLUDEPHP|DEFINE|UNDEFINE|ENDDEFINE|EVENT|PHP|ENDPHP)\b/';
 		$problems = array();
 
 		foreach ($this->shipped_templates() as $template)
 		{
-			$pending = in_array($template, self::LEGACY_SYNTAX_PENDING, true);
 			preg_match_all('/<!--.*?(?:-->|\z)/s', file_get_contents($this->package . '/' . $template), $comments);
 
 			foreach ($comments[0] as $comment)
 			{
-				if ($pending && preg_match($legacy_tag, $comment))
-				{
-					continue;
-				}
-
 				$problems[] = $template . ': ' . substr(preg_replace('/\s+/', ' ', $comment), 0, 60);
 			}
 		}
 
 		$this->assertSame(array(), $problems);
-	}
-
-	public function test_the_pending_list_names_only_shipped_templates()
-	{
-		$this->assertSame(array(), array_diff(self::LEGACY_SYNTAX_PENDING, $this->shipped_templates()));
 	}
 
 	/**
