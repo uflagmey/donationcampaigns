@@ -26,17 +26,17 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, array(
 	'LOG_DONATIONCAMPAIGNS_SETTINGS_UPDATED'	=> '<strong>Donation campaigns settings updated</strong>',
 
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED'		=> '<strong>Donation campaign created</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_EDITED'		=> '<strong>Donation campaign edited</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ENABLED'	=> '<strong>Donation campaign enabled</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DISABLED'	=> '<strong>Donation campaign disabled</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED'	=> '<strong>Donation campaign deleted</strong><br />&raquo; %s',
-	'LOG_DONATIONCAMPAIGNS_TOTAL_RECALCULATED'	=> '<strong>Donation campaign total recalculated</strong><br />&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED'		=> '<strong>Donation campaign created</strong><br>&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_EDITED'		=> '<strong>Donation campaign edited</strong><br>&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ENABLED'	=> '<strong>Donation campaign enabled</strong><br>&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DISABLED'	=> '<strong>Donation campaign disabled</strong><br>&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_CAMPAIGN_DELETED'	=> '<strong>Donation campaign deleted</strong><br>&raquo; %s',
+	'LOG_DONATIONCAMPAIGNS_TOTAL_RECALCULATED'	=> '<strong>Donation campaign total recalculated</strong><br>&raquo; %s',
 
-	'LOG_DONATIONCAMPAIGNS_DONATION_ADDED'		=> '<strong>Confirmed donation recorded</strong><br />&raquo; %1$s from %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_EDITED'		=> '<strong>Confirmed donation edited</strong><br />&raquo; %1$s from %2$s',
-	'LOG_DONATIONCAMPAIGNS_DONATION_DELETED'	=> '<strong>Confirmed donation deleted</strong><br />&raquo; %1$s from %2$s',
+	'LOG_DONATIONCAMPAIGNS_DONATION_ADDED'		=> '<strong>Confirmed donation recorded</strong><br>&raquo; %1$s from %2$s',
+	'LOG_DONATIONCAMPAIGNS_DONATION_EDITED'		=> '<strong>Confirmed donation edited</strong><br>&raquo; %1$s from %2$s',
+	'LOG_DONATIONCAMPAIGNS_DONATION_DELETED'	=> '<strong>Confirmed donation deleted</strong><br>&raquo; %1$s from %2$s',
 
 	// Critical: the posting form saved the topic, the campaign insert failed (ADR-019).
-	'LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED'	=> '<strong>A donation campaign could not be created with its new topic</strong><br />&raquo; Topic ID %s. The topic was saved; create the campaign from the topic.',
+	'LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED'	=> '<strong>A donation campaign could not be created with its new topic</strong><br>&raquo; Topic ID %s. The topic was saved; create the campaign from the topic.',
 ));

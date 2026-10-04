@@ -99,10 +99,10 @@ $lang = array_merge($lang, array(
 	// 'BACK' ist kein phpBB-Kernschlüssel; {L_BACK} würde den rohen Schlüssel
 	// anzeigen. Dies ist das eigene übersetzte Label der Erweiterung.
 	'DONATIONCAMPAIGNS_BACK_TO_TOPIC'				=> 'Zurück zum Thema',
-	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'Die Kampagne wurde gespeichert.<br /><br />%sZurück zum Thema%s',
-	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'Die Kampagne wurde gelöscht.<br /><br />%sZurück zum Thema%s',
-	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'Die bestätigte Spende wurde gespeichert und die Kampagnensumme neu berechnet.<br /><br />%sZurück zum Thema%s',
-	'DONATIONCAMPAIGNS_DONATION_DELETED_RETURN'		=> 'Die bestätigte Spende wurde gelöscht und die Kampagnensumme neu berechnet.<br /><br />%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_SAVED_RETURN'		=> 'Die Kampagne wurde gespeichert.<br><br>%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_CAMPAIGN_DELETED_RETURN'		=> 'Die Kampagne wurde gelöscht.<br><br>%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_DONATION_SAVED_RETURN'		=> 'Die bestätigte Spende wurde gespeichert und die Kampagnensumme neu berechnet.<br><br>%sZurück zum Thema%s',
+	'DONATIONCAMPAIGNS_DONATION_DELETED_RETURN'		=> 'Die bestätigte Spende wurde gelöscht und die Kampagnensumme neu berechnet.<br><br>%sZurück zum Thema%s',
 
 	'DONATIONCAMPAIGNS_STATUS'						=> 'Status',
 	'DONATIONCAMPAIGNS_EDIT'						=> 'Kampagne bearbeiten',
