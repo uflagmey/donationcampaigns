@@ -99,6 +99,18 @@ services:
             - '@uflagmey.donationcampaigns.campaign_repository'
             - '@uflagmey.donationcampaigns.donation_repository'
 
+    # Which campaigns the board-wide list shows to the current viewer
+    # (ADR-018): f_read minus locked password forums, plus core's topic
+    # visibility. Read only.
+    uflagmey.donationcampaigns.campaign_list_service:
+        class: uflagmey\donationcampaigns\service\campaign_list_service
+        arguments:
+            - '@auth'
+            - '@content.visibility'
+            - '@user'
+            - '@uflagmey.donationcampaigns.campaign_list_repository'
+            - '@uflagmey.donationcampaigns.donation_repository'
+
     uflagmey.donationcampaigns.access:
         class: uflagmey\donationcampaigns\service\access
         arguments:
