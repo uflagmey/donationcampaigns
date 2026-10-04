@@ -1,31 +1,31 @@
-<!-- INCLUDE overall_header.html -->
+{% include 'overall_header.html' %}
 
 <div class="panel">
 	<div class="inner">
 
-	<h2 class="donationcampaigns-heading"><!-- IF S_DONATIONCAMPAIGNS_ADD -->{L_DONATIONCAMPAIGNS_ADD_CAMPAIGN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_EDIT_CAMPAIGN}<!-- ENDIF --></h2>
-	<p>{L_DONATIONCAMPAIGNS_FORM_EXPLAIN}</p>
+	<h2 class="donationcampaigns-heading">{% if S_DONATIONCAMPAIGNS_ADD %}{{ lang('DONATIONCAMPAIGNS_ADD_CAMPAIGN') }}{% else %}{{ lang('DONATIONCAMPAIGNS_EDIT_CAMPAIGN') }}{% endif %}</h2>
+	<p>{{ lang('DONATIONCAMPAIGNS_FORM_EXPLAIN') }}</p>
 
-	<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+	{% if S_DONATIONCAMPAIGNS_ERROR %}
 		<div class="errorbox">
-			<h3>{L_ERROR}</h3>
-			<!-- BEGIN donationcampaigns_error --><p>{donationcampaigns_error.MESSAGE|e}</p><!-- END donationcampaigns_error -->
+			<h3>{{ lang('ERROR') }}</h3>
+			{% for donationcampaigns_error in loops.donationcampaigns_error %}<p>{{ donationcampaigns_error.MESSAGE|e }}</p>{% endfor %}
 		</div>
-	<!-- ENDIF -->
+	{% endif %}
 
-	<form id="donationcampaigns_campaign" method="post" action="{U_ACTION}">
+	<form id="donationcampaigns_campaign" method="post" action="{{ U_ACTION }}">
 	<fieldset>
 		{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': ''} %}
 	</fieldset>
 
 	<fieldset class="submit-buttons">
-		<input type="submit" name="submit" id="submit" class="button1" value="{L_SUBMIT}">&nbsp;
-		<input type="submit" name="cancel" class="button2" value="{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}">
-		{S_FORM_TOKEN}
+		<input type="submit" name="submit" id="submit" class="button1" value="{{ lang('SUBMIT') }}">&nbsp;
+		<input type="submit" name="cancel" class="button2" value="{{ lang('DONATIONCAMPAIGNS_BACK_TO_TOPIC') }}">
+		{{ S_FORM_TOKEN }}
 	</fieldset>
 	</form>
 
 	</div>
 </div>
 
-<!-- INCLUDE overall_footer.html -->
+{% include 'overall_footer.html' %}

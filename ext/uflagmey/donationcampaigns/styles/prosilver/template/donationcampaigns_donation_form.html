@@ -1,57 +1,57 @@
-<!-- INCLUDE overall_header.html -->
+{% include 'overall_header.html' %}
 
 <div class="panel">
 	<div class="inner">
 
-	<h2 class="donationcampaigns-heading"><!-- IF S_DONATIONCAMPAIGNS_ADD -->{L_DONATIONCAMPAIGNS_ADD_DONATION}<!-- ELSE -->{L_DONATIONCAMPAIGNS_EDIT_DONATION}<!-- ENDIF --></h2>
-	<p>{L_DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN}</p>
+	<h2 class="donationcampaigns-heading">{% if S_DONATIONCAMPAIGNS_ADD %}{{ lang('DONATIONCAMPAIGNS_ADD_DONATION') }}{% else %}{{ lang('DONATIONCAMPAIGNS_EDIT_DONATION') }}{% endif %}</h2>
+	<p>{{ lang('DONATIONCAMPAIGNS_DONATION_FORM_EXPLAIN') }}</p>
 
-	<p><strong>{L_DONATIONCAMPAIGNS_LIST_CAMPAIGN}{L_COLON}</strong> {DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}</p>
+	<p><strong>{{ lang('DONATIONCAMPAIGNS_LIST_CAMPAIGN') }}{{ lang('COLON') }}</strong> {{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}</p>
 
-	<!-- IF S_DONATIONCAMPAIGNS_ERROR -->
+	{% if S_DONATIONCAMPAIGNS_ERROR %}
 		<div class="errorbox">
-			<h3>{L_ERROR}</h3>
-			<!-- BEGIN donationcampaigns_error --><p>{donationcampaigns_error.MESSAGE|e}</p><!-- END donationcampaigns_error -->
+			<h3>{{ lang('ERROR') }}</h3>
+			{% for donationcampaigns_error in loops.donationcampaigns_error %}<p>{{ donationcampaigns_error.MESSAGE|e }}</p>{% endfor %}
 		</div>
-	<!-- ENDIF -->
+	{% endif %}
 
-	<form id="donationcampaigns_donation" method="post" action="{U_ACTION}">
+	<form id="donationcampaigns_donation" method="post" action="{{ U_ACTION }}">
 	<fieldset>
-		<legend>{L_DONATIONCAMPAIGNS_RECEIPT}</legend>
+		<legend>{{ lang('DONATIONCAMPAIGNS_RECEIPT') }}</legend>
 
 		<dl>
-			<dt><label for="donation_amount">{L_DONATIONCAMPAIGNS_AMOUNT}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_AMOUNT_EXPLAIN}</span></dt>
+			<dt><label for="donation_amount">{{ lang('DONATIONCAMPAIGNS_AMOUNT') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_AMOUNT_EXPLAIN') }}</span></dt>
 			{# The currency is shown beside the field, not inside it: the input
 			   carries only the number the parser will read. Same pattern as the
 			   campaign target field. type="text", not number, so a comma decimal
 			   is not silently dropped. #}
-			<dd><!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --><strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong> <!-- ENDIF --><input id="donation_amount" type="text" name="donation_amount" size="15" value="{DONATIONCAMPAIGNS_DONATION_AMOUNT|e}"><!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE --> <strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong><!-- ENDIF --></dd>
+			<dd>{% if S_DONATIONCAMPAIGNS_SYMBOL_BEFORE %}<strong>{{ DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e }}</strong> {% endif %}<input id="donation_amount" type="text" name="donation_amount" size="15" value="{{ DONATIONCAMPAIGNS_DONATION_AMOUNT|e }}">{% if not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE %} <strong>{{ DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e }}</strong>{% endif %}</dd>
 		</dl>
 
 		<dl>
-			<dt><label for="donation_time">{L_DONATIONCAMPAIGNS_RECEIVED_ON}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_RECEIVED_ON_EXPLAIN}</span></dt>
-			<dd><input id="donation_time" type="date" name="donation_time" value="{DONATIONCAMPAIGNS_DONATION_TIME|e}"></dd>
+			<dt><label for="donation_time">{{ lang('DONATIONCAMPAIGNS_RECEIVED_ON') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_RECEIVED_ON_EXPLAIN') }}</span></dt>
+			<dd><input id="donation_time" type="date" name="donation_time" value="{{ DONATIONCAMPAIGNS_DONATION_TIME|e }}"></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="donor_name">{L_DONATIONCAMPAIGNS_DONOR}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_DONOR_EXPLAIN}</span></dt>
-			<dd><input id="donor_name" type="text" name="donor_name" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_DONOR_NAME|e}"></dd>
+			<dt><label for="donor_name">{{ lang('DONATIONCAMPAIGNS_DONOR') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_DONOR_EXPLAIN') }}</span></dt>
+			<dd><input id="donor_name" type="text" name="donor_name" size="45" maxlength="255" value="{{ DONATIONCAMPAIGNS_DONOR_NAME|e }}"></dd>
 		</dl>
 
 		<dl>
-			<dt><label for="donation_public">{L_DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY}{L_COLON}</label><br><span>{L_DONATIONCAMPAIGNS_PUBLIC_EXPLAIN}</span></dt>
-			<dd><input id="donation_public" type="checkbox" class="radio" name="donation_public" value="1"<!-- IF S_DONATIONCAMPAIGNS_PUBLIC --> checked<!-- ENDIF --> ></dd>
+			<dt><label for="donation_public">{{ lang('DONATIONCAMPAIGNS_SHOW_DONOR_PUBLICLY') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_PUBLIC_EXPLAIN') }}</span></dt>
+			<dd><input id="donation_public" type="checkbox" class="radio" name="donation_public" value="1"{% if S_DONATIONCAMPAIGNS_PUBLIC %} checked{% endif %} ></dd>
 		</dl>
 	</fieldset>
 
 	<fieldset class="submit-buttons">
-		<input type="submit" name="submit" id="submit" class="button1" value="{L_SUBMIT}">&nbsp;
-		<input type="submit" name="cancel" class="button2" value="{L_DONATIONCAMPAIGNS_BACK_TO_TOPIC}">
-		{S_FORM_TOKEN}
+		<input type="submit" name="submit" id="submit" class="button1" value="{{ lang('SUBMIT') }}">&nbsp;
+		<input type="submit" name="cancel" class="button2" value="{{ lang('DONATIONCAMPAIGNS_BACK_TO_TOPIC') }}">
+		{{ S_FORM_TOKEN }}
 	</fieldset>
 	</form>
 
 	</div>
 </div>
 
-<!-- INCLUDE overall_footer.html -->
+{% include 'overall_footer.html' %}
