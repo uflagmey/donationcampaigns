@@ -6,11 +6,11 @@ post. Donations are **confirmed receipts recorded from the topic by an
 administrator or any user or group authorised for that forum**; the extension processes no
 payments and stores no payment data.
 
-> **Status:** `1.0.0-beta2` — public beta (GitHub pre-release). It implements
-> the review feedback on beta1: forum permissions that can be granted to any
-> group, a manage button in the campaign box, donation dates, and the currency
-> symbol before or after the amount. Not yet submitted to the phpBB Extension
-> Database.
+> **Status:** `1.0.0-beta3` — public beta (GitHub pre-release). It implements
+> the remaining review feedback: an optional board-wide campaign list and
+> creating a campaign together with a new topic from the posting form. The
+> release package passes the phpBB Extension Check without findings. Not yet
+> submitted to the phpBB Extension Database.
 
 ## The extension lives here
 
