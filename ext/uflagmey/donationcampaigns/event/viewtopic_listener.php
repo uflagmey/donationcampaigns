@@ -47,15 +47,6 @@ use uflagmey\donationcampaigns\service\access;
  */
 class viewtopic_listener implements EventSubscriberInterface
 {
-	/**
-	 * Granularity of the progress bar, in percent.
-	 *
-	 * The width comes from a stylesheet class rather than an inline style
-	 * (ADR-013 forbids inline CSS), so there is one class per step and the
-	 * emitted value must always land on one of them.
-	 */
-	const PERCENT_STEP = 5;
-
 	/** @var campaign_service */
 	protected $campaign_service;
 
@@ -146,13 +137,13 @@ class viewtopic_listener implements EventSubscriberInterface
 
 		$target = $campaign['target_amount'];
 		$collected = $campaign['collected_amount'];
-		$percent = $this->percentage($collected, $target);
+		$progress = $this->campaign_service->progress($collected, $target);
 
 		$this->template->assign_vars(array(
 			'S_DONATIONCAMPAIGNS_SHOW'			=> true,
 			'S_DONATIONCAMPAIGNS_SHOW_DONORS'	=> $campaign['show_donor_names'],
 			'S_DONATIONCAMPAIGNS_SHOW_COUNT'	=> $campaign['show_donation_count'],
-			'S_DONATIONCAMPAIGNS_REACHED'		=> ($collected >= $target),
+			'S_DONATIONCAMPAIGNS_REACHED'		=> $progress['reached'],
 
 			'DONATIONCAMPAIGNS_CAMPAIGN_TITLE'	=> $campaign['campaign_title'],
 			'DONATIONCAMPAIGNS_DESC'			=> $this->render_description($campaign),
@@ -164,12 +155,12 @@ class viewtopic_listener implements EventSubscriberInterface
 			// The real figure, which may exceed 100. It is what the page shows
 			// and what aria-valuetext announces, so sighted and screen-reader
 			// users hear the same number.
-			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> $percent,
+			'DONATIONCAMPAIGNS_PERCENT_RAW'		=> $progress['percent'],
 			// ...and the clamped one, for aria-valuenow. ARIA requires
 			// valuenow to sit within valuemin/valuemax, so an over-target
 			// campaign cannot report 250 against a max of 100.
-			'DONATIONCAMPAIGNS_PERCENT'			=> min(100, $percent),
-			'DONATIONCAMPAIGNS_PERCENT_STEP'	=> $this->bar_step($percent),
+			'DONATIONCAMPAIGNS_PERCENT'			=> $progress['percent_capped'],
+			'DONATIONCAMPAIGNS_PERCENT_STEP'	=> $progress['step'],
 
 			'DONATIONCAMPAIGNS_URL'				=> $this->safe_url($campaign['external_url']),
 			// The button's label. Plain text the administrator chose, and
@@ -311,45 +302,6 @@ class viewtopic_listener implements EventSubscriberInterface
 				$this->language->lang('DONATIONCAMPAIGNS_AND_OTHERS', $remaining)
 			);
 		}
-	}
-
-	/**
-	 * Integer percentage of the target that has been collected.
-	 *
-	 * Integer arithmetic throughout: these are money values, and money never
-	 * touches a float in this extension. intdiv() truncates, which is the
-	 * honest direction — 99.9% of a target should not read as complete.
-	 *
-	 * The zero-target guard exists even though validation forbids a zero
-	 * target, because a hand-edited or pre-upgrade row must not produce a
-	 * division by zero on a public page.
-	 *
-	 * @param int $collected
-	 * @param int $target
-	 * @return int May exceed 100
-	 */
-	protected function percentage($collected, $target)
-	{
-		if ($target <= 0)
-		{
-			return 0;
-		}
-
-		return intdiv($collected * 100, $target);
-	}
-
-	/**
-	 * The bar's width class, rounded DOWN to the nearest step so that the bar
-	 * never claims more progress than has been made.
-	 *
-	 * @param int $percent
-	 * @return int A multiple of PERCENT_STEP, between 0 and 100
-	 */
-	protected function bar_step($percent)
-	{
-		$capped = min(100, max(0, $percent));
-
-		return intdiv($capped, self::PERCENT_STEP) * self::PERCENT_STEP;
 	}
 
 	/**

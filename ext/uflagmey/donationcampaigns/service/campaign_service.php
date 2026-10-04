@@ -29,6 +29,7 @@ use uflagmey\donationcampaigns\exception\donationcampaigns_exception;
  *   validate()               none — reads only
  *   create_campaign()        none — one INSERT, atomic by itself
  *   update_campaign()        none — one UPDATE, atomic by itself
+ *   progress()               none — pure arithmetic, no I/O
  *   delete_campaign()        OWN — two statements across two tables
  *   purge_for_topics()       OWN — resolve, delete donations, delete campaigns
  *   purge_for_forum()        delegates to purge_for_topics(); opens none itself
@@ -100,6 +101,15 @@ class campaign_service
 	 * we happen to know about.
 	 */
 	const ALLOWED_URL_SCHEMES = array('http', 'https');
+
+	/**
+	 * Granularity of the progress bar, in percent.
+	 *
+	 * The width comes from a stylesheet class rather than an inline style
+	 * (ADR-013 forbids inline CSS), so there is one class per step and the
+	 * emitted value must always land on one of them.
+	 */
+	const PERCENT_STEP = 5;
 
 	/** @var \phpbb\db\driver\driver_interface Injected ONLY to open transactions */
 	protected $db;
@@ -307,6 +317,50 @@ class campaign_service
 	public function count_campaigns()
 	{
 		return $this->campaigns->count_all();
+	}
+
+	// ---------------------------------------------------------------- progress
+
+	/**
+	 * How far a campaign is towards its target — the ONE implementation.
+	 *
+	 * The topic box and the board list both show these figures; computing them
+	 * in one place keeps the two from ever disagreeing.
+	 *
+	 * Integer arithmetic throughout: these are money values, and money never
+	 * touches a float in this extension. intdiv() truncates, which is the
+	 * honest direction — 99.9% of a target should not read as complete. The
+	 * largest storable amount (UINT) times 100 still fits a 64-bit integer.
+	 *
+	 * The zero-target guard exists even though validation forbids a zero
+	 * target, because a hand-edited or pre-upgrade row must not produce a
+	 * division by zero on a public page, nor claim the target was reached.
+	 *
+	 * TRANSACTION BOUNDARY: none. No I/O.
+	 *
+	 * @param int $collected Minor units
+	 * @param int $target    Minor units
+	 * @return array{percent:int, percent_capped:int, step:int, reached:bool}
+	 *   percent        the real figure, may exceed 100 — shown and announced
+	 *   percent_capped at most 100 — ARIA requires valuenow within valuemax
+	 *   step           the bar's width class, rounded DOWN to PERCENT_STEP so
+	 *                  the bar never claims more progress than has been made
+	 *   reached        the target is met (never for a zero target)
+	 */
+	public function progress($collected, $target)
+	{
+		$collected = (int) $collected;
+		$target = (int) $target;
+
+		$percent = ($target > 0) ? intdiv($collected * 100, $target) : 0;
+		$capped = min(100, max(0, $percent));
+
+		return array(
+			'percent'			=> $percent,
+			'percent_capped'	=> min(100, $percent),
+			'step'				=> intdiv($capped, self::PERCENT_STEP) * self::PERCENT_STEP,
+			'reached'			=> ($target > 0 && $collected >= $target),
+		);
 	}
 
 	// ------------------------------------------------------------- validation

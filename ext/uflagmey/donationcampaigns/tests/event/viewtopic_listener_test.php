@@ -382,7 +382,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$this->assertSame($percent, $this->template->vars['DONATIONCAMPAIGNS_PERCENT_RAW'], 'The real percentage must be truthful');
 
-		// bar_step() is now the only place the 100 cap lives.
+		// campaign_service::progress() is the only place the 100 cap lives.
 		$this->assertSame($step, $this->template->vars['DONATIONCAMPAIGNS_PERCENT_STEP']);
 		$this->assertLessThanOrEqual(100, $this->template->vars['DONATIONCAMPAIGNS_PERCENT_STEP'], 'The bar exceeded a full width');
 
@@ -423,6 +423,8 @@ class viewtopic_listener_test extends \phpbb_test_case
 
 		$this->assertSame(0, $this->template->vars['DONATIONCAMPAIGNS_PERCENT_STEP']);
 		$this->assertSame(0, $this->template->vars['DONATIONCAMPAIGNS_PERCENT_RAW']);
+		// A hand-edited zero target is not "reached" (beta3, owner decision Q2).
+		$this->assertFalse($this->template->vars['S_DONATIONCAMPAIGNS_REACHED']);
 	}
 
 	public function test_the_target_reached_flag_is_set_at_and_above_target()
@@ -901,7 +903,7 @@ class viewtopic_listener_test extends \phpbb_test_case
 	 * Nothing rendered it once aria-valuenow moved to the real figure, so it
 	 * was removed and the invariant it carried now lives here, against the
 	 * two things that actually still enforce and express it: the width class
-	 * bar_step() chooses, and the markup itself.
+	 * campaign_service::progress() chooses, and the markup itself.
 	 *
 	 * @dataProvider over_target_data
 	 */
