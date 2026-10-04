@@ -30,6 +30,16 @@ services:
             - '@dbal.conn'
             - '%core.table_prefix%topics'
 
+    # Read model for the board-wide list (ADR-018): joins our campaigns with
+    # core's topics and forums so the visibility filter runs in SQL.
+    uflagmey.donationcampaigns.campaign_list_repository:
+        class: uflagmey\donationcampaigns\repository\campaign_list_repository
+        arguments:
+            - '@dbal.conn'
+            - '%uflagmey.donationcampaigns.tables.campaigns%'
+            - '%core.table_prefix%topics'
+            - '%core.table_prefix%forums'
+
     uflagmey.donationcampaigns.currency_formatter:
         class: uflagmey\donationcampaigns\service\currency_formatter
         arguments:
