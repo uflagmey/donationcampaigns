@@ -229,9 +229,10 @@ class architecture_test extends \phpbb_test_case
 
 		foreach ($files as $file)
 		{
-			preg_match_all('/\{L_([A-Z0-9_]+)\}/', file_get_contents($file), $matches);
+			// {L_KEY} in legacy markup, lang('KEY') in Twig partials.
+			preg_match_all('/\{L_([A-Z0-9_]+)\}|lang\(\'([A-Z0-9_]+)\'\)/', file_get_contents($file), $matches);
 
-			foreach (array_unique($matches[1]) as $key)
+			foreach (array_unique(array_filter(array_merge($matches[1], $matches[2]))) as $key)
 			{
 				$this->assertArrayHasKey(
 					$key,

@@ -22,6 +22,15 @@ namespace uflagmey\donationcampaigns\tests;
  * Conditionals are ignored — their branches are left in place — because what
  * is being asserted is how a value is ESCAPED, not which branch renders. The
  * real templates are additionally exercised on the Docker board.
+ *
+ * One Twig construct is understood, because shared markup depends on it:
+ *
+ *   {% include '@uflagmey_donationcampaigns/x.html' with {'a': VAR} only %}
+ *
+ * The partial is inlined, {{ a }} becomes {VAR} and {{ lang('KEY') }} becomes
+ * {L_KEY}, so the rest of the renderer treats it like any legacy markup —
+ * inside a BEGIN loop, too. Anything else in {{ }} fails loudly rather than
+ * rendering something real Twig would not.
  */
 class template_renderer
 {
@@ -33,9 +42,40 @@ class template_renderer
 	 */
 	public static function render($template, array $vars, array $blocks = array())
 	{
-		$html = self::render_blocks($template, $blocks);
+		$html = self::render_blocks(self::inline_includes($template), $blocks);
 
 		return self::substitute($html, $vars);
+	}
+
+	/**
+	 * Inline the extension's own includes, mapping their variables.
+	 *
+	 * @param string $html
+	 * @return string
+	 */
+	public static function inline_includes($html)
+	{
+		$pattern = "/\\{% include '@uflagmey_donationcampaigns\\/([a-z_]+\\.html)' with \\{(.*?)\\} only %\\}/s";
+
+		return preg_replace_callback($pattern, function ($include) {
+			$partial = file_get_contents(dirname(__DIR__) . '/styles/prosilver/template/' . $include[1]);
+
+			preg_match_all("/'([a-z_]+)'\\s*:\\s*([A-Za-z0-9_.]+)/", $include[2], $pairs, PREG_SET_ORDER);
+
+			foreach ($pairs as $pair)
+			{
+				$partial = str_replace('{{ ' . $pair[1] . ' }}', '{' . $pair[2] . '}', $partial);
+			}
+
+			$partial = preg_replace("/\\{\\{ lang\\('([A-Z0-9_]+)'\\) \\}\\}/", '{L_$1}', $partial);
+
+			if (strpos($partial, '{{') !== false)
+			{
+				throw new \RuntimeException($include[1] . ' uses a Twig expression the test renderer does not model');
+			}
+
+			return rtrim($partial, "\n");
+		}, $html);
 	}
 
 	/**

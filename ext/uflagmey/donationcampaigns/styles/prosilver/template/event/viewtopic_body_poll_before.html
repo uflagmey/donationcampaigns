@@ -14,9 +14,7 @@
 			<div class="donationcampaigns-desc">{DONATIONCAMPAIGNS_DESC}</div>
 		<!-- ENDIF -->
 
-		<div class="donationcampaigns-progress" role="progressbar" aria-valuenow="{DONATIONCAMPAIGNS_PERCENT}" aria-valuemin="0" aria-valuemax="100" aria-valuetext="{DONATIONCAMPAIGNS_PERCENT_RAW}%" aria-label="{L_DONATIONCAMPAIGNS_PROGRESS_LABEL}">
-			<span class="donationcampaigns-bar donationcampaigns-bar--{DONATIONCAMPAIGNS_PERCENT_STEP}"></span>
-		</div>
+		{% include '@uflagmey_donationcampaigns/donationcampaigns_progress.html' with {'percent': DONATIONCAMPAIGNS_PERCENT, 'percent_raw': DONATIONCAMPAIGNS_PERCENT_RAW, 'step': DONATIONCAMPAIGNS_PERCENT_STEP} only %}
 
 		<p class="donationcampaigns-figures">
 			{L_DONATIONCAMPAIGNS_COLLECTED}{L_COLON} <strong>{DONATIONCAMPAIGNS_COLLECTED|e}</strong>

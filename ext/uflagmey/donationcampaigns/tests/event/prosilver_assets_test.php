@@ -37,11 +37,14 @@ class prosilver_assets_test extends \phpbb_test_case
 	}
 
 	/**
+	 * The box as it renders: the shared progress partial inlined, so every
+	 * structural rule below also covers the markup the box includes.
+	 *
 	 * @return string
 	 */
 	protected function template()
 	{
-		return file_get_contents($this->template_file);
+		return \uflagmey\donationcampaigns\tests\template_renderer::inline_includes(file_get_contents($this->template_file));
 	}
 
 	/**
@@ -315,6 +318,40 @@ class prosilver_assets_test extends \phpbb_test_case
 		$this->assertStringContainsString('{DONATIONCAMPAIGNS_PERCENT_RAW}%', $template);
 		$this->assertStringContainsString('aria-valuemin="0"', $template);
 		$this->assertStringContainsString('aria-valuemax="100"', $template);
+	}
+
+	/**
+	 * The bar exists once (beta3): the box and the board list include the
+	 * same partial, so they cannot drift apart.
+	 */
+	public function test_the_progress_bar_markup_exists_only_in_its_partial()
+	{
+		$partial = $this->package . '/styles/prosilver/template/donationcampaigns_progress.html';
+		$this->assertFileExists($partial);
+		$this->assertStringContainsString('role="progressbar"', file_get_contents($partial));
+
+		$files = array_merge(
+			glob($this->package . '/styles/prosilver/template/*.html'),
+			glob($this->package . '/styles/prosilver/template/event/*.html')
+		);
+
+		foreach ($files as $file)
+		{
+			if ($file === $partial)
+			{
+				continue;
+			}
+
+			$this->assertStringNotContainsString('role="progressbar"', file_get_contents($file), basename($file) . ' carries its own copy of the progress bar');
+		}
+	}
+
+	public function test_the_box_includes_the_shared_progress_bar()
+	{
+		$this->assertStringContainsString(
+			"{% include '@uflagmey_donationcampaigns/donationcampaigns_progress.html' with {'percent': DONATIONCAMPAIGNS_PERCENT, 'percent_raw': DONATIONCAMPAIGNS_PERCENT_RAW, 'step': DONATIONCAMPAIGNS_PERCENT_STEP} only %}",
+			file_get_contents($this->template_file)
+		);
 	}
 
 	/**

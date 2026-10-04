@@ -1,0 +1,7 @@
+{# The progress bar, shared by the topic box and the board-wide list (beta3).
+   Included with: percent (capped at 100, for aria-valuenow), percent_raw (the
+   real figure, shown and announced), step (the width class, a multiple of 5).
+   All three are integers from campaign_service::progress(). #}
+<div class="donationcampaigns-progress" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100" aria-valuetext="{{ percent_raw }}%" aria-label="{{ lang('DONATIONCAMPAIGNS_PROGRESS_LABEL') }}">
+	<span class="donationcampaigns-bar donationcampaigns-bar--{{ step }}"></span>
+</div>
