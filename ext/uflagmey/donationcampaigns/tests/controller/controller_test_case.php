@@ -84,6 +84,9 @@ abstract class controller_test_case extends \phpbb_test_case
 	/** @var array<string, true|int[]> the current actor's ACL grants */
 	protected $grants = array();
 
+	/** @var string phpBB's PHP file extension as the container injects it (%core.php_ext%) */
+	protected $php_ext = 'php';
+
 	public function setUp(): void
 	{
 		parent::setUp();
@@ -198,7 +201,8 @@ abstract class controller_test_case extends \phpbb_test_case
 			new topic_repository($this->db, 'phpbb_topics'),
 			new currency_formatter($language, $this->config),
 			\uflagmey\donationcampaigns\tests\utc_date_formatter::create($language),
-			new \uflagmey\donationcampaigns\service\campaign_form($request, new currency_formatter($language, $this->config), $this->config, $language)
+			new \uflagmey\donationcampaigns\service\campaign_form($request, new currency_formatter($language, $this->config), $this->config, $language),
+			$this->php_ext
 		);
 
 		$this->donation_controller = new donation_controller(
@@ -215,7 +219,8 @@ abstract class controller_test_case extends \phpbb_test_case
 			$this->donations,
 			$this->campaign_service,
 			new topic_repository($this->db, 'phpbb_topics'),
-			new currency_formatter($language, $this->config)
+			new currency_formatter($language, $this->config),
+			$this->php_ext
 		);
 	}
 

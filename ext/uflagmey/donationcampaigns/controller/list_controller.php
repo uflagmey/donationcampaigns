@@ -67,6 +67,9 @@ class list_controller
 	/** @var currency_formatter */
 	protected $formatter;
 
+	/** @var string phpBB's PHP file extension (%core.php_ext%) */
+	protected $php_ext;
+
 	public function __construct(
 		\phpbb\controller\helper $helper,
 		\phpbb\path_helper $path_helper,
@@ -77,7 +80,8 @@ class list_controller
 		\phpbb\pagination $pagination,
 		campaign_list_service $list,
 		campaign_service $campaigns,
-		currency_formatter $formatter
+		currency_formatter $formatter,
+		$php_ext
 	)
 	{
 		$this->helper = $helper;
@@ -90,6 +94,7 @@ class list_controller
 		$this->list = $list;
 		$this->campaigns = $campaigns;
 		$this->formatter = $formatter;
+		$this->php_ext = $php_ext;
 	}
 
 	/**
@@ -166,8 +171,6 @@ class list_controller
 	 */
 	protected function board_url($page, $params)
 	{
-		global $phpEx;
-
-		return append_sid($this->path_helper->get_web_root_path() . $page . '.' . $phpEx, $params);
+		return append_sid($this->path_helper->get_web_root_path() . $page . '.' . $this->php_ext, $params);
 	}
 }

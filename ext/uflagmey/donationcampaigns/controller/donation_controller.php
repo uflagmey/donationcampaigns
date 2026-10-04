@@ -84,6 +84,9 @@ class donation_controller
 	/** @var \uflagmey\donationcampaigns\service\currency_formatter */
 	protected $formatter;
 
+	/** @var string phpBB's PHP file extension (%core.php_ext%) */
+	protected $php_ext;
+
 	public function __construct(
 		\phpbb\controller\helper $helper,
 		\phpbb\path_helper $path_helper,
@@ -98,7 +101,8 @@ class donation_controller
 		\uflagmey\donationcampaigns\repository\donation_repository $donations,
 		\uflagmey\donationcampaigns\service\campaign_service $campaign_service,
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
-		\uflagmey\donationcampaigns\service\currency_formatter $formatter
+		\uflagmey\donationcampaigns\service\currency_formatter $formatter,
+		$php_ext
 	)
 	{
 		$this->helper = $helper;
@@ -115,6 +119,7 @@ class donation_controller
 		$this->campaign_service = $campaign_service;
 		$this->topics = $topics;
 		$this->formatter = $formatter;
+		$this->php_ext = $php_ext;
 	}
 
 	/**
@@ -578,16 +583,6 @@ class donation_controller
 		// controller is served under app.php/donationcampaigns/..., where a bare
 		// "viewtopic.php" would resolve against that path and 404;
 		// get_web_root_path() returns the correct prefix back to the board root.
-		return append_sid($this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext(), 't=' . (int) $topic_id);
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function php_ext()
-	{
-		global $phpEx;
-
-		return $phpEx;
+		return append_sid($this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext, 't=' . (int) $topic_id);
 	}
 }

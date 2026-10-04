@@ -721,6 +721,26 @@ class campaign_controller_test extends controller_test_case
 	}
 
 	/**
+	 * The file extension in the landing's topic link and in the Cancel
+	 * redirect is the one the container injects (%core.php_ext%), not a
+	 * global the controller reaches for.
+	 */
+	public function test_topic_links_use_the_injected_php_extension()
+	{
+		$this->php_ext = 'phpx';
+		$this->as_manager_a();
+		$this->request();
+
+		$this->controller->manage(10);
+		$this->assertSame(fake_path_helper::WEB_ROOT . 'viewtopic.phpx', $this->template->vars['U_VIEWTOPIC']);
+
+		global $request;
+		$request = new \phpbb_mock_request(array(), array('cancel' => 'Cancel'));
+		$this->rebuild();
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT . 'viewtopic.phpx?', $this->controller->edit(1)->getTargetUrl());
+	}
+
+	/**
 	 * Cancel is a submit button that abandons the form and returns to the topic —
 	 * writing nothing — like phpBB's own forms. The redirect target is built from
 	 * the web root so it resolves from under app.php/...

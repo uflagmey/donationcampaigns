@@ -46,6 +46,9 @@ class list_controller_test extends campaign_list_test_case
 	/** @var array */
 	protected $grants;
 
+	/** @var string phpBB's PHP file extension as the container injects it (%core.php_ext%) */
+	protected $php_ext = 'php';
+
 	public function setUp(): void
 	{
 		parent::setUp();
@@ -121,7 +124,8 @@ class list_controller_test extends campaign_list_test_case
 			$this->pagination,
 			$list,
 			$campaigns,
-			new currency_formatter($this->language, $this->config)
+			new currency_formatter($this->language, $this->config),
+			$this->php_ext
 		);
 
 		return $controller->display();
@@ -226,6 +230,20 @@ class list_controller_test extends campaign_list_test_case
 
 		$this->assertSame(fake_path_helper::WEB_ROOT . 'viewtopic.php?t=10', $row['U_TOPIC']);
 		$this->assertSame(fake_path_helper::WEB_ROOT . 'viewforum.php?f=' . self::FORUM_A, $row['U_FORUM']);
+	}
+
+	/**
+	 * The file extension is the one the container injects (%core.php_ext%),
+	 * not a global the controller reaches for.
+	 */
+	public function test_row_links_use_the_injected_php_extension()
+	{
+		$this->php_ext = 'phpx';
+		$this->display();
+		$row = $this->rows()[1];
+
+		$this->assertSame(fake_path_helper::WEB_ROOT . 'viewtopic.phpx?t=10', $row['U_TOPIC']);
+		$this->assertSame(fake_path_helper::WEB_ROOT . 'viewforum.phpx?f=' . self::FORUM_A, $row['U_FORUM']);
 	}
 
 	public function test_amounts_carry_the_currency_symbol()

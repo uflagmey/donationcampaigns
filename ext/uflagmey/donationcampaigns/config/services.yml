@@ -177,6 +177,7 @@ services:
             - '@uflagmey.donationcampaigns.currency_formatter'
             - '@uflagmey.donationcampaigns.date_formatter'
             - '@uflagmey.donationcampaigns.campaign_form'
+            - '%core.php_ext%'
 
     uflagmey.donationcampaigns.controller.donation:
         class: uflagmey\donationcampaigns\controller\donation_controller
@@ -195,6 +196,7 @@ services:
             - '@uflagmey.donationcampaigns.campaign_service'
             - '@uflagmey.donationcampaigns.topic_repository'
             - '@uflagmey.donationcampaigns.currency_formatter'
+            - '%core.php_ext%'
 
     # The board-wide campaign list (ADR-018). Read only: no form, no write.
     uflagmey.donationcampaigns.controller.list:
@@ -210,6 +212,7 @@ services:
             - '@uflagmey.donationcampaigns.campaign_list_service'
             - '@uflagmey.donationcampaigns.campaign_service'
             - '@uflagmey.donationcampaigns.currency_formatter'
+            - '%core.php_ext%'
 
     uflagmey.donationcampaigns.description_formatter:
         class: uflagmey\donationcampaigns\service\description_formatter

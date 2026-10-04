@@ -90,6 +90,9 @@ class campaign_controller
 	/** @var \uflagmey\donationcampaigns\service\campaign_form */
 	protected $form;
 
+	/** @var string phpBB's PHP file extension (%core.php_ext%) */
+	protected $php_ext;
+
 	public function __construct(
 		\phpbb\controller\helper $helper,
 		\phpbb\path_helper $path_helper,
@@ -106,7 +109,8 @@ class campaign_controller
 		\uflagmey\donationcampaigns\repository\topic_repository $topics,
 		\uflagmey\donationcampaigns\service\currency_formatter $formatter,
 		\uflagmey\donationcampaigns\service\date_formatter $dates,
-		\uflagmey\donationcampaigns\service\campaign_form $form
+		\uflagmey\donationcampaigns\service\campaign_form $form,
+		$php_ext
 	)
 	{
 		$this->helper = $helper;
@@ -125,6 +129,7 @@ class campaign_controller
 		$this->formatter = $formatter;
 		$this->dates = $dates;
 		$this->form = $form;
+		$this->php_ext = $php_ext;
 	}
 
 	/**
@@ -557,7 +562,7 @@ class campaign_controller
 			// is split into a query-free action and a hidden topic id — a GET form
 			// discards a query string on its action.
 			'DONATIONCAMPAIGNS_TOPIC_ID'	=> (int) $topic['topic_id'],
-			'U_VIEWTOPIC'				=> $this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext(),
+			'U_VIEWTOPIC'				=> $this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext,
 			'U_DONATIONCAMPAIGNS_TOPIC'	=> $this->topic_url($topic['topic_id']),
 			'U_EDIT'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_edit', array('campaign_id' => $campaign_id)),
 			'U_ENABLE'					=> $this->helper->route('uflagmey_donationcampaigns_campaign_enable', array('campaign_id' => $campaign_id)),
@@ -773,16 +778,6 @@ class campaign_controller
 		// controller is served under app.php/donationcampaigns/..., where a bare
 		// "viewtopic.php" would resolve against that path and 404;
 		// get_web_root_path() returns the correct prefix back to the board root.
-		return append_sid($this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext(), 't=' . (int) $topic_id);
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function php_ext()
-	{
-		global $phpEx;
-
-		return $phpEx;
+		return append_sid($this->path_helper->get_web_root_path() . 'viewtopic.' . $this->php_ext, 't=' . (int) $topic_id);
 	}
 }

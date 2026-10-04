@@ -565,6 +565,22 @@ class donation_controller_test extends controller_test_case
 		$this->assertSame($before, $this->donations->count_by_campaign(1), 'Cancel must not record a donation');
 	}
 
+	/**
+	 * The Cancel redirect uses the PHP file extension the container injects
+	 * (%core.php_ext%), not a global the controller reaches for.
+	 */
+	public function test_the_cancel_redirect_uses_the_injected_php_extension()
+	{
+		$this->php_ext = 'phpx';
+		$this->as_donations_a();
+
+		global $request;
+		$request = new \phpbb_mock_request(array(), array('cancel' => 'Cancel'));
+		$this->rebuild();
+
+		$this->assertStringStartsWith(fake_path_helper::WEB_ROOT . 'viewtopic.phpx?', $this->donation_controller->add(1)->getTargetUrl());
+	}
+
 	public function test_a_donor_name_in_a_delete_log_entry_is_escaped()
 	{
 		$this->donations->update(1, array('donor_name' => '<script>alert(1)</script>'));
