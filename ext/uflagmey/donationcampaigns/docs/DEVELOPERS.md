@@ -234,16 +234,27 @@ Verified against core source, not inferred from names.
 | `S_DISPLAY_TOPIC_TOOLS` | `viewtopic_topic_tools.html:1` | Referenced by the wrapper condition and assigned **nowhere in core PHP**. It exists so an extension can force the dropdown open when no core tool would have |
 | `core.permissions` | — | Declares the three permissions (`a_donationcampaigns` plus the two forum-scoped `f_donationcampaigns_*`, ADR-016) and their category to the ACP UI |
 | `overall_header_head_append` (template) | — | `INCLUDECSS` for the stylesheet |
+| `core.page_header` | `functions.php:3845` | Quick-links entry for the board-wide list (ADR-018); returns at once while the ACP switch is off |
+| `navbar_header_quick_links_after` (template) | `navbar_header.html:75` | Last item of the quick-links menu. prosilver hides the whole menu when quick links and search are both off for the viewer, and the entry with it |
+| `content_visibility::get_forums_visibility_sql()` | `content_visibility.php:250` | Topic approval / soft-delete SQL for the board list. Intersects the `m_approve` forums with the given list **only if that list is non-empty** — never call it with an empty list (ADR-018) |
 
 ## The escaping contract
 
 phpBB 3.3 runs Twig with **autoescape disabled**
 (`phpbb/template/twig/environment.php:79`), so nothing is escaped for you.
 
-**Domain scalars are stored raw** — campaign titles, topic titles, donor names,
-external URLs, currency code and symbol. They are read with
-`$request->raw_variable()`, never `variable()`, which would escape on input and
-store `&amp;` for an administrator who typed `&`.
+**Domain scalars are stored raw** — campaign titles, donor names, external
+URLs, currency code and symbol. They are read with `$request->raw_variable()`,
+never `variable()`, which would escape on input and store `&amp;` for an
+administrator who typed `&`.
+
+**Core-owned titles are the exception: they are stored escaped.** phpBB reads a
+topic subject and a forum name through `request->variable()`, so `topic_title`
+and `forum_name` sit in the database as `Kosten &amp; Miete`. Core's templates
+print them without `|e`, and so do ours. Until beta3 three templates added
+`|e` and showed `Kosten &amp; Miete` (fixed in 1.0.0-beta3).
+`architecture_test::CORE_ESCAPED_FIELDS` names these fields; a template that
+escapes them fails the build.
 
 Escaping happens at output, in exactly two places:
 
@@ -261,8 +272,9 @@ Escaping happens at output, in exactly two places:
 `U_*` URL variables are assigned already attribute-safe and must **not** carry
 `|e`, or they would be escaped twice.
 
-A test forbids any direct `htmlspecialchars()` call in production code and
-requires `|e` on every administrator-controlled scalar in every template.
+A test forbids any direct `htmlspecialchars()` call in production code,
+requires `|e` on every administrator-controlled scalar in every template, and
+forbids it on the core-escaped fields.
 
 ## The BBCode description
 
@@ -520,6 +532,69 @@ assign the key at all when the campaign has not opted in.
 **Manage button.** The box header carries a "Manage" button bound to the same
 flag and URL as the topic-tools entry (`S_DONATIONCAMPAIGNS_TOPIC_LINK`), so
 its visibility is exactly the access rule and no second rule exists.
+
+### ADR-018 — A third, read-only controller for the board-wide campaign list
+
+**Decision (1.0.0-beta3).** `controller/list_controller.php` serves
+`app.php/donationcampaigns` (route `uflagmey_donationcampaigns_list`, GET only):
+every campaign the viewer may see, 25 per page, newest first, with title (linked
+to the topic), forum, the shared progress bar, collected / target / percent and,
+if the campaign shows it, the donation count. No donor names. A board setting,
+`donationcampaigns_list_enabled` (m10, **off by default**), switches the page
+and its quick-links entry on; while it is off — or before m10 has run — the
+route answers 404 `PAGE_NOT_FOUND`.
+
+**Why a third controller.** The phpBB.com review asked for a site-wide list with
+an ACP switch. A public, paginated page needs a route, and a route needs a
+controller; phpBB 3.3 offers no event-only way to render a standalone page. The
+rule "avoid additional controllers or duplicated write paths" exists to keep a
+single write path per action. This controller is not a write path: one action,
+no form, no form key, no write method. `architecture_test` fails the build if a
+write method, a form key, POST handling or a log call appears in it.
+Alternatives: a block on the board index (no pagination, clutters the index, not
+what was asked) and the ACP list (exists, not public).
+
+**Visibility — the part that must be right.** A campaign is listed only if all
+hold, i.e. exactly when its box would be visible in the topic:
+
+1. `campaign_enabled = 1`;
+2. its topic exists and is not a moved shadow (`topic_moved_id = 0`);
+3. the viewer has `f_read` on the topic's forum;
+4. the topic is visible to the viewer per core's `content_visibility`
+   (unapproved / soft-deleted topics only for `m_approve`);
+5. the forum has no password, or this session has unlocked it — otherwise
+   viewtopic shows the forum login box instead of the topic.
+
+The filter runs in SQL (one JOIN of campaigns, topics and forums), not in PHP
+after fetching, so the page count matches the pages. `campaign_list_service`
+builds the forum list (rules 3 and 5, from `acl_getf('f_read')` and
+`user::get_passworded_forums()`) and core's visibility fragment (rule 4);
+`campaign_list_repository` applies them together with rules 1 and 2. When no
+forum is left, the service answers "nothing" **before** building the fragment:
+`get_forums_visibility_sql()` with an empty forum list would open every
+`m_approve` forum regardless of `f_read`. The repository applies the forum list
+itself as well, so it never relies on the fragment alone.
+
+**Read model, not new methods on the existing classes.** `campaign_repository`
+is single-table by design and `campaign_service` carries no authorisation (that
+lives in `access`). The list needs a three-table JOIN and the viewer's
+permissions, so it gets its own repository and service; no existing constructor
+changed. The repository selects only the columns the list renders, so the
+description, the link and every donor setting never leave the database here.
+Donation counts for a page come from one grouped query
+(`donation_repository::count_by_campaign_ids()`), only for campaigns that show
+them.
+
+**Shared parts.** The percentage, bar step and "reached" state come from
+`campaign_service::progress()` (moved out of `viewtopic_listener`; "reached" now
+needs a target above zero). The bar markup is one partial,
+`donationcampaigns_progress.html`, included by the box and the list with
+`{% include … with {…} only %}`; the test renderer understands exactly that form.
+
+**Consequences.** Off by default, so an update publishes nothing. One more
+listener on every page (`core.page_header`), idle while the switch is off. The
+navbar entry is shown whenever the switch is on, even to a viewer for whom the
+list is empty — checking would cost a query on every page.
 
 ## Styles
 
