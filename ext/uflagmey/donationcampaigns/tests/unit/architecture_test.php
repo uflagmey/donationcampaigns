@@ -34,6 +34,32 @@ class architecture_test extends \phpbb_test_case
 	const CORE_ESCAPED_FIELDS = array('TOPIC_TITLE', 'FORUM_NAME');
 
 	/**
+	 * Templates still written in phpBB's legacy syntax, relative to the
+	 * package. 1.0.0-beta4 converts them to native Twig.
+	 *
+	 * A ratchet: a template on this list must still contain legacy syntax, so
+	 * a converted file cannot stay listed; a template off the list must not
+	 * contain any. Each conversion removes its files; when the list is empty
+	 * it is deleted with the check that reads it.
+	 */
+	const LEGACY_SYNTAX_PENDING = array(
+		'adm/style/acp_donationcampaigns_campaigns.html',
+		'adm/style/acp_donationcampaigns_donations.html',
+		'adm/style/acp_donationcampaigns_settings.html',
+		'styles/prosilver/template/donationcampaigns_campaign_fields.html',
+		'styles/prosilver/template/donationcampaigns_campaign_form.html',
+		'styles/prosilver/template/donationcampaigns_donation_form.html',
+		'styles/prosilver/template/donationcampaigns_list.html',
+		'styles/prosilver/template/donationcampaigns_manage.html',
+		'styles/prosilver/template/event/navbar_header_quick_links_after.html',
+		'styles/prosilver/template/event/overall_header_head_append.html',
+		'styles/prosilver/template/event/posting_editor_add_panel_tab.html',
+		'styles/prosilver/template/event/posting_layout_include_panel_body.html',
+		'styles/prosilver/template/event/viewtopic_body_poll_before.html',
+		'styles/prosilver/template/event/viewtopic_topic_tools_after.html',
+	);
+
+	/**
 	 * SHA-256 of the license text both license files must carry.
 	 *
 	 * It is the license.txt of the official phpBB Skeleton Extension 1.2.3,
@@ -642,6 +668,154 @@ class architecture_test extends \phpbb_test_case
 		{
 			$this->assertStringNotContainsString($fragment, $code, "The read-only list controller contains {$fragment}");
 		}
+	}
+
+	/**
+	 * Every shipped template, relative to the package.
+	 *
+	 * @return string[]
+	 */
+	protected function shipped_templates()
+	{
+		$templates = array();
+
+		foreach (array('adm/style', 'styles') as $root)
+		{
+			$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->package . '/' . $root, \FilesystemIterator::SKIP_DOTS));
+
+			foreach ($files as $file)
+			{
+				if (substr($file->getFilename(), -5) === '.html')
+				{
+					$templates[] = substr($file->getPathname(), strlen($this->package) + 1);
+				}
+			}
+		}
+
+		sort($templates);
+
+		return $templates;
+	}
+
+	/**
+	 * Every piece of phpBB legacy template syntax in a source: the comment
+	 * tags phpBB's lexer turns into Twig tags, and anything its variable
+	 * patterns rewrite (phpbb/template/twig/lexer.php:111, :118, :122, :126,
+	 * :324). Searched everywhere, comments included: the lexer rewrites a
+	 * {WORD} inside a comment too, which is how {MESSAGE} in an HTML comment
+	 * printed the post text (beta4 F1).
+	 *
+	 * @param string $source
+	 * @return string[]
+	 */
+	protected function legacy_syntax($source)
+	{
+		$patterns = array(
+			'/<!--\s*(?:IF|ELSE ?IF|ELSE|ENDIF|BEGIN|BEGINELSE|END|INCLUDE|INCLUDEJS|INCLUDECSS|INCLUDEPHP|DEFINE|UNDEFINE|ENDDEFINE|EVENT|PHP|ENDPHP)\b.*?-->/s',
+			'/\{[a-zA-Z0-9_.]+(?:\|[^}]+?)?\}/',
+			'/\{\$[a-zA-Z0-9_.]+\}/',
+		);
+
+		$found = array();
+
+		foreach ($patterns as $pattern)
+		{
+			preg_match_all($pattern, $source, $matches);
+			$found = array_merge($found, $matches[0]);
+		}
+
+		return $found;
+	}
+
+	/**
+	 * Native Twig only, as the phpBB Skeleton Extension writes templates and
+	 * as the Extension Check team asked for beta4.
+	 */
+	public function test_templates_use_native_twig_only()
+	{
+		$templates = $this->shipped_templates();
+		$this->assertNotEmpty($templates);
+
+		// Collected, so one run names every offending template.
+		$problems = array();
+
+		foreach ($templates as $template)
+		{
+			$found = $this->legacy_syntax(file_get_contents($this->package . '/' . $template));
+			$pending = in_array($template, self::LEGACY_SYNTAX_PENDING, true);
+
+			if ($pending && !$found)
+			{
+				$problems[] = "{$template} is native Twig now: remove it from LEGACY_SYNTAX_PENDING";
+			}
+			else if (!$pending && $found)
+			{
+				$problems[] = "{$template} uses phpBB's legacy template syntax (" . count($found) . 'x), e.g. ' . implode(' ', array_slice(array_unique($found), 0, 3));
+			}
+		}
+
+		$this->assertSame(array(), $problems);
+	}
+
+	public function test_the_pending_list_names_only_shipped_templates()
+	{
+		$this->assertSame(array(), array_diff(self::LEGACY_SYNTAX_PENDING, $this->shipped_templates()));
+	}
+
+	/**
+	 * @return array
+	 */
+	public function legacy_syntax_samples()
+	{
+		return array(
+			'IF'					=> array('<!-- IF S_FLAG -->'),
+			'IF on a block'			=> array('<!-- IF .block -->'),
+			'ELSE'					=> array('<!-- ELSE -->'),
+			'ELSEIF'				=> array('<!-- ELSEIF S_FLAG -->'),
+			'ENDIF'					=> array('<!-- ENDIF -->'),
+			'BEGIN'					=> array('<!-- BEGIN block -->'),
+			'BEGINELSE'				=> array('<!-- BEGINELSE -->'),
+			'END'					=> array('<!-- END block -->'),
+			'INCLUDE'				=> array('<!-- INCLUDE overall_header.html -->'),
+			'INCLUDEJS'				=> array('<!-- INCLUDEJS script.js -->'),
+			'INCLUDECSS'			=> array('<!-- INCLUDECSS @vendor_package/style.css -->'),
+			'DEFINE'				=> array('<!-- DEFINE $X = 1 -->'),
+			'EVENT'					=> array('<!-- EVENT some_event -->'),
+			'language variable'		=> array('{L_KEY}'),
+			'JS language variable'	=> array('{LA_KEY}'),
+			'variable'				=> array('{VAR}'),
+			'filtered variable'		=> array('{VAR|e}'),
+			'block variable'		=> array('{block.VAR}'),
+			'defined variable'		=> array('{$VAR}'),
+			'in an HTML comment'	=> array('<!-- as core does with {MESSAGE} -->'),
+			'in a Twig comment'		=> array('{# as core does with {MESSAGE} #}'),
+			'unspaced Twig print'	=> array('{{VAR}}'),
+		);
+	}
+
+	/**
+	 * The guard recognises every legacy construct the extension could use.
+	 *
+	 * @dataProvider legacy_syntax_samples
+	 */
+	public function test_the_legacy_syntax_guard_finds($source)
+	{
+		$this->assertNotEmpty($this->legacy_syntax($source));
+	}
+
+	/**
+	 * ...and leaves native Twig, plain HTML comments and Twig hash literals
+	 * alone, so it does not simply reject everything.
+	 */
+	public function test_the_legacy_syntax_guard_accepts_native_twig()
+	{
+		$twig = "{% if S_FLAG %}{{ VAR }}{{ VAR|e }}{% else %}{{ lang('KEY') }}{{ lang('KEY')|e('js') }}{% endif %}\n"
+			. "{% for row in loops.block %}{{ row.VAR }}{% else %}-{% endfor %}\n"
+			. "{% include 'overall_header.html' %}{% include '@vendor_package/x.html' with {'prefix': '', 'step': row.STEP} only %}\n"
+			. "{% INCLUDECSS '@vendor_package/style.css' %}{% INCLUDEJS 'script.js' %}\n"
+			. "{# a Twig comment #}<!-- an HTML comment -->";
+
+		$this->assertSame(array(), $this->legacy_syntax($twig));
 	}
 
 	/**
