@@ -33,4 +33,7 @@ $lang = array_merge($lang, array(
 	'LOG_DONATIONCAMPAIGNS_DONATION_ADDED'		=> '<strong>Bestätigte Spende erfasst</strong><br />&raquo; %1$s von %2$s',
 	'LOG_DONATIONCAMPAIGNS_DONATION_EDITED'		=> '<strong>Bestätigte Spende bearbeitet</strong><br />&raquo; %1$s von %2$s',
 	'LOG_DONATIONCAMPAIGNS_DONATION_DELETED'	=> '<strong>Bestätigte Spende gelöscht</strong><br />&raquo; %1$s von %2$s',
+
+	// Critical: the posting form saved the topic, the campaign insert failed (ADR-019).
+	'LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED'	=> '<strong>Eine Spendenkampagne konnte nicht mit ihrem neuen Thema angelegt werden</strong><br />&raquo; Themen-ID %s. Das Thema wurde gespeichert; die Kampagne im Thema anlegen.',
 ));

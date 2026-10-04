@@ -168,6 +168,7 @@ class posting_listener_test extends campaign_list_test_case
 		$this->assertSame(array(
 			'core.posting_modify_template_vars'		=> 'assign_panel',
 			'core.posting_modify_submission_errors'	=> 'validate_panel',
+			'core.posting_modify_submit_post_after'	=> 'create_campaign',
 		), posting_listener::getSubscribedEvents());
 	}
 
@@ -429,6 +430,221 @@ class posting_listener_test extends campaign_list_test_case
 	public function test_injected_fields_outside_a_new_topic_are_ignored($mode)
 	{
 		$this->assertSame(array(), $this->validate($this->panel(array('target_amount' => '0')), $this->submission_event($mode)));
+	}
+
+	// ======================================================= creation (Task 7)
+
+	/**
+	 * core.posting_modify_submit_post_after as posting.php:1603 dispatches it
+	 * for a NEW topic: submit_post() has filled data['topic_id'], while the
+	 * event's own topic_id is still 0.
+	 */
+	protected function created_event($mode = 'post', $forum_id = self::FORUM_A, $subject = 'A new topic', array $data = array())
+	{
+		return new \phpbb\event\data(array(
+			'post_data'			=> array('post_subject' => utf8_htmlspecialchars($subject)),
+			'poll'				=> array(),
+			'data'				=> $data + array('topic_id' => self::NEW_TOPIC, 'forum_id' => $forum_id, 'post_id' => 700),
+			'mode'				=> $mode,
+			'post_id'			=> 0,
+			'topic_id'			=> 0,
+			'forum_id'			=> $forum_id,
+			'post_author_name'	=> '',
+			'update_message'	=> true,
+			'update_subject'	=> true,
+			'redirect_url'		=> './viewtopic.php?t=' . self::NEW_TOPIC,
+		));
+	}
+
+	protected function create(array $post, \phpbb\event\data $event = null)
+	{
+		$this->insert_topic(self::NEW_TOPIC, $event ? (int) $event['forum_id'] : self::FORUM_A);
+
+		$event = $event ?: $this->created_event();
+		$this->listener($post)->create_campaign($event);
+
+		return $event;
+	}
+
+	protected function stored()
+	{
+		return $this->campaign_service->get_campaign_by_topic(self::NEW_TOPIC);
+	}
+
+	public function test_the_campaign_is_created_for_the_new_topic()
+	{
+		$this->grants['f_noapprove'] = array(self::FORUM_A);
+
+		$event = $this->create($this->panel(array('external_url' => 'https://example.org/donate', 'show_donation_date' => '')));
+		unset($event);
+		$campaign = $this->stored();
+
+		$this->assertNotNull($campaign, 'No campaign for data[topic_id]');
+		$this->assertSame('Server fund', $campaign['campaign_title']);
+		$this->assertSame(25000, $campaign['target_amount']);
+		$this->assertSame(0, $campaign['collected_amount']);
+		$this->assertTrue($campaign['campaign_enabled']);
+		$this->assertTrue($campaign['show_donor_names']);
+		$this->assertTrue($campaign['show_donation_count']);
+		$this->assertSame('https://example.org/donate', $campaign['external_url']);
+		$this->assertSame('How to donate', $campaign['external_link_text']);
+	}
+
+	public function test_an_unticked_flag_is_stored_off()
+	{
+		$post = $this->panel();
+		unset($post['donationcampaigns_show_donation_date']);
+
+		$this->create($post);
+
+		$this->assertFalse($this->stored()['show_donation_date']);
+	}
+
+	/**
+	 * D8: the same moderator-log entry as a frontend create, with the forum
+	 * and the new topic, and the title escaped for the log viewer.
+	 */
+	public function test_creation_is_logged_like_a_frontend_create()
+	{
+		$this->create($this->panel(array('campaign_title' => 'A & B')));
+
+		$this->assertSame(array('LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED'), $this->log->operations);
+		list($mode, $user_id, , , , $data) = $this->log->entries[0];
+		$this->assertSame('mod', $mode);
+		$this->assertSame(61, $user_id);
+		$this->assertSame(self::FORUM_A, $data['forum_id']);
+		$this->assertSame(self::NEW_TOPIC, $data['topic_id']);
+		$this->assertSame('A &amp; B', $data[0]);
+	}
+
+	/**
+	 * WD1 + the review's point 1: an empty title takes the subject, decoded
+	 * from core's escaped form, so the stored title is raw and the box
+	 * escapes it exactly once.
+	 */
+	public function test_an_empty_title_takes_the_decoded_subject()
+	{
+		$subject = 'Kosten & "Miete" <2026> \'x\'';
+
+		$this->create($this->panel(array('campaign_title' => '')), $this->created_event('post', self::FORUM_A, $subject));
+		$title = $this->stored()['campaign_title'];
+
+		$this->assertSame($subject, $title);
+		$this->assertStringNotContainsString('&amp;', $title);
+		$this->assertStringNotContainsString('&quot;', $title);
+
+		$box = \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents(dirname(dirname(__DIR__)) . '/styles/prosilver/template/event/viewtopic_body_poll_before.html'),
+			array('DONATIONCAMPAIGNS_CAMPAIGN_TITLE' => $title)
+		);
+		$this->assertStringContainsString('Kosten &amp; &quot;Miete&quot; &lt;2026&gt; &#039;x&#039;', $box);
+		$this->assertStringNotContainsString('&amp;amp;', $box);
+	}
+
+	public function test_a_typed_title_wins_over_the_subject()
+	{
+		$this->create($this->panel(array('campaign_title' => 'Typed')), $this->created_event('post', self::FORUM_A, 'Subject'));
+
+		$this->assertSame('Typed', $this->stored()['campaign_title']);
+	}
+
+	public function test_unticked_no_campaign_is_created()
+	{
+		$this->create($this->panel(array(), false));
+
+		$this->assertNull($this->stored());
+		$this->assertSame(array(), $this->log->operations);
+	}
+
+	public function test_injected_fields_without_the_permission_create_nothing()
+	{
+		$this->create($this->panel(), $this->created_event('post', self::FORUM_B));
+
+		$this->assertNull($this->stored());
+	}
+
+	/**
+	 * Fields injected into a reply, a quote or an edit create nothing.
+	 *
+	 * @dataProvider other_modes
+	 */
+	public function test_injected_fields_outside_a_new_topic_create_nothing($mode)
+	{
+		$this->create($this->panel(), $this->created_event($mode));
+
+		$this->assertNull($this->stored());
+		$this->assertSame(array(), $this->log->operations);
+	}
+
+	/**
+	 * D7 / Q3: a topic that waits for approval is still created by
+	 * submit_post(), so the campaign is created too; it becomes visible with
+	 * the topic.
+	 */
+	public function test_a_topic_waiting_for_approval_gets_its_campaign()
+	{
+		$event = $this->create($this->panel(), $this->created_event('post', self::FORUM_A, 'Queued', array('force_approved_state' => false)));
+
+		$this->assertNotNull($this->stored());
+		$this->assertSame('./viewtopic.php?t=' . self::NEW_TOPIC, $event['redirect_url']);
+	}
+
+	/**
+	 * Q4: core's posting lock stops a resubmitted form before submit_post(),
+	 * so this event cannot run twice for one form. Should it ever run twice
+	 * for one topic, the campaign exists: nothing more happens, no error.
+	 */
+	public function test_a_second_run_for_the_same_topic_creates_nothing_more()
+	{
+		$event = $this->create($this->panel());
+		$this->listener($this->panel())->create_campaign($this->created_event());
+
+		$this->assertSame(1, $this->campaign_service->count_campaigns() - 8);
+		$this->assertSame(array(), $this->log->operations, 'The second run logged something');
+		$this->assertSame('./viewtopic.php?t=' . self::NEW_TOPIC, $event['redirect_url']);
+	}
+
+	/**
+	 * WD2: the post is saved, the insert fails. No exception escapes, a
+	 * critical log entry records it, and an approved topic sends the poster
+	 * to the management landing, which offers the create form.
+	 */
+	public function test_a_failed_insert_on_an_approved_topic_logs_and_redirects_to_the_landing()
+	{
+		$this->grants['f_noapprove'] = array(self::FORUM_A);
+		$this->use_failing_insert();
+
+		$event = $this->create($this->panel());
+
+		$this->assertNull($this->stored());
+		$this->assertSame(array('LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED'), $this->log->operations);
+		$this->assertSame('critical', $this->log->entries[0][0]);
+		$this->assertSame('uflagmey_donationcampaigns_manage?topic_id=' . self::NEW_TOPIC, $event['redirect_url']);
+	}
+
+	/**
+	 * WD2: when the topic waits for approval, core shows its own fixed
+	 * message after this event; only the log entry is written.
+	 */
+	public function test_a_failed_insert_on_a_queued_topic_only_logs()
+	{
+		$this->use_failing_insert();
+
+		$event = $this->create($this->panel(), $this->created_event('post', self::FORUM_A, 'Queued'));
+
+		$this->assertSame(array('LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED'), $this->log->operations);
+		$this->assertSame('./viewtopic.php?t=' . self::NEW_TOPIC, $event['redirect_url']);
+	}
+
+	protected function use_failing_insert()
+	{
+		$this->campaign_service = new campaign_service(
+			$this->db,
+			new \uflagmey\donationcampaigns\tests\service\failing_insert_campaign_repository($this->db, 'phpbb_ufdc_campaigns'),
+			new donation_repository($this->db, 'phpbb_ufdc_donations'),
+			new topic_repository($this->db, 'phpbb_topics'),
+			new fake_description_formatter()
+		);
 	}
 
 	// ---------------------------------------------------------------- markup

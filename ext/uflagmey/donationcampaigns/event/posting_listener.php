@@ -12,6 +12,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use uflagmey\donationcampaigns\service\access;
 use uflagmey\donationcampaigns\service\campaign_form;
 use uflagmey\donationcampaigns\service\campaign_service;
+use uflagmey\donationcampaigns\exception\donationcampaigns_exception;
 
 /**
  * Create a campaign together with a new topic, from the posting form (ADR-019).
@@ -104,6 +105,7 @@ class posting_listener implements EventSubscriberInterface
 		return array(
 			'core.posting_modify_template_vars'		=> 'assign_panel',
 			'core.posting_modify_submission_errors'	=> 'validate_panel',
+			'core.posting_modify_submit_post_after'	=> 'create_campaign',
 		);
 	}
 
@@ -202,6 +204,123 @@ class posting_listener implements EventSubscriberInterface
 			$error[] = $this->language->lang($key);
 		}
 		$event['error'] = $error;
+	}
+
+	/**
+	 * Create the campaign once the topic exists
+	 * (core.posting_modify_submit_post_after, posting.php:1603).
+	 *
+	 * submit_post() takes $data by reference and fills data['topic_id'] for a
+	 * new topic (functions_posting.php:2021); the event's own topic_id is
+	 * still 0 then. A topic that waits for approval is inserted all the same,
+	 * so its campaign is created too and becomes visible with it (D7).
+	 *
+	 * The full campaign_service rules run here, topic included. Validation
+	 * already passed in validate_panel(), and the topic is brand new, so a
+	 * failure means the database failed. The post is NOT rolled back (D-risk):
+	 *   - a critical log entry records it;
+	 *   - an approved topic sends the poster to the management landing, whose
+	 *     create form offers a second try (WD2). A queued topic gets core's
+	 *     fixed message after this event, so there only the log entry.
+	 * A campaign that already exists for the topic is not a failure: this
+	 * event cannot run twice for one form (core's posting lock refuses the
+	 * second submit), so it would mean the campaign is already there.
+	 *
+	 * @param \phpbb\event\data $event
+	 * @return void
+	 */
+	public function create_campaign($event)
+	{
+		$forum_id = (int) $event['forum_id'];
+
+		if (!$this->applies($event['mode'], $forum_id) || !$this->attached())
+		{
+			return;
+		}
+
+		$data = $event['data'];
+		$topic_id = isset($data['topic_id']) ? (int) $data['topic_id'] : 0;
+
+		list($input, ) = $this->input($event['post_data']);
+		$input['topic_id'] = $topic_id;
+
+		try
+		{
+			$this->campaigns->create_campaign($input);
+		}
+		catch (donationcampaigns_exception $e)
+		{
+			$errors = $e->get_parameters() ?: array($e->get_language_key());
+
+			if (in_array('DONATIONCAMPAIGNS_ERROR_TOPIC_HAS_CAMPAIGN', $errors, true))
+			{
+				return;
+			}
+
+			$this->creation_failed($event, $topic_id, $data);
+
+			return;
+		}
+		catch (\Exception $e)
+		{
+			$this->creation_failed($event, $topic_id, $data);
+
+			return;
+		}
+
+		$this->log->add(
+			'mod',
+			$this->user->data['user_id'],
+			$this->user->ip,
+			'LOG_DONATIONCAMPAIGNS_CAMPAIGN_ADDED',
+			time(),
+			array(
+				'forum_id'	=> $forum_id,
+				'topic_id'	=> $topic_id,
+				// The log viewer prints parameters unescaped.
+				utf8_htmlspecialchars($input['campaign_title']),
+			)
+		);
+	}
+
+	/**
+	 * WD2: record the failure; send an approved topic's poster to the landing.
+	 *
+	 * @param \phpbb\event\data $event
+	 * @param int $topic_id
+	 * @param array $data core's post data, after submit_post()
+	 * @return void
+	 */
+	protected function creation_failed($event, $topic_id, array $data)
+	{
+		$this->log->add(
+			'critical',
+			$this->user->data['user_id'],
+			$this->user->ip,
+			'LOG_DONATIONCAMPAIGNS_POSTING_CREATE_FAILED',
+			time(),
+			array((int) $topic_id)
+		);
+
+		if (!$this->waits_for_approval($data))
+		{
+			$event['redirect_url'] = $this->helper->route('uflagmey_donationcampaigns_manage', array('topic_id' => (int) $topic_id), false);
+		}
+	}
+
+	/**
+	 * The condition posting.php itself uses right after this event
+	 * (posting.php:1619) to show POST_STORED_MOD instead of redirecting.
+	 *
+	 * @param array $data
+	 * @return bool
+	 */
+	protected function waits_for_approval(array $data)
+	{
+		$forum_id = isset($data['forum_id']) ? (int) $data['forum_id'] : 0;
+
+		return (!$this->auth->acl_get('f_noapprove', $forum_id) && empty($data['force_approved_state']))
+			|| (isset($data['force_approved_state']) && !$data['force_approved_state']);
 	}
 
 	/**
