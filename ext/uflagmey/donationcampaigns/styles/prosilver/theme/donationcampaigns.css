@@ -117,7 +117,7 @@
 }
 
 .donationcampaigns-donors {
-	word-wrap: break-word;
+	overflow-wrap: break-word;
 }
 
 /* The board-wide campaign list (beta3). prosilver's table1 supplies the
