@@ -13,20 +13,19 @@ namespace uflagmey\donationcampaigns\tests\acp;
  *
  * The campaign target field and the donation amount field — both now on the
  * frontend forms — must show the configured currency the same way, so the two
- * presentations cannot drift apart. This reads the shipped templates as files,
- * wherever they live.
- *
- * It is deliberately a file-level test: the drift is a template inconsistency,
- * and a rendered-output test driving one surface cannot see the other template.
+ * presentations cannot drift apart. Every rule runs against both templates
+ * from one data provider, rendered by phpBB's engine in both layouts, so a
+ * difference between the two forms fails here whichever template drifted.
  */
 class amount_currency_parity_test extends \phpbb_test_case
 {
 	/**
 	 * The label every amount input must carry beside it: the board's one
 	 * configured symbol, escaped, as a sibling of the input. Not a second
-	 * configuration key, and never part of the input value.
+	 * configuration key, and never part of the input value. Rendered here for
+	 * the symbol '<€>' below.
 	 */
-	const CURRENCY_LABEL = '<strong>{DONATIONCAMPAIGNS_CURRENCY_SYMBOL|e}</strong>';
+	const CURRENCY_LABEL = '<strong>&lt;€&gt;</strong>';
 
 	/**
 	 * @return array label => [template path relative to the package, amount input name]
@@ -40,57 +39,69 @@ class amount_currency_parity_test extends \phpbb_test_case
 	}
 
 	/**
+	 * A form rendered with phpBB's engine.
+	 *
 	 * @param string $path Relative to the extension package root
+	 * @param bool $symbol_before
 	 * @return string
 	 */
-	private function template($path)
+	private function render($path, $symbol_before)
 	{
-		// Shared includes pasted in (the campaign fields moved into one in beta3).
-		return \uflagmey\donationcampaigns\tests\template_renderer::inline_partials(
-			file_get_contents(dirname(dirname(__DIR__)) . '/' . $path)
+		return \uflagmey\donationcampaigns\tests\template_renderer::render(
+			file_get_contents(dirname(dirname(__DIR__)) . '/' . $path),
+			array(
+				'S_DONATIONCAMPAIGNS_SYMBOL_BEFORE'	=> $symbol_before,
+				'DONATIONCAMPAIGNS_CURRENCY_SYMBOL'	=> '<€>',
+				'DONATIONCAMPAIGNS_TARGET_AMOUNT'	=> 'AMOUNT_MARKER',
+				'DONATIONCAMPAIGNS_DONATION_AMOUNT'	=> 'AMOUNT_MARKER',
+			)
 		);
 	}
 
 	/**
 	 * The label sits on the side the board puts the symbol of every displayed
 	 * amount (ADR-017): after the field by default, before it when "symbol
-	 * before the amount" is set. Both branches must exist, keyed on the same
-	 * flag, around the same input.
+	 * before the amount" is set. Exactly once, beside the same input.
 	 *
 	 * @dataProvider amount_inputs
 	 */
 	public function test_the_currency_label_sits_on_the_configured_side_of_the_input($file, $input_name)
 	{
-		$markup = $this->template($file);
 		$input = '<input id="' . preg_quote($input_name, '#') . '"[^>]*name="' . preg_quote($input_name, '#') . '"[^>]*>';
 		$label = preg_quote(self::CURRENCY_LABEL, '#');
 
+		$before = $this->render($file, true);
 		$this->assertMatchesRegularExpression(
-			'#<!-- IF S_DONATIONCAMPAIGNS_SYMBOL_BEFORE -->' . $label . '\s*<!-- ENDIF -->' . $input . '#',
-			$markup,
+			'#' . $label . '\s*' . $input . '#',
+			$before,
 			"{$input_name} in {$file} has no currency label before it for the symbol-before layout"
 		);
+		$this->assertSame(1, substr_count($before, self::CURRENCY_LABEL));
+
+		$after = $this->render($file, false);
 		$this->assertMatchesRegularExpression(
-			'#' . $input . '<!-- IF not S_DONATIONCAMPAIGNS_SYMBOL_BEFORE -->\s*' . $label . '<!-- ENDIF -->#',
-			$markup,
+			'#' . $input . '\s*' . $label . '#',
+			$after,
 			"{$input_name} in {$file} has no currency label after it for the default layout"
 		);
+		$this->assertSame(1, substr_count($after, self::CURRENCY_LABEL));
 	}
 
 	/**
 	 * The symbol is a label, not a value: no amount input may carry the symbol
-	 * variable inside its own value attribute, or the parser would be handed
-	 * more than the number.
+	 * inside its own value attribute, or the parser would be handed more than
+	 * the number.
 	 *
 	 * @dataProvider amount_inputs
 	 */
 	public function test_the_amount_value_never_carries_the_symbol($file, $input_name)
 	{
-		$markup = $this->template($file);
+		foreach (array(true, false) as $symbol_before)
+		{
+			preg_match('#name="' . preg_quote($input_name, '#') . '"[^>]*value="([^"]*)"#', $this->render($file, $symbol_before), $m);
 
-		preg_match('#name="' . preg_quote($input_name, '#') . '"[^>]*value="([^"]*)"#', $markup, $m);
-
-		$this->assertNotEmpty($m, "Could not find the {$input_name} value attribute in {$file}");
-		$this->assertStringNotContainsString('CURRENCY_SYMBOL', $m[1], 'The currency symbol must not be inside the input value');
+			$this->assertNotEmpty($m, "Could not find the {$input_name} value attribute in {$file}");
+			$this->assertSame('AMOUNT_MARKER', $m[1], 'The input value must be the amount and nothing else');
+		}
 	}
 }
