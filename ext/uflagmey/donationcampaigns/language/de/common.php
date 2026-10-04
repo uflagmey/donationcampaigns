@@ -128,4 +128,11 @@ $lang = array_merge($lang, array(
 		1	=> '%d Kampagne',
 		2	=> '%d Kampagnen',
 	),
+
+	// Das Panel im Beitragsformular (beta3, ADR-019).
+	'DONATIONCAMPAIGNS_POSTING_TAB'	=> 'Spendenkampagne',
+	'DONATIONCAMPAIGNS_POSTING_EXPLAIN'	=> 'Eine Spendenkampagne an dieses neue Thema anhängen. Sie wird zusammen mit dem Thema angelegt und danach im Thema verwaltet.',
+	'DONATIONCAMPAIGNS_POSTING_ATTACH'	=> 'Eine Spendenkampagne an dieses Thema anhängen',
+	'DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN'	=> 'Leer lassen, um den Thementitel zu verwenden.',
+	'DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER'	=> 'Thementitel',
 ));

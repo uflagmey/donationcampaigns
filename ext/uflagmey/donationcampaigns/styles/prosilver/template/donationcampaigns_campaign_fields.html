@@ -5,8 +5,9 @@
    extensions. The values come from the including page's template variables.
    The topic row appears only where a topic already exists. #}
 		<dl>
-			<dt><label for="{{ prefix }}campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br /><span>{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}</span></dt>
-			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}" /></dd>
+			<dt><label for="{{ prefix }}campaign_title">{L_DONATIONCAMPAIGNS_FORM_TITLE}{L_COLON}</label><br /><span><!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT -->{L_DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN}<!-- ELSE -->{L_DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN}<!-- ENDIF --></span></dt>
+			<!-- In the posting form an empty title becomes the topic title on submit (WD1). -->
+			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e}"<!-- IF S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT --> placeholder="{L_DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER}"<!-- ENDIF --> /></dd>
 		</dl>
 
 		<!-- IF DONATIONCAMPAIGNS_TOPIC_TITLE -->

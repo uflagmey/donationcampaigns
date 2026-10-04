@@ -128,4 +128,11 @@ $lang = array_merge($lang, array(
 		1	=> '%d campaign',
 		2	=> '%d campaigns',
 	),
+
+	// The posting-form panel (beta3, ADR-019).
+	'DONATIONCAMPAIGNS_POSTING_TAB'	=> 'Donation campaign',
+	'DONATIONCAMPAIGNS_POSTING_EXPLAIN'	=> 'Attach a donation campaign to this new topic. It is created together with the topic and is managed from the topic afterwards.',
+	'DONATIONCAMPAIGNS_POSTING_ATTACH'	=> 'Attach a donation campaign to this topic',
+	'DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN'	=> 'Leave empty to use the topic title.',
+	'DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER'	=> 'Topic title',
 ));

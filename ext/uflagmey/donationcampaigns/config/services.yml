@@ -81,6 +81,24 @@ services:
         tags:
             - { name: event.listener }
 
+    # Campaign creation from the posting form of a new topic (ADR-019).
+    uflagmey.donationcampaigns.listener.posting:
+        class: uflagmey\donationcampaigns\event\posting_listener
+        arguments:
+            - '@uflagmey.donationcampaigns.access'
+            - '@auth'
+            - '@uflagmey.donationcampaigns.campaign_service'
+            - '@uflagmey.donationcampaigns.campaign_form'
+            - '@config'
+            - '@template'
+            - '@language'
+            - '@request'
+            - '@log'
+            - '@user'
+            - '@controller.helper'
+        tags:
+            - { name: event.listener }
+
     uflagmey.donationcampaigns.listener.topic_delete:
         class: uflagmey\donationcampaigns\event\topic_delete_listener
         arguments:
