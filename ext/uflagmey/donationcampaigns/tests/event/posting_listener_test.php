@@ -667,13 +667,12 @@ class posting_listener_test extends campaign_list_test_case
 	 */
 	public function test_the_tab_follows_the_poll_tab_markup()
 	{
-		$tab = trim($this->tab_template());
+		// Only on a page the listener enabled the panel for.
+		$this->assertSame('', trim(\uflagmey\donationcampaigns\tests\template_renderer::render($this->tab_template(), array())));
 
-		$this->assertStringStartsWith('<!-- IF S_DONATIONCAMPAIGNS_POSTING -->', $tab);
-		$this->assertStringEndsWith('<!-- ENDIF -->', $tab);
-		$this->assertStringContainsString(
-			'<li id="donationcampaigns-panel-tab" class="tab"><a href="#tabs" data-subpanel="donationcampaigns-panel" role="tab" aria-controls="donationcampaigns-panel">{L_DONATIONCAMPAIGNS_POSTING_TAB}</a></li>',
-			$tab
+		$this->assertSame(
+			'<li id="donationcampaigns-panel-tab" class="tab"><a href="#tabs" data-subpanel="donationcampaigns-panel" role="tab" aria-controls="donationcampaigns-panel">DONATIONCAMPAIGNS_POSTING_TAB</a></li>',
+			trim(\uflagmey\donationcampaigns\tests\template_renderer::render($this->tab_template(), array('S_DONATIONCAMPAIGNS_POSTING' => true)))
 		);
 	}
 
@@ -683,12 +682,15 @@ class posting_listener_test extends campaign_list_test_case
 	 */
 	public function test_the_panel_follows_the_poll_panel_markup_and_needs_no_javascript()
 	{
-		$panel = trim($this->panel_template());
+		$panel = $this->panel_template();
 
-		$this->assertStringStartsWith('<!-- IF S_DONATIONCAMPAIGNS_POSTING -->', $panel);
-		$this->assertStringEndsWith('<!-- ENDIF -->', $panel);
-		$this->assertStringContainsString('<div class="panel bg3" id="donationcampaigns-panel">', $panel);
-		$this->assertStringContainsString('<div class="inner">', $panel);
+		// Only on a page the listener enabled it for, and then the whole panel.
+		$this->assertSame('', trim(\uflagmey\donationcampaigns\tests\template_renderer::render($panel, array())));
+
+		$html = \uflagmey\donationcampaigns\tests\template_renderer::render($panel, array('S_DONATIONCAMPAIGNS_POSTING' => true));
+		$this->assertStringContainsString('<div class="panel bg3" id="donationcampaigns-panel">', $html);
+		$this->assertStringContainsString('<div class="inner">', $html);
+		$this->assertStringContainsString('name="donationcampaigns_target_amount"', $html, 'The shared fields are not in the panel');
 		$this->assertStringContainsString("{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': 'donationcampaigns_'} %}", $panel);
 
 		$this->assertDoesNotMatchRegularExpression('/\sstyle\s*=/i', $panel, 'ADR-013: no inline CSS, and nothing may hide the panel');
