@@ -11,7 +11,7 @@
 	<fieldset class="fields2">
 		<dl>
 			<dt><label for="donationcampaigns_attach">{{ lang('DONATIONCAMPAIGNS_POSTING_ATTACH') }}{{ lang('COLON') }}</label></dt>
-			<dd><input type="checkbox" class="radio" name="donationcampaigns_attach" id="donationcampaigns_attach" value="1"{% if S_DONATIONCAMPAIGNS_ATTACH %} checked{% endif %} ></dd>
+			<dd><input type="checkbox" class="radio" name="donationcampaigns_attach" id="donationcampaigns_attach" value="1"{% if S_DONATIONCAMPAIGNS_ATTACH %} checked{% endif %}></dd>
 		</dl>
 
 		{% include '@uflagmey_donationcampaigns/donationcampaigns_campaign_fields.html' with {'prefix': 'donationcampaigns_'} %}

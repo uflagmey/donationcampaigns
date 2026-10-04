@@ -7,7 +7,7 @@
 		<dl>
 			<dt><label for="{{ prefix }}campaign_title">{{ lang('DONATIONCAMPAIGNS_FORM_TITLE') }}{{ lang('COLON') }}</label><br><span>{% if S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT %}{{ lang('DONATIONCAMPAIGNS_POSTING_TITLE_EXPLAIN') }}{% else %}{{ lang('DONATIONCAMPAIGNS_FORM_TITLE_EXPLAIN') }}{% endif %}</span></dt>
 			{# In the posting form an empty title becomes the topic title on submit (WD1). #}
-			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}"{% if S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT %} placeholder="{{ lang('DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER') }}"{% endif %} ></dd>
+			<dd><input type="text" id="{{ prefix }}campaign_title" name="{{ prefix }}campaign_title" size="45" maxlength="255" value="{{ DONATIONCAMPAIGNS_CAMPAIGN_TITLE|e }}"{% if S_DONATIONCAMPAIGNS_TITLE_FROM_SUBJECT %} placeholder="{{ lang('DONATIONCAMPAIGNS_POSTING_TITLE_PLACEHOLDER') }}"{% endif %}></dd>
 		</dl>
 
 		{% if DONATIONCAMPAIGNS_TOPIC_TITLE %}
@@ -46,15 +46,15 @@
 
 		<dl>
 			<dt><label for="{{ prefix }}show_donor_names">{{ lang('DONATIONCAMPAIGNS_SHOW_DONOR_NAMES') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_DONOR_PRIVACY_WARNING') }}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donor_names" class="radio" name="{{ prefix }}show_donor_names" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_DONORS %} checked{% endif %} ></dd>
+			<dd><input type="checkbox" id="{{ prefix }}show_donor_names" class="radio" name="{{ prefix }}show_donor_names" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_DONORS %} checked{% endif %}></dd>
 		</dl>
 
 		<dl>
 			<dt><label for="{{ prefix }}show_donation_count">{{ lang('DONATIONCAMPAIGNS_FORM_SHOW_COUNT') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_FORM_SHOW_COUNT_EXPLAIN') }}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donation_count" class="radio" name="{{ prefix }}show_donation_count" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_COUNT %} checked{% endif %} ></dd>
+			<dd><input type="checkbox" id="{{ prefix }}show_donation_count" class="radio" name="{{ prefix }}show_donation_count" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_COUNT %} checked{% endif %}></dd>
 		</dl>
 
 		<dl>
 			<dt><label for="{{ prefix }}show_donation_date">{{ lang('DONATIONCAMPAIGNS_FORM_SHOW_DATE') }}{{ lang('COLON') }}</label><br><span>{{ lang('DONATIONCAMPAIGNS_FORM_SHOW_DATE_EXPLAIN') }}</span></dt>
-			<dd><input type="checkbox" id="{{ prefix }}show_donation_date" class="radio" name="{{ prefix }}show_donation_date" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_DATE %} checked{% endif %} ></dd>
+			<dd><input type="checkbox" id="{{ prefix }}show_donation_date" class="radio" name="{{ prefix }}show_donation_date" value="1"{% if S_DONATIONCAMPAIGNS_SHOW_DATE %} checked{% endif %}></dd>
 		</dl>

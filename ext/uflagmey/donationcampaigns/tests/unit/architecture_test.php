@@ -1022,7 +1022,9 @@ class architecture_test extends \phpbb_test_case
 	/**
 	 * Shipped markup uses HTML5 syntax: no self-closing "/>" and no quoted
 	 * boolean attribute such as checked="checked". The phpBB Extension Check
-	 * (XHTMLcheck) warns on both in html, php and js files.
+	 * (XHTMLcheck) warns on both in html, php and js files. In templates, a
+	 * tag also ends without a space before ">": the space was a remnant of
+	 * removing "/>" (beta3, where "--> >" avoided "-->>").
 	 *
 	 * @dataProvider markup_files
 	 */
@@ -1043,6 +1045,12 @@ class architecture_test extends \phpbb_test_case
 			if (preg_match('#(?<![\w$>-])(checked|selected|disabled|readonly|multiple|required)\s*=\s*["\']#i', $line))
 			{
 				$violations[] = $relative . ':' . ($number + 1) . ' quoted boolean attribute';
+			}
+
+			// Templates only: in php and js, " >" is a comparison.
+			if (substr($path, -5) === '.html' && preg_match('#(?:"|%\}|\}\}|\w)[ \t]+>#', $line))
+			{
+				$violations[] = $relative . ':' . ($number + 1) . ' space before the end of a tag';
 			}
 		}
 
