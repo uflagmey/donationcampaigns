@@ -157,7 +157,7 @@ Neither is granted on installation.
 > Upgrading from 1.0.0-beta1: the beta1 moderator permissions
 > (`m_donationcampaigns_*`) are replaced and their grants are **not** carried
 > over. Re-assign the new forum permissions after updating. See
-> [RELEASE_NOTES_BETA2.md](RELEASE_NOTES_BETA2.md).
+> [RELEASE_NOTES_BETA2.md](https://github.com/uflagmey/donationcampaigns/blob/main/ext/uflagmey/donationcampaigns/RELEASE_NOTES_BETA2.md).
 
 ## Configuration
 
