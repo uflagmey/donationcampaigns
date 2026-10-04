@@ -69,6 +69,18 @@ services:
         tags:
             - { name: event.listener }
 
+    # Quick-links entry for the board-wide list (ADR-018); idle while the
+    # ACP switch is off.
+    uflagmey.donationcampaigns.listener.navbar:
+        class: uflagmey\donationcampaigns\event\navbar_listener
+        arguments:
+            - '@config'
+            - '@template'
+            - '@language'
+            - '@controller.helper'
+        tags:
+            - { name: event.listener }
+
     uflagmey.donationcampaigns.listener.topic_delete:
         class: uflagmey\donationcampaigns\event\topic_delete_listener
         arguments:
