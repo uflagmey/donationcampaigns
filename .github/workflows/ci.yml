@@ -27,7 +27,7 @@ jobs:
         run: ./vendor/bin/EPV.php run --dir=ext
 
   unit:
-    name: Unit tests (PHP ${{ matrix.php }})
+    name: Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -49,8 +49,19 @@ jobs:
           tar xzf /tmp/phpbb.tar.gz -C .phpbb-test
           composer install --no-dev --no-interaction \
             --working-dir=.phpbb-test/phpbb-release-3.3.17/phpBB
-      - name: Run unit tests
-        run: ./vendor/bin/phpunit --testsuite unit
+      - name: Link the extension into the phpBB tree
+        # Every suite except "unit" boots phpBB's extension manager, language
+        # loader or migrator, and those resolve the extension under
+        # phpBB/ext/uflagmey/donationcampaigns. Without this link they fail
+        # with "language file not found" / MODULE_INFO_FILE_NOT_EXIST, which is
+        # why this job used to run the unit suite only (528 of ~1600 tests).
+        # A symlink, so phpBB still gets nothing copied into its tree.
+        run: |
+          mkdir -p .phpbb-test/phpbb-release-3.3.17/phpBB/ext/uflagmey
+          ln -s "$GITHUB_WORKSPACE/ext/uflagmey/donationcampaigns" \
+            .phpbb-test/phpbb-release-3.3.17/phpBB/ext/uflagmey/donationcampaigns
+      - name: Run the full test suite
+        run: ./vendor/bin/phpunit
 
   coding-standard:
     name: phpBB coding standard
