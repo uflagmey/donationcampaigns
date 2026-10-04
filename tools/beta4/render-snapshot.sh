@@ -15,8 +15,10 @@
 #
 # Environment:
 #   BOARD_URL    default http://localhost:8081
-#   RS_PASSWORD  password of the board's test accounts (user1, admin2); kept
-#                out of this file on purpose. Required for capture.
+#   COMPOSE_FILE default Testboard_donation/docker-compose.yml
+#   RS_PASSWORD  password of the board's test accounts (user1, admin2,
+#                cashier1); kept out of this file on purpose. Required for
+#                capture.
 #
 # Every state is read-only on the board: GET pages, plus POSTs that cannot
 # write — a form that fails validation, a posting preview. The ACP exponent
@@ -28,10 +30,14 @@
 # task named in the cron image, the board clock ("It is currently …"), the
 # who-is-online blocks. Two captures of an unchanged board must be identical.
 #
-# Not covered, because the board's data has no such case (review and the
-# compiled comparison only): a shown donation date, "and N others", an account
-# with the donations permission alone, the create form (every topic already has
-# a campaign), the currency symbol before the amount.
+# Board data: the states need what tools/beta4/seed-board.sh adds (cashier1,
+# a topic without a campaign, dated and many donations). Ids the seed created
+# are looked up at capture time ({SEED_…} in the paths below).
+#
+# The currency symbol before the amount is a board-wide setting. Its states
+# (STATES_SYMBOL_BEFORE) are captured after switching the setting with
+# phpBB's own CLI (config:set); the previous value is restored afterwards,
+# also when the capture fails. This is the one write the tool makes.
 #
 # Exit codes: capture 0 ok / 1 a state failed; diff 0 identical / 1 different;
 # 64 usage.
@@ -43,10 +49,13 @@
 set -euo pipefail
 
 BOARD_URL="${BOARD_URL:-http://localhost:8081}"
+COMPOSE_FILE="${COMPOSE_FILE:-Testboard_donation/docker-compose.yml}"
+SYMBOL_BEFORE_KEY='donationcampaigns_currency_symbol_before'
 ACP_MODULE='i=-uflagmey-donationcampaigns-acp-main_module'
 
 # name | account | method | path | POST fields (urlencoded, & separated)
 # account: guest, user1 (f_donationcampaigns_manage in forum 902 only),
+#          cashier1 (f_donationcampaigns_donations in forum 902 only),
 #          admin2 (a_donationcampaigns: manage + donations everywhere),
 #          acp (admin2 after ACP re-authentication)
 STATES='
@@ -80,6 +89,26 @@ acp-campaigns-page1|acp|GET|/adm/index.php?ACP&mode=campaigns|
 acp-campaigns-page2|acp|GET|/adm/index.php?ACP&mode=campaigns&start=25|
 acp-donations-912|acp|GET|/adm/index.php?ACP&mode=donations&campaign_id=912|
 acp-donations-913-empty|acp|GET|/adm/index.php?ACP&mode=donations&campaign_id=913|
+g-topic-918-dated-and-private|guest|GET|/viewtopic.php?t=918|
+g-topic-919-and-others|guest|GET|/viewtopic.php?t=919|
+c1-topic-918-tools-donations-only|cashier1|GET|/viewtopic.php?t=918|
+c1-manage-918-donations-only|cashier1|GET|/app.php/donationcampaigns/topic/918|
+c1-donation-add-918|cashier1|GET|/app.php/donationcampaigns/campaign/918/donation/add|
+u1-campaign-create-seed-topic|user1|GET|/app.php/donationcampaigns/topic/{SEED_TOPIC_NO_CAMPAIGN}/create|
+a2-donation-edit-dated|admin2|GET|/app.php/donationcampaigns/donation/{SEED_DONATION_DATED}/edit|
+acp-donations-919-page1|acp|GET|/adm/index.php?ACP&mode=donations&campaign_id=919|
+acp-donations-919-page3|acp|GET|/adm/index.php?ACP&mode=donations&campaign_id=919&start=50|
+'
+
+# Captured with the currency symbol before the amount (see the header).
+STATES_SYMBOL_BEFORE='
+sb-topic-912|guest|GET|/viewtopic.php?t=912|
+sb-list-page1|guest|GET|/app.php/donationcampaigns|
+sb-campaign-edit-913|user1|GET|/app.php/donationcampaigns/campaign/913/edit|
+sb-campaign-create-seed-topic|user1|GET|/app.php/donationcampaigns/topic/{SEED_TOPIC_NO_CAMPAIGN}/create|
+sb-posting-902-panel|user1|GET|/posting.php?mode=post&f=902|
+sb-donation-add-912|admin2|GET|/app.php/donationcampaigns/campaign/912/donation/add|
+sb-acp-settings|acp|GET|/adm/index.php?ACP&mode=settings|
 '
 
 usage()
@@ -164,25 +193,26 @@ normalise()
 	'
 }
 
-capture()
+phpbb_cli()
 {
-	local out="$1" failed=0
-	[ -n "${RS_PASSWORD:-}" ] || { echo "render-snapshot: RS_PASSWORD is not set" >&2; exit 64; }
-	# Global, not local: the EXIT trap runs after this function has returned.
-	tmp="$(mktemp -d)"
-	trap 'rm -rf "$tmp"' EXIT
-	mkdir -p "$out"
+	docker compose -f "$COMPOSE_FILE" exec -T web php /var/www/html/phpBB/bin/phpbbcli.php --no-ansi "$@"
+}
 
-	login user1 "$tmp/user1.jar"
-	login admin2 "$tmp/admin2.jar"
-	# A session of its own: the ACP re-authentication replaces the session it
-	# runs in, so sharing admin2's would log the frontend states out.
-	login admin2 "$tmp/acp.jar"
-	acp_login "$tmp/acp.jar"
+# Capture every state of $1 into $2; the seed ids replace their placeholders.
+capture_states()
+{
+	local states="$1" out="$2" failed=0 seed_ids
+	seed_ids="$("$(dirname "$0")/seed-board.sh" ids)"
 
 	while IFS='|' read -r name account method path fields; do
 		[ -n "$name" ] || continue
-		local jar=() url status args=() page sid needle
+		local jar=() url status args=() page sid needle key value
+		while IFS='=' read -r key value; do
+			path="${path//\{$key\}/$value}"
+		done <<< "$seed_ids"
+		case "$path" in
+			*'{SEED_'*) echo "FAIL $name (no seed id for $path; run seed-board.sh seed)" >&2; failed=1; continue ;;
+		esac
 		if [ "$account" != guest ]; then jar=(-c "$tmp/$account.jar" -b "$tmp/$account.jar"); fi
 		url="$BOARD_URL$path"
 		if [ "$account" = acp ]; then
@@ -213,7 +243,46 @@ capture()
 		else
 			echo "ok   $name"
 		fi
-	done <<< "$STATES"
+	done <<< "$states"
+
+	return "$failed"
+}
+
+restore_symbol_setting()
+{
+	if [ -n "${symbol_before_was:-}" ]; then
+		phpbb_cli config:set "$SYMBOL_BEFORE_KEY" "$symbol_before_was" > /dev/null
+		echo "restored $SYMBOL_BEFORE_KEY=$symbol_before_was"
+		symbol_before_was=''
+	fi
+}
+
+capture()
+{
+	local out="$1" failed=0
+	[ -n "${RS_PASSWORD:-}" ] || { echo "render-snapshot: RS_PASSWORD is not set" >&2; exit 64; }
+	# Globals, not locals: the EXIT trap runs after this function has returned.
+	tmp="$(mktemp -d)"
+	symbol_before_was=''
+	trap 'restore_symbol_setting; rm -rf "$tmp"' EXIT
+	mkdir -p "$out"
+
+	login user1 "$tmp/user1.jar"
+	login cashier1 "$tmp/cashier1.jar"
+	login admin2 "$tmp/admin2.jar"
+	# A session of its own: the ACP re-authentication replaces the session it
+	# runs in, so sharing admin2's would log the frontend states out.
+	login admin2 "$tmp/acp.jar"
+	acp_login "$tmp/acp.jar"
+
+	capture_states "$STATES" "$out" || failed=1
+
+	symbol_before_was="$(phpbb_cli config:get "$SYMBOL_BEFORE_KEY" | tr -d '[:space:]')"
+	[ "$symbol_before_was" = 0 ] || { echo "render-snapshot: expected $SYMBOL_BEFORE_KEY=0, found '$symbol_before_was'" >&2; symbol_before_was=''; return 1; }
+	phpbb_cli config:set "$SYMBOL_BEFORE_KEY" 1 > /dev/null
+	echo "set $SYMBOL_BEFORE_KEY=1"
+	capture_states "$STATES_SYMBOL_BEFORE" "$out" || failed=1
+	restore_symbol_setting
 
 	return "$failed"
 }
